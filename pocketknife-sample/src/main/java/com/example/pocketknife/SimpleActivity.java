@@ -15,7 +15,7 @@ import java.util.ArrayList;
 
 public class SimpleActivity extends Activity {
 
-    @SaveState(defaultValue="0")
+    @SaveState(defaultValue = "0")
     int counter = 0;
     @SaveState
     int[] array = null;
@@ -31,6 +31,8 @@ public class SimpleActivity extends Activity {
     ArrayList<Integer> integerArrayList = null;
     @SaveState(defaultValue = "\"HelloWorld\"", minSdk = 12)
     String message;
+    @SaveState
+    MyOtherObj myOtherObj;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -61,6 +63,10 @@ public class SimpleActivity extends Activity {
         public void writeToParcel(Parcel parcel, int i) {
 
         }
+    }
+
+    public static class MyOtherObj extends MyObj {
+
     }
 
 }
