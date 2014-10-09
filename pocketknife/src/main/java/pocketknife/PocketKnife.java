@@ -189,17 +189,17 @@ public final class PocketKnife {
                 return constructor.newInstance();
             } catch (NoSuchMethodException e) {
                 throw new IllegalStateException(
-                        "Couldn't find default constructor in the generated bank adapter for class "
+                        "Couldn't find default constructor in the generated bundle adapter for class "
                                 + className);
             } catch (InvocationTargetException e) {
                 throw new IllegalStateException(
-                        "Could not create an instance of the bank adapter for class " + className, e);
+                        "Could not create an instance of the bundle adapter for class " + className, e);
             } catch (InstantiationException e) {
                 throw new IllegalStateException(
-                        "Could not create an instance of the bank adapter for class " + className, e);
+                        "Could not create an instance of the bundle adapter for class " + className, e);
             } catch (IllegalAccessException e) {
                 throw new IllegalStateException(
-                        "Could not create an instance of the bank adapter for class " + className, e);
+                        "Could not create an instance of the bundle adapter for class " + className, e);
             }
         }
         if (debug) {
