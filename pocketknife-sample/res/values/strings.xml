@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<resources>
+  <string name="app_name">Pocket Knife</string>
+    <string name="count">Save state was called %d times.</string>
+</resources>
