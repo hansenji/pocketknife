@@ -1,61 +1,49 @@
-Butter Knife
+Pocket Knife
 ============
 
-![Logo](website/static/logo.png)
-
-View "injection" library for Android which uses annotation processing to generate boilerplate code
+Intent and Bundle "injection" library for Android which uses annotation processing to generate boilerplate code
 for you.
-
- * Eliminate `findViewById` calls by using `@InjectView` on fields.
- * Group multiple views in a list using `@InjectViews`. Operate on all of them at once with actions,
-   setters, or properties.
- * Eliminate anonymous inner-classes for listeners by annotating methods with `@OnClick` and others.
 
 ```java
 class ExampleActivity extends Activity {
-  @InjectView(R.id.user) EditText username;
-  @InjectView(R.id.pass) EditText password;
 
-  @OnClick(R.id.submit) void submit() {
-    // TODO call server...
-  }
-
-  @Override public void onCreate(Bundle savedInstanceState) {
-    super.onCreate(savedInstanceState);
-    setContentView(R.layout.simple_activity);
-    ButterKnife.inject(this);
-    // TODO Use "injected" views...
-  }
 }
 ```
 
-For documentation and additional information see [the website][3].
+For documentation and additional information see [the website][4].
 
-__Remember: A butter knife is like [a dagger][1] only infinitely less sharp.__
+__Remember: A pocket knife is like [a dagger][1] or [a butter knife][2] but has more gadgets.__
 
 
 
 Download
 --------
 
-Download [the latest JAR][2] or grab via Maven:
+Download [the latest JAR][3] or grab via Maven:
 ```xml
 <dependency>
-  <groupId>com.jakewharton</groupId>
-  <artifactId>butterknife</artifactId>
-  <version>5.1.2</version>
+  <groupId>com.vikingsen</groupId>
+  <artifactId>pocketknife</artifactId>
+  <version>1.0.0</version>
+</dependency>
+<dependency>
+  <groupId>com.vikingsen</groupId>
+  <artifactId>pocketknife-compiler</artifactId>
+  <version>1.0.0</version>
+  <scope>provided</scope>
 </dependency>
 ```
 or Gradle:
 ```groovy
-compile 'com.jakewharton:butterknife:5.1.2'
+compile 'com.vikingsen:pocketknife:1.0.0'
+provided 'com.vikingsen:pocketknife-compiler:1.0.0'
 ```
 
 
 License
 -------
 
-    Copyright 2013 Jake Wharton
+    Copyright 2014 Jordan Hansen
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -72,5 +60,6 @@ License
 
 
  [1]: http://square.github.com/dagger/
- [2]: http://repository.sonatype.org/service/local/artifact/maven/redirect?r=central-proxy&g=com.jakewharton&a=butterknife&v=LATEST
- [3]: http://jakewharton.github.com/butterknife/
+ [2]: http://jakewharton.github.com/butterknife/
+ [3]: {maven-central repo}
+ [4]: {website}
