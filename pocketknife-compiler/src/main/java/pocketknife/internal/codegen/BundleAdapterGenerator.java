@@ -1,8 +1,8 @@
 package pocketknife.internal.codegen;
 
 import com.squareup.javawriter.JavaWriter;
+import pocketknife.internal.BundleBinding;
 import pocketknife.internal.GeneratedAdapters;
-import pocketknife.internal.StoreBinding;
 
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
@@ -18,17 +18,18 @@ import static javax.lang.model.element.Modifier.FINAL;
 import static javax.lang.model.element.Modifier.PRIVATE;
 import static javax.lang.model.element.Modifier.PUBLIC;
 import static javax.lang.model.element.Modifier.STATIC;
+import static pocketknife.internal.codegen.BundleFieldBinding.AnnotationType.SAVE_STATE;
 
-final class StoreAdapterGenerator {
+final class BundleAdapterGenerator {
 
-    private final Set<StoreFieldBinding> fields = new LinkedHashSet<StoreFieldBinding>();
+    private final Set<BundleFieldBinding> fields = new LinkedHashSet<BundleFieldBinding>();
     private final String classPackage;
     private final String className;
     private final String targetType;
     private final Elements elements;
     private final Types types;
 
-    public StoreAdapterGenerator(String classPackage, String className, String targetType, Elements elements, Types types) {
+    public BundleAdapterGenerator(String classPackage, String className, String targetType, Elements elements, Types types) {
         this.classPackage = classPackage;
         this.className = className;
         this.targetType = targetType;
@@ -36,7 +37,7 @@ final class StoreAdapterGenerator {
         this.types = types;
     }
 
-    public void addField(StoreFieldBinding binding) {
+    public void addField(BundleFieldBinding binding) {
         fields.add(binding);
     }
 
@@ -45,7 +46,7 @@ final class StoreAdapterGenerator {
         writer.emitPackage(classPackage);
         writer.emitImports("android.os.Bundle");
         writer.emitEmptyLine();
-        writer.beginType(className, "class", EnumSet.of(PUBLIC, FINAL), JavaWriter.type(StoreBinding.class, targetType));
+        writer.beginType(className, "class", EnumSet.of(PUBLIC, FINAL), JavaWriter.type(BundleBinding.class, targetType));
         writer.emitEmptyLine();
         writeBundleKeys(writer);
         // write Save State
@@ -61,37 +62,41 @@ final class StoreAdapterGenerator {
 
     private void writeBundleKeys(JavaWriter writer) throws IOException {
         writer.emitSingleLineComment(AdapterJavadoc.BUNDLE_KEYS);
-        for (StoreFieldBinding field : fields) {
+        for (BundleFieldBinding field : fields) {
             writer.emitField(String.class.getCanonicalName(), field.getKey(), EnumSet.of(PRIVATE, STATIC, FINAL), JavaWriter.stringLiteral(field.getKey()));
         }
     }
 
     private void writeSaveState(JavaWriter writer) throws IOException, IllegalBundleTypeException {
-        writer.emitJavadoc(AdapterJavadoc.SAVE_METHOD, targetType);
+        writer.emitJavadoc(AdapterJavadoc.SAVE_INSTANCE_STATE_METHOD, targetType);
         writer.beginMethod("void", GeneratedAdapters.SAVE_METHOD, EnumSet.of(PUBLIC), targetType, "target", "Bundle", "bundle");
-        for (StoreFieldBinding field : fields) {
-            writeSaveFieldState(writer, field);
+        for (BundleFieldBinding field : fields) {
+            if (SAVE_STATE == field.getAnnotationType()) {
+                writeSaveFieldState(writer, field);
+            }
         }
         writer.endMethod();
     }
 
-    private void writeSaveFieldState(JavaWriter writer, StoreFieldBinding field) throws IOException, IllegalBundleTypeException {
+    private void writeSaveFieldState(JavaWriter writer, BundleFieldBinding field) throws IOException, IllegalBundleTypeException {
         writer.emitSingleLineComment(field.getDescription());
         writer.emitStatement("bundle.put%s(%s, target.%s)", field.getBundleType(elements, types), field.getKey(), field.getName());
     }
 
     private void writeRestoreState(JavaWriter writer) throws IOException, IllegalBundleTypeException {
-        writer.emitJavadoc(AdapterJavadoc.RESTORE_METHOD, targetType);
+        writer.emitJavadoc(AdapterJavadoc.RESTORE_INSTANCE_STATE_METHOD, targetType);
         writer.beginMethod("void", GeneratedAdapters.RESTORE_METHOD, EnumSet.of(PUBLIC), targetType, "target", "Bundle", "bundle");
         writer.beginControlFlow("if (bundle != null)");
-        for (StoreFieldBinding field : fields) {
-            writeRestoreFieldState(writer, field);
+        for (BundleFieldBinding field : fields) {
+            if (SAVE_STATE == field.getAnnotationType()) {
+                writeRestoreFieldState(writer, field);
+            }
         }
         writer.endControlFlow();
         writer.endMethod();
     }
 
-    private void writeRestoreFieldState(JavaWriter writer, StoreFieldBinding field) throws IOException, IllegalBundleTypeException {
+    private void writeRestoreFieldState(JavaWriter writer, BundleFieldBinding field) throws IOException, IllegalBundleTypeException {
         writer.emitSingleLineComment(field.getDescription());
         List<String> stmtArgs = new ArrayList<String>();
         String stmt = "target.".concat(field.getName()).concat(" = ");

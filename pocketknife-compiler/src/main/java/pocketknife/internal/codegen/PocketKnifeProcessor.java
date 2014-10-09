@@ -64,16 +64,16 @@ public class PocketKnifeProcessor extends AbstractProcessor {
 
     @Override
     public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
-        Map<TypeElement, StoreAdapterGenerator> targetClassMap = findAndParseTargets(roundEnv);
+        Map<TypeElement, BundleAdapterGenerator> targetClassMap = findAndParseTargets(roundEnv);
 
-        for (Map.Entry<TypeElement, StoreAdapterGenerator> entry : targetClassMap.entrySet()) {
+        for (Map.Entry<TypeElement, BundleAdapterGenerator> entry : targetClassMap.entrySet()) {
             TypeElement typeElement = entry.getKey();
-            StoreAdapterGenerator storeAdapterGenerator = entry.getValue();
+            BundleAdapterGenerator bundleAdapterGenerator = entry.getValue();
             JavaWriter javaWriter = null;
             try {
-                JavaFileObject jfo = filer.createSourceFile(storeAdapterGenerator.getFqcn(), typeElement);
+                JavaFileObject jfo = filer.createSourceFile(bundleAdapterGenerator.getFqcn(), typeElement);
                  javaWriter = new JavaWriter(jfo.openWriter());
-                storeAdapterGenerator.generate(javaWriter);
+                bundleAdapterGenerator.generate(javaWriter);
             } catch (Exception e) {
                 error(typeElement, "Unable to write injector for type %s: %s", typeElement, e.getMessage());
             } finally {
@@ -91,8 +91,8 @@ public class PocketKnifeProcessor extends AbstractProcessor {
         return false;
     }
 
-    private Map<TypeElement, StoreAdapterGenerator> findAndParseTargets(RoundEnvironment env) {
-        Map<TypeElement, StoreAdapterGenerator> targetClassMap = new LinkedHashMap<TypeElement, StoreAdapterGenerator>();
+    private Map<TypeElement, BundleAdapterGenerator> findAndParseTargets(RoundEnvironment env) {
+        Map<TypeElement, BundleAdapterGenerator> targetClassMap = new LinkedHashMap<TypeElement, BundleAdapterGenerator>();
         Set<String> erasedTargetNames = new LinkedHashSet<String>();
 
         for (Element element : env.getElementsAnnotatedWith(SaveState.class)) {
@@ -109,7 +109,7 @@ public class PocketKnifeProcessor extends AbstractProcessor {
         return targetClassMap;
     }
 
-    private void parseSaveState(Element element, Map<TypeElement, StoreAdapterGenerator> targetClassMap, Set<String> erasedTargetNames)
+    private void parseSaveState(Element element, Map<TypeElement, BundleAdapterGenerator> targetClassMap, Set<String> erasedTargetNames)
             throws ClassNotFoundException {
         boolean hasError = false;
         TypeElement enclosingElement = (TypeElement) element.getEnclosingElement();
@@ -139,9 +139,9 @@ public class PocketKnifeProcessor extends AbstractProcessor {
         String defaultValue = annotation.defaultValue();
         int minSdk = annotation.minSdk();
 
-        StoreAdapterGenerator storeAdapterGenerator = getOrCreateTargetClass(targetClassMap, enclosingElement);
-        StoreFieldBinding binding = new StoreFieldBinding(name, elementType, defaultValue, minSdk);
-        storeAdapterGenerator.addField(binding);
+        BundleAdapterGenerator bundleAdapterGenerator = getOrCreateTargetClass(targetClassMap, enclosingElement);
+        BundleFieldBinding binding = new BundleFieldBinding(name, elementType, defaultValue, minSdk);
+        bundleAdapterGenerator.addField(binding);
 
         // Add the type-erased version to the valid injection targets set.
         erasedTargetNames.add(enclosingElement.toString());
@@ -210,17 +210,17 @@ public class PocketKnifeProcessor extends AbstractProcessor {
         return false;
     }
 
-    private StoreAdapterGenerator getOrCreateTargetClass(Map<TypeElement, StoreAdapterGenerator> targetClassMap, TypeElement enclosingElement) {
-        StoreAdapterGenerator storeAdapterGenerator = targetClassMap.get(enclosingElement);
-        if (storeAdapterGenerator == null) {
+    private BundleAdapterGenerator getOrCreateTargetClass(Map<TypeElement, BundleAdapterGenerator> targetClassMap, TypeElement enclosingElement) {
+        BundleAdapterGenerator bundleAdapterGenerator = targetClassMap.get(enclosingElement);
+        if (bundleAdapterGenerator == null) {
             String targetType = enclosingElement.getQualifiedName().toString();
             String classPackage = getPackageName(enclosingElement);
-            String className = getClassName(enclosingElement, classPackage) + GeneratedAdapters.STORE_ADAPTER_SUFFIX;
+            String className = getClassName(enclosingElement, classPackage) + GeneratedAdapters.BUNDLE_ADAPTER_SUFFIX;
 
-            storeAdapterGenerator = new StoreAdapterGenerator(classPackage, className, targetType, elements, types);
-            targetClassMap.put(enclosingElement, storeAdapterGenerator);
+            bundleAdapterGenerator = new BundleAdapterGenerator(classPackage, className, targetType, elements, types);
+            targetClassMap.put(enclosingElement, bundleAdapterGenerator);
         }
-        return storeAdapterGenerator;
+        return bundleAdapterGenerator;
     }
 
     private void error(Element element, String message, Object... args) {

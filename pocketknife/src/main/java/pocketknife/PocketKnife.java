@@ -2,8 +2,8 @@ package pocketknife;
 
 import android.os.Bundle;
 import android.util.Log;
+import pocketknife.internal.BundleBinding;
 import pocketknife.internal.Memoizer;
-import pocketknife.internal.StoreBinding;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
@@ -13,7 +13,7 @@ import java.util.Map;
 
 import static pocketknife.internal.GeneratedAdapters.ANDROID_PREFIX;
 import static pocketknife.internal.GeneratedAdapters.JAVA_PREFIX;
-import static pocketknife.internal.GeneratedAdapters.STORE_ADAPTER_SUFFIX;
+import static pocketknife.internal.GeneratedAdapters.BUNDLE_ADAPTER_SUFFIX;
 import static pocketknife.internal.GeneratedAdapters.RESTORE_METHOD;
 import static pocketknife.internal.GeneratedAdapters.SAVE_METHOD;
 
@@ -107,10 +107,10 @@ public final class PocketKnife {
         }
 
         try {
-            Class<?> bank = Class.forName(clsName.concat(STORE_ADAPTER_SUFFIX));
-            save = bank.getMethod(SAVE_METHOD, cls, Bundle.class);
+            Class<?> bundleBinding = Class.forName(clsName.concat(BUNDLE_ADAPTER_SUFFIX));
+            save = bundleBinding.getMethod(SAVE_METHOD, cls, Bundle.class);
             if (debug) {
-                Log.d(TAG, "HIT: Class loaded bank class");
+                Log.d(TAG, "HIT: Class loaded bundleBinding class");
             }
         } catch (ClassNotFoundException e) {
             if (debug) {
@@ -136,10 +136,10 @@ public final class PocketKnife {
             return NO_OP;
         }
         try {
-            Class<?> bank = Class.forName(clsName.concat(STORE_ADAPTER_SUFFIX));
-            restore = bank.getMethod(RESTORE_METHOD, cls, Bundle.class);
+            Class<?> bundleBinding = Class.forName(clsName.concat(BUNDLE_ADAPTER_SUFFIX));
+            restore = bundleBinding.getMethod(RESTORE_METHOD, cls, Bundle.class);
             if (debug) {
-                Log.d(TAG, "HIT: Class loaded bank class");
+                Log.d(TAG, "HIT: Class loaded bundleBinding class");
             }
         } catch (ClassNotFoundException e) {
             if (debug) {
@@ -159,7 +159,7 @@ public final class PocketKnife {
      */
     public static <T> T saveInstanceState(T target, Bundle bundle) {
         @SuppressWarnings("unchecked")
-        StoreBinding<T> binding = (StoreBinding<T>) getStoreBinding(target.getClass().getClassLoader(), target.getClass().getName());
+        BundleBinding<T> binding = (BundleBinding<T>) getBundleBinding(target.getClass().getClassLoader(), target.getClass().getName());
         binding.saveInstanceState(target, bundle);
         return target;
     }
@@ -172,20 +172,20 @@ public final class PocketKnife {
      */
     public static <T> T restoreInstanceState(T target, Bundle bundle) {
         @SuppressWarnings("unchecked")
-        StoreBinding<T> binding = (StoreBinding<T>) getStoreBinding(target.getClass().getClassLoader(), target.getClass().getName());
+        BundleBinding<T> binding = (BundleBinding<T>) getBundleBinding(target.getClass().getClassLoader(), target.getClass().getName());
         binding.restoreInstanceState(target, bundle);
         return target;
     }
 
-    private static StoreBinding<?> getStoreBinding(ClassLoader classLoader, String className) {
-        Class<?> adapterClass = loadClass(classLoader, className.concat(STORE_ADAPTER_SUFFIX));
+    private static BundleBinding<?> getBundleBinding(ClassLoader classLoader, String className) {
+        Class<?> adapterClass = loadClass(classLoader, className.concat(BUNDLE_ADAPTER_SUFFIX));
         if (!adapterClass.equals(Void.class)) {
             if (debug) {
                 Log.d(TAG, "Found loadable adapter for " + className);
             }
             try {
                 @SuppressWarnings("unchecked")
-                Constructor<StoreBinding<?>> constructor = (Constructor<StoreBinding<?>>) adapterClass.getConstructor();
+                Constructor<BundleBinding<?>> constructor = (Constructor<BundleBinding<?>>) adapterClass.getConstructor();
                 return constructor.newInstance();
             } catch (NoSuchMethodException e) {
                 throw new IllegalStateException(
