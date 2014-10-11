@@ -62,9 +62,9 @@ public class BundleFieldBinding implements Binding {
         this.annotationType = AnnotationType.SAVE_STATE;
         this.name = name;
         this.type = type;
+        this.key = generateKey();
         this.defaultValue = defaultValue;
         this.minSdk = minSdk;
-        this.key = generateKey();
     }
 
     /**
@@ -76,13 +76,13 @@ public class BundleFieldBinding implements Binding {
      * @param minSdk from the annotation
      * @param key from the annotation
      */
-    public BundleFieldBinding(String name, TypeMirror type, String defaultValue, int minSdk, String key) {
+    public BundleFieldBinding(String name, TypeMirror type, String key, String defaultValue, int minSdk) {
         this.annotationType = AnnotationType.ARGUMENT;
         this.name = name;
         this.type = type;
+        this.key = key;
         this.defaultValue = defaultValue;
         this.minSdk = minSdk;
-        this.key = key;
     }
 
     @Override

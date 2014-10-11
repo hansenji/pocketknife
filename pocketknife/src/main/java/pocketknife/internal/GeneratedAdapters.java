@@ -7,8 +7,10 @@ public class GeneratedAdapters {
     private static final String SEPARATOR = "$$";
     public static final String BUNDLE_ADAPTER_SUFFIX = SEPARATOR + "BundleAdapter";
 
+    // Bundle methods
     public static final String SAVE_METHOD = "saveInstanceState";
     public static final String RESTORE_METHOD = "restoreInstanceState";
+    public static final String INJECT_ARGUMENTS_METHOD = "injectArguments";
 
     public static final String BUNDLE_KEY_PREFIX = "BUNDLE_";
 

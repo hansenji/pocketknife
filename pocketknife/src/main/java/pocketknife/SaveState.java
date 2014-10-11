@@ -14,7 +14,8 @@ import static java.lang.annotation.RetentionPolicy.CLASS;
  *     <code>
  *         {@literal @}SaveState int i;
  *         {@literal @}SaveState(defaultValue="100") int i;
- *         {@literal @}SaveState(defaultValue="DEFAULT", minSdk=Build.) int i;
+ *         {@literal @}SaveState(defaultValue=CONSTANT, minSdk=Build.VERSION_CODES.HONEYCOMB_MR1) int i;
+ *         {@literal @}SaveState(defaultValue="\"DEFAULT\"", minSdk=Build.VERSION_CODES.HONEYCOMB_MR1) String s;
  *     </code>
  * </pre>
  */

@@ -177,6 +177,13 @@ public final class PocketKnife {
         return target;
     }
 
+    public static <T> T injectArguments(T target, Bundle bundle) {
+        @SuppressWarnings("unchecked")
+        BundleBinding<T> binding = (BundleBinding<T>) getBundleBinding(target.getClass().getClassLoader(), target.getClass().getName());
+        binding.injectArguments(target, bundle);
+        return target;
+    }
+
     private static BundleBinding<?> getBundleBinding(ClassLoader classLoader, String className) {
         Class<?> adapterClass = loadClass(classLoader, className.concat(BUNDLE_ADAPTER_SUFFIX));
         if (!adapterClass.equals(Void.class)) {

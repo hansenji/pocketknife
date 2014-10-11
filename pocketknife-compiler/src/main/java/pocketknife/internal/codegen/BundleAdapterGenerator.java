@@ -18,6 +18,7 @@ import static javax.lang.model.element.Modifier.FINAL;
 import static javax.lang.model.element.Modifier.PRIVATE;
 import static javax.lang.model.element.Modifier.PUBLIC;
 import static javax.lang.model.element.Modifier.STATIC;
+import static pocketknife.internal.codegen.BundleFieldBinding.AnnotationType.ARGUMENT;
 import static pocketknife.internal.codegen.BundleFieldBinding.AnnotationType.SAVE_STATE;
 
 final class BundleAdapterGenerator {
@@ -54,6 +55,9 @@ final class BundleAdapterGenerator {
         writer.emitEmptyLine();
         // Write restoreState
         writeRestoreState(writer);
+        writer.emitEmptyLine();
+        // write injectArguments
+        writeInjectArguments(writer);
         writer.endType();
 
 
@@ -100,7 +104,39 @@ final class BundleAdapterGenerator {
         writer.emitSingleLineComment(field.getDescription());
         List<String> stmtArgs = new ArrayList<String>();
         String stmt = "target.".concat(field.getName()).concat(" = ");
-        if (field.needsToBeCast(elements, types)) { //TODO double check casting
+        if (field.needsToBeCast(elements, types)) {
+            stmt = stmt.concat("(%s) ");
+            stmtArgs.add(field.getType());
+        }
+        stmt = stmt.concat("bundle.get%s(%s");
+        stmtArgs.add(field.getBundleType(elements, types));
+        stmtArgs.add(field.getKey());
+        if (field.hasDefault(types)) {
+            stmt = stmt.concat(", %s");
+            stmtArgs.add(field.getDefaultValue());
+        }
+        stmt = stmt.concat(")");
+        writer.emitStatement(stmt, stmtArgs.toArray(new Object[stmtArgs.size()]));
+    }
+
+    private void writeInjectArguments(JavaWriter writer) throws IOException, IllegalBundleTypeException {
+        writer.emitJavadoc(AdapterJavadoc.INJECT_ARGUMENTS_METHOD, targetType);
+        writer.beginMethod("void", GeneratedAdapters.INJECT_ARGUMENTS_METHOD, EnumSet.of(PUBLIC), targetType, "target", "Bundle", "bundle");
+        writer.beginControlFlow("if (bundle != null)");
+        for (BundleFieldBinding field : fields) {
+            if (ARGUMENT == field.getAnnotationType()) {
+                writeInjectArgumentFiled(writer, field);
+            }
+        }
+        writer.endControlFlow();
+        writer.endMethod();
+    }
+
+    private void writeInjectArgumentFiled(JavaWriter writer, BundleFieldBinding field) throws IOException, IllegalBundleTypeException {
+        writer.emitSingleLineComment(field.getDescription());
+        List<String> stmtArgs = new ArrayList<String>();
+        String stmt = "target.".concat(field.getName()).concat(" = ");
+        if (field.needsToBeCast(elements, types)) {
             stmt = stmt.concat("(%s) ");
             stmtArgs.add(field.getType());
         }
