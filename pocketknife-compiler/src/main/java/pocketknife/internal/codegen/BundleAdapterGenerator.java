@@ -4,15 +4,12 @@ import com.squareup.javawriter.JavaWriter;
 import pocketknife.internal.BundleBinding;
 import pocketknife.internal.GeneratedAdapters;
 
-import javax.lang.model.util.Elements;
-import javax.lang.model.util.Types;
 import java.io.IOException;
-import java.util.Set;
-import java.util.LinkedHashSet;
-import java.util.EnumSet;
-import java.util.List;
 import java.util.ArrayList;
-
+import java.util.EnumSet;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Set;
 
 import static javax.lang.model.element.Modifier.FINAL;
 import static javax.lang.model.element.Modifier.PRIVATE;
@@ -27,15 +24,11 @@ final class BundleAdapterGenerator {
     private final String classPackage;
     private final String className;
     private final String targetType;
-    private final Elements elements;
-    private final Types types;
 
-    public BundleAdapterGenerator(String classPackage, String className, String targetType, Elements elements, Types types) {
+    public BundleAdapterGenerator(String classPackage, String className, String targetType) {
         this.classPackage = classPackage;
         this.className = className;
         this.targetType = targetType;
-        this.elements = elements;
-        this.types = types;
     }
 
     public void addField(BundleFieldBinding binding) {
@@ -59,9 +52,6 @@ final class BundleAdapterGenerator {
         // write injectArguments
         writeInjectArguments(writer);
         writer.endType();
-
-
-
     }
 
     private void writeBundleKeys(JavaWriter writer) throws IOException {
@@ -84,7 +74,7 @@ final class BundleAdapterGenerator {
 
     private void writeSaveFieldState(JavaWriter writer, BundleFieldBinding field) throws IOException, IllegalBundleTypeException {
         writer.emitSingleLineComment(field.getDescription());
-        writer.emitStatement("bundle.put%s(%s, target.%s)", field.getBundleType(elements, types), field.getKey(), field.getName());
+        writer.emitStatement("bundle.put%s(%s, target.%s)", field.getBundleType(), field.getKey(), field.getName());
     }
 
     private void writeRestoreState(JavaWriter writer) throws IOException, IllegalBundleTypeException {
@@ -104,16 +94,15 @@ final class BundleAdapterGenerator {
         writer.emitSingleLineComment(field.getDescription());
         List<String> stmtArgs = new ArrayList<String>();
         String stmt = "target.".concat(field.getName()).concat(" = ");
-        if (field.needsToBeCast(elements, types)) {
+        if (field.needsToBeCast()) {
             stmt = stmt.concat("(%s) ");
             stmtArgs.add(field.getType());
         }
         stmt = stmt.concat("bundle.get%s(%s");
-        stmtArgs.add(field.getBundleType(elements, types));
+        stmtArgs.add(field.getBundleType());
         stmtArgs.add(field.getKey());
-        if (field.hasDefault(types)) {
-            stmt = stmt.concat(", %s");
-            stmtArgs.add(field.getDefaultValue());
+        if (field.canHaveDefault()) {
+            stmt = stmt.concat(", target.").concat(field.getName());
         }
         stmt = stmt.concat(")");
         writer.emitStatement(stmt, stmtArgs.toArray(new Object[stmtArgs.size()]));
@@ -134,18 +123,44 @@ final class BundleAdapterGenerator {
 
     private void writeInjectArgumentFiled(JavaWriter writer, BundleFieldBinding field) throws IOException, IllegalBundleTypeException {
         writer.emitSingleLineComment(field.getDescription());
+        if (field.isRequired()) {
+            writeRequiredInjectArgumentField(writer, field);
+        } else {
+            writeOptionalInjectArgumentField(writer, field);
+        }
+    }
+
+    private void writeRequiredInjectArgumentField(JavaWriter writer, BundleFieldBinding field) throws IOException, IllegalBundleTypeException {
+        List<String> stmtArgs = new ArrayList<String>();
+        writer.beginControlFlow("if (bundle.containsKey(%s))", field.getKey());
+        String stmt = "target.".concat(field.getName()).concat(" = ");
+        if (field.needsToBeCast()) {
+            stmt = stmt.concat("(%s) ");
+            stmtArgs.add(field.getType());
+        }
+        stmt = stmt.concat("bundle.get%s(%s)");
+        stmtArgs.add(field.getBundleType());
+        stmtArgs.add(field.getKey());
+        writer.emitStatement(stmt, stmtArgs.toArray(new Object[stmtArgs.size()]));
+        writer.nextControlFlow("else");
+        writer.emitStatement("throw new IllegalStateException(\"Required Argument with key '%s' was not found for '%s'. "
+                + "If this field is not required add '@NotRequired' annotation\")", field.getKey(), field.getName());
+        writer.endControlFlow();
+
+    }
+
+    private void writeOptionalInjectArgumentField(JavaWriter writer, BundleFieldBinding field) throws IOException, IllegalBundleTypeException {
         List<String> stmtArgs = new ArrayList<String>();
         String stmt = "target.".concat(field.getName()).concat(" = ");
-        if (field.needsToBeCast(elements, types)) {
+        if (field.needsToBeCast()) {
             stmt = stmt.concat("(%s) ");
             stmtArgs.add(field.getType());
         }
         stmt = stmt.concat("bundle.get%s(%s");
-        stmtArgs.add(field.getBundleType(elements, types));
+        stmtArgs.add(field.getBundleType());
         stmtArgs.add(field.getKey());
-        if (field.hasDefault(types)) {
-            stmt = stmt.concat(", %s");
-            stmtArgs.add(field.getDefaultValue());
+        if (field.canHaveDefault()) {
+            stmt = stmt.concat(", target.").concat(field.getName());
         }
         stmt = stmt.concat(")");
         writer.emitStatement(stmt, stmtArgs.toArray(new Object[stmtArgs.size()]));

@@ -3,6 +3,7 @@ package pocketknife.internal.codegen;
 import android.os.Build;
 import com.squareup.javawriter.JavaWriter;
 import pocketknife.InjectArgument;
+import pocketknife.NotRequired;
 import pocketknife.SaveState;
 import pocketknife.internal.GeneratedAdapters;
 
@@ -15,6 +16,9 @@ import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.ArrayType;
+import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
 import javax.lang.model.util.Elements;
@@ -28,6 +32,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -39,6 +44,26 @@ import static pocketknife.internal.GeneratedAdapters.ANDROID_PREFIX;
 import static pocketknife.internal.GeneratedAdapters.JAVA_PREFIX;
 
 public class PocketKnifeProcessor extends AbstractProcessor {
+
+    private static final CharSequence SERIALIZABLE =  "java.io.Serializable";
+    private static final CharSequence PARCELABLE = "android.os.Parcelable";
+//    private static final CharSequence BINDER = "android.os.IBinder"; // Api 18+
+    private static final CharSequence BUNDLE = "android.os.Bundle";
+    private static final CharSequence STRING = "java.lang.String";
+    private static final CharSequence CHAR_SEQUENCE = "java.lang.CharSequence";
+    private static final CharSequence INTEGER = "java.lang.Integer";
+    private static final CharSequence ARRAY_LIST = "java.util.ArrayList";
+    private static final CharSequence SPARSE_ARRAY = "android.util.SparseArray";
+
+    private TypeMirror serializableType;
+    private TypeMirror parcelableType;
+//    private TypeMirror binderType; // API 18+
+    private TypeMirror bundleType;
+    private TypeMirror stringType;
+    private TypeMirror charSequenceType;
+    private TypeMirror integerType;
+    private TypeMirror arrayListType;
+    private TypeMirror sparseArrayType;
 
     private Messager messager;
     private Elements elements;
@@ -57,6 +82,73 @@ public class PocketKnifeProcessor extends AbstractProcessor {
         elements = processingEnv.getElementUtils();
         types = processingEnv.getTypeUtils();
         filer = processingEnv.getFiler();
+        setupComparableTypes();
+    }
+
+    private void setupComparableTypes() {
+        if (serializableType == null) {
+            Element element = elements.getTypeElement(SERIALIZABLE);
+            if (element == null) {
+                throw new IllegalStateException("Unable to find Serializable type");
+            }
+            serializableType = element.asType();
+        }
+        if (parcelableType == null) {
+            Element element = elements.getTypeElement(PARCELABLE);
+            if (element == null) {
+                throw new IllegalStateException("Unable to find Parcelable type");
+            }
+            parcelableType = element.asType();
+        }
+//        if (binderType == null) { // API 18+
+//            Element element = elements.getTypeElement(BINDER);
+//            if (element == null) {
+//                throw new IllegalStateException("Unable to find Binder type");
+//            }
+//            binderType = element.asType();
+//        }
+        if (bundleType == null) {
+            Element element = elements.getTypeElement(BUNDLE);
+            if (element == null) {
+                throw new IllegalStateException("Unable to find Bundle type");
+            }
+            bundleType = element.asType();
+        }
+        if (stringType == null) {
+            Element element = elements.getTypeElement(STRING);
+            if (element == null) {
+                throw new IllegalStateException("Unable to find String type");
+            }
+            stringType = element.asType();
+        }
+        if (charSequenceType == null) {
+            Element element = elements.getTypeElement(CHAR_SEQUENCE);
+            if (element == null) {
+                throw new IllegalStateException("Unable to find CharSequence type");
+            }
+            charSequenceType = element.asType();
+        }
+        if (integerType == null) {
+            Element element = elements.getTypeElement(INTEGER);
+            if (element == null) {
+                throw new IllegalStateException("Unable to find Integer type");
+            }
+            integerType = element.asType();
+        }
+        if (arrayListType == null) {
+            Element element = elements.getTypeElement(ARRAY_LIST);
+            if (element == null) {
+                throw new IllegalStateException("Unable to find ArrayList type");
+            }
+            arrayListType = element.asType();
+        }
+        if (sparseArrayType == null) {
+            Element element = elements.getTypeElement(SPARSE_ARRAY);
+            if (element == null) {
+                throw new IllegalStateException("Unable to find SparseArray type");
+            }
+            sparseArrayType = element.asType();
+        }
     }
 
     @Override
@@ -135,8 +227,13 @@ public class PocketKnifeProcessor extends AbstractProcessor {
             elementType = typeVariable.getUpperBound();
         }
 
-        boolean hasError = isSaveStateArgumentsInvalid(element);
-        hasError |= isInvalidForGeneratedCode(SaveState.class, "fields", element);
+        String bundleType = getBundleType(element, elementType);
+        Boolean needsToBeCast = needsToBeCast(element, elementType);
+
+        boolean hasError = !areSaveStateArgumentsValid(element);
+        hasError |= bundleType == null;
+        hasError |= needsToBeCast == null;
+        hasError |= !isValidForGeneratedCode(SaveState.class, "fields", element);
         hasError |= isBindingInWrongPackage(SaveState.class, element);
 
         if (hasError) {
@@ -145,12 +242,16 @@ public class PocketKnifeProcessor extends AbstractProcessor {
 
         // Assemble information on the injection point.
         String name = element.getSimpleName().toString();
-        SaveState annotation = element.getAnnotation(SaveState.class);
-        String defaultValue = annotation.defaultValue();
-        int minSdk = annotation.minSdk();
+        NotRequired notRequired = element.getAnnotation(NotRequired.class);
+        boolean required = notRequired == null;
+        int minSdk = Build.VERSION_CODES.FROYO;
+        if (!required) {
+            minSdk = notRequired.value();
+        }
+        boolean canHaveDefault = !required && canHaveDefault(elementType, minSdk);
 
         BundleAdapterGenerator bundleAdapterGenerator = getOrCreateTargetClass(targetClassMap, enclosingElement);
-        BundleFieldBinding binding = new BundleFieldBinding(name, elementType, defaultValue, minSdk);
+        BundleFieldBinding binding = new BundleFieldBinding(name, elementType.toString(), bundleType, needsToBeCast, canHaveDefault, required);
         bundleAdapterGenerator.addField(binding);
 
         // Add the type-erased version to the valid injection targets set.
@@ -167,8 +268,11 @@ public class PocketKnifeProcessor extends AbstractProcessor {
             elementType = typeVariable.getUpperBound();
         }
 
-        boolean hasError = isInjectArugmentArgumentsInvalid(element);
-        hasError |= isInvalidForGeneratedCode(InjectArgument.class, "fields", element);
+        String bundleType = getBundleType(element, elementType);
+
+        boolean hasError = !areInjectArgumentArgumentsValid(element);
+        hasError |= bundleType == null;
+        hasError |= !isValidForGeneratedCode(InjectArgument.class, "fields", element);
         hasError |= isBindingInWrongPackage(InjectArgument.class, element);
 
         if (hasError) {
@@ -178,55 +282,57 @@ public class PocketKnifeProcessor extends AbstractProcessor {
         // Assemble information on the injection point
         String name = element.getSimpleName().toString();
         InjectArgument annotation = element.getAnnotation(InjectArgument.class);
-        String key = annotation.key();
-        String defaultValue = annotation.defaultValue();
-        int minSdk = annotation.minSdk();
+        String key = annotation.value();
+        NotRequired notRequired = element.getAnnotation(NotRequired.class);
+        boolean required = notRequired == null;
+        int minSdk = Build.VERSION_CODES.FROYO;
+        if (!required) {
+            minSdk = notRequired.value();
+        }
+        boolean canHaveDefault = !required && canHaveDefault(elementType, minSdk);
 
         BundleAdapterGenerator bundleAdapterGenerator = getOrCreateTargetClass(targetClassMap, enclosingElement);
-        BundleFieldBinding binding = new BundleFieldBinding(name, elementType, key, defaultValue, minSdk);
+        BundleFieldBinding binding = new BundleFieldBinding(name, elementType.toString(), bundleType, key, isPrimitive(elementType), canHaveDefault, required);
         bundleAdapterGenerator.addField(binding);
 
         // Add the type-erased version to the valid injection targets set.
         erasedTargetNames.add(enclosingElement.toString());
     }
 
-    private boolean isSaveStateArgumentsInvalid(Element element) {
-        if (element.getAnnotation(SaveState.class).minSdk() < Build.VERSION_CODES.FROYO) {
-            error(element, "SaveState.minSdk must be FROYO(8)+");
-            return true;
+    private boolean areSaveStateArgumentsValid(Element element) {
+        NotRequired notRequired = element.getAnnotation(NotRequired.class);
+        if (notRequired != null && notRequired.value() < Build.VERSION_CODES.FROYO) {
+            error(element, "NotRequired value must be FROYO(8)+");
+            return false;
         }
-        return false;
-    }
-
-    private boolean isInjectArugmentArgumentsInvalid(Element element) {
-        InjectArgument annotation = element.getAnnotation(InjectArgument.class);
-        if (annotation.minSdk() < Build.VERSION_CODES.FROYO) {
-            error(element, "InjectAnnotation.minSdk must be FROYO(8)+");
-            return true;
-        }
-        if (annotation.key() == null || annotation.key().trim().isEmpty()) {
-            error(element, "InjectAnnotation.key must not be empty");
-            return true;
-        }
-        return false;
-    }
-
-    private boolean hasAllNeededValues(Element element, TypeMirror elementType) {
         return true;
     }
 
+    private boolean areInjectArgumentArgumentsValid(Element element) {
+        NotRequired notRequired = element.getAnnotation(NotRequired.class);
+        if (notRequired != null && notRequired.value() < Build.VERSION_CODES.FROYO) {
+            error(element, "NotRequired value must be FROYO(8)+");
+            return false;
+        }
+        InjectArgument injectArgument = element.getAnnotation(InjectArgument.class);
+        if (injectArgument.value() == null || injectArgument.value().trim().isEmpty()) {
+            error(element, "InjectAnnotation value must not be empty");
+            return false;
+        }
+        return true;
+    }
 
-    private boolean isInvalidForGeneratedCode(Class<? extends Annotation> annotationClass, String targetThing, Element element) {
-        boolean hasError = false;
+    private boolean isValidForGeneratedCode(Class<? extends Annotation> annotationClass, String targetThing, Element element) {
+        boolean isValid = true;
         TypeElement enclosingElement = (TypeElement) element.getEnclosingElement();
 
         // Verify method modifiers
         Set<Modifier> modifiers = element.getModifiers();
         if (modifiers.contains(PRIVATE) || modifiers.contains(STATIC)) {
-            error(element, "@%s %s must not be private or static. (%s.%s)",
+            error(element, "@%s %s must not be private, protected, or static. (%s.%s)",
                     annotationClass.getSimpleName(), targetThing, enclosingElement.getQualifiedName(),
                     element.getSimpleName());
-            hasError = true;
+            isValid = false;
         }
 
         // Verify Containing type.
@@ -234,21 +340,20 @@ public class PocketKnifeProcessor extends AbstractProcessor {
             error(enclosingElement, "@%s %s may only be contained in classes. (%s.%s)",
                     annotationClass.getSimpleName(), targetThing, enclosingElement.getQualifiedName(),
                     element.getSimpleName());
-            hasError = true;
+            isValid = false;
         }
 
         // Verify containing class visibility is not private
         if (enclosingElement.getModifiers().contains(PRIVATE)) {
             error(enclosingElement, "@%s %s may not be contained in private classes (%s.%s)", annotationClass.getSimpleName(), targetThing,
                     enclosingElement.getQualifiedName(), element.getSimpleName());
-            hasError = true;
+            isValid = false;
         }
 
-        return hasError;
+        return isValid;
     }
 
-    private boolean isBindingInWrongPackage(Class<? extends Annotation> annotationClass,
-                                            Element element) {
+    private boolean isBindingInWrongPackage(Class<? extends Annotation> annotationClass, Element element) {
         TypeElement enclosingElement = (TypeElement) element.getEnclosingElement();
         String qualifiedName = enclosingElement.getQualifiedName().toString();
 
@@ -273,7 +378,7 @@ public class PocketKnifeProcessor extends AbstractProcessor {
             String classPackage = getPackageName(enclosingElement);
             String className = getClassName(enclosingElement, classPackage) + GeneratedAdapters.BUNDLE_ADAPTER_SUFFIX;
 
-            bundleAdapterGenerator = new BundleAdapterGenerator(classPackage, className, targetType, elements, types);
+            bundleAdapterGenerator = new BundleAdapterGenerator(classPackage, className, targetType);
             targetClassMap.put(enclosingElement, bundleAdapterGenerator);
         }
         return bundleAdapterGenerator;
@@ -293,5 +398,235 @@ public class PocketKnifeProcessor extends AbstractProcessor {
     private String getClassName(TypeElement typeElement, String packageName) {
         int packageLen = packageName.length() + 1;
         return typeElement.getQualifiedName().toString().substring(packageLen).replace('.', '$');
+    }
+
+    private boolean canHaveDefault(TypeMirror type, int minSdk) {
+        return isPrimitive(type) || minSdk >= Build.VERSION_CODES.HONEYCOMB_MR1 && types.isAssignable(type, charSequenceType);
+    }
+
+    private String getBundleType(Element element, TypeMirror type) {
+        try {
+            // Check Primitive
+            if (isPrimitive(type)) {
+                return getPrimitiveBundleType(type);
+            }
+
+            // Check Array
+            if (TypeKind.ARRAY == type.getKind() && type instanceof ArrayType) {
+                String componentType = getArrayComponentBundleType(((ArrayType) type).getComponentType());
+                if (componentType != null && !componentType.isEmpty()) {
+                    return componentType.concat("Array");
+                }
+            }
+
+            // Check ArrayList
+            if (types.isAssignable(types.erasure(type), arrayListType)) {
+                String arrayListType = getArrayListBundleType(type);
+                if (arrayListType != null && !arrayListType.isEmpty()) {
+                    return arrayListType;
+                }
+            }
+
+            // Check Sparse Parcelable Array
+            if (isSparesParcelableArray(type)) {
+                return "SparseParcelableArray";
+            }
+
+            // Other Types
+            if (types.isAssignable(type, bundleType)) {
+                return "Bundle";
+            }
+
+            String aggregateBundleType = getAggregateBundleType(type);
+            if (aggregateBundleType != null && !aggregateBundleType.isEmpty()) {
+                return aggregateBundleType;
+            }
+
+            if (types.isAssignable(type, serializableType)) {
+                return "Serializable";
+            }
+
+        } catch (InvalidTypeException e) {
+            error(element, "%s", e.getMessage());
+            return null;
+        }
+
+        error(element, "Invalid bundle type '%s'", type.toString());
+        return null;
+    }
+
+    private boolean isPrimitive(TypeMirror type) {
+        return type.getKind().isPrimitive();
+    }
+
+    private String getPrimitiveBundleType(TypeMirror type) throws InvalidTypeException {
+        // No unboxing due to the nullable nature of Boxed primitives.
+        switch (type.getKind()) {
+            case BOOLEAN:
+                return "Boolean";
+            case BYTE:
+                return "Byte";
+            case SHORT:
+                return "Short";
+            case INT:
+                return "Int";
+            case LONG:
+                return "Long";
+            case CHAR:
+                return "Char";
+            case FLOAT:
+                return "Float";
+            case DOUBLE:
+                return "Double";
+            default:
+                throw new InvalidTypeException("Primitive", type);
+        }
+    }
+
+    private String getArrayComponentBundleType(TypeMirror type) throws InvalidTypeException {
+        if (isPrimitive(type)) {
+            try {
+                return getPrimitiveBundleType(type);
+            } catch (InvalidTypeException e) {
+                throw new InvalidTypeException("Array", type);
+            }
+        }
+        return getAggregateBundleType(type);
+    }
+
+    private String getArrayListBundleType(TypeMirror type) {
+        if (type instanceof DeclaredType) {
+            List<? extends TypeMirror> typeArguments = ((DeclaredType) type).getTypeArguments();
+            if (typeArguments.size() == 1) {
+                String arrayListComponentType = getArrayListComponentBundleType(typeArguments.get(0));
+                if (arrayListComponentType != null && !arrayListComponentType.isEmpty()) {
+                    return arrayListComponentType.concat("ArrayList");
+                }
+            }
+        }
+        return null;
+    }
+
+    private String getArrayListComponentBundleType(TypeMirror type) {
+        if (types.isAssignable(type, integerType)) {
+            return "Integer";
+        }
+        return getAggregateBundleType(type);
+    }
+
+    private String getAggregateBundleType(TypeMirror type) {
+        if (types.isAssignable(type, stringType)) { // String is subtype of charsequence should go first.
+            return "String";
+        }
+        if (types.isAssignable(type, charSequenceType)) {
+            return "CharSequence";
+        }
+        if (types.isAssignable(type, parcelableType)) {
+            return "Parcelable";
+        }
+        return null;
+    }
+
+    private boolean isSparesParcelableArray(TypeMirror type) {
+        if (types.isAssignable(types.erasure(type), sparseArrayType) && type instanceof DeclaredType) {
+            List<? extends TypeMirror> typeArguments = ((DeclaredType) type).getTypeArguments();
+            if (typeArguments.size() == 1) {
+                return types.isAssignable(typeArguments.get(0), parcelableType);
+            }
+        }
+        return false;
+    }
+
+    private Boolean needsToBeCast(Element element, TypeMirror type) {
+        if (isPrimitive(type)) {
+            return false;
+        }
+
+        // Check Array
+        if (TypeKind.ARRAY == type.getKind() && type instanceof ArrayType) {
+            Boolean result = needToCastArrayComponentType(((ArrayType) type).getComponentType());
+            if (result != null) {
+                return result;
+            }
+        }
+
+        // ArrayList
+        if (types.isAssignable(types.erasure(type), arrayListType)) {
+            Boolean result = needToCastArrayList(type);
+            if (result != null) {
+                return result;
+            }
+        }
+
+        // Sparse Parcelable Array
+        if (types.isAssignable(types.erasure(type), sparseArrayType)) {
+            Boolean result = needToCastSparseParcelableArray(type);
+            if (result != null) {
+                return result;
+            }
+        }
+
+        // Other types
+        Boolean result = needToCastAggregateBundleType(type);
+        if (result != null) {
+            return result;
+        }
+
+        if (types.isAssignable(type, bundleType)) {
+            return !types.isSameType(type, bundleType);
+        }
+
+        if (types.isAssignable(type, serializableType)) {
+            return !types.isSameType(type, serializableType);
+        }
+
+        error(element, "Error invalid bundle type '%s'", type);
+        return null;
+    }
+
+    private Boolean needToCastArrayComponentType(TypeMirror type) {
+        if (isPrimitive(type)) {
+            return false;
+        }
+        return needToCastAggregateBundleType(type);
+    }
+
+    private Boolean needToCastArrayList(TypeMirror type) {
+        if (type instanceof DeclaredType) {
+            List<? extends TypeMirror> typeArguments = ((DeclaredType) type).getTypeArguments();
+            if (typeArguments.size() == 1) {
+                if (types.isAssignable(type, integerType)) {
+                    return !types.isSameType(type, integerType);
+                }
+                Boolean result = needToCastAggregateBundleType(type);
+                if (result != null) {
+                    return result;
+                }
+            }
+        }
+        return null;
+    }
+
+    private Boolean needToCastAggregateBundleType(TypeMirror type) {
+        if (types.isAssignable(type, charSequenceType)) {
+            return !types.isSameType(type, charSequenceType);
+        }
+        if (types.isAssignable(type, stringType)) {
+            return !types.isSameType(type, stringType);
+        }
+        if (types.isAssignable(type, parcelableType)) {
+            return !types.isSameType(type, parcelableType);
+        }
+        return null;
+    }
+
+    private Boolean needToCastSparseParcelableArray(TypeMirror type) {
+        if (type instanceof DeclaredType) {
+            List<? extends TypeMirror> typeArguments = ((DeclaredType) type).getTypeArguments();
+            if (typeArguments.size() == 1 && types.isAssignable(typeArguments.get(0), parcelableType)) {
+                return false;
+            }
+        }
+        return null;
     }
 }

@@ -177,6 +177,24 @@ public final class PocketKnife {
         return target;
     }
 
+    /**
+     * Inject annotated fields in the specified {@code fragment} from its arguments.
+     *
+     * @param fragment fragment to inject the arguments;
+     */
+    public static void injectArguments(android.app.Fragment fragment) {
+       injectArguments(fragment, fragment.getArguments());
+    }
+
+    /**
+     * Inject annotated fields in the specified {@code fragment} from its arguments.
+     *
+     * @param fragment fragment to inject the arguments;
+     */
+    public static void injectArguments(android.support.v4.app.Fragment fragment) {
+        injectArguments(fragment, fragment.getArguments());
+    }
+
     public static <T> T injectArguments(T target, Bundle bundle) {
         @SuppressWarnings("unchecked")
         BundleBinding<T> binding = (BundleBinding<T>) getBundleBinding(target.getClass().getClassLoader(), target.getClass().getName());

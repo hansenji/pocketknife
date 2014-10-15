@@ -21,8 +21,10 @@ public class SimpleActivityTest {
         initialController.saveInstanceState(bundle);
         ActivityController<SimpleActivity> secondaryController = Robolectric.buildActivity(SimpleActivity.class).create(bundle);
         SimpleActivity simpleActivity = secondaryController.start().restart().visible().get();
+        SimpleFragment simpleFragment = (SimpleFragment) simpleActivity.getSupportFragmentManager().findFragmentById(R.id.container);
 
         // Make sure all saved objects are restored.
+        Assert.assertEquals(1, simpleFragment.counter);
     }
 
     @Test
@@ -30,7 +32,7 @@ public class SimpleActivityTest {
         ActivityController<SimpleActivity> initialController = Robolectric.buildActivity(SimpleActivity.class).create();
         SimpleActivity simpleActivity = initialController.start().restart().visible().get();
         SimpleFragment simpleFragment = (SimpleFragment) simpleActivity.getSupportFragmentManager().findFragmentById(R.id.container);
-        Assert.assertEquals(simpleFragment.stringArg, "I AM AWESOME");
+        Assert.assertEquals("I AM AWESOME", simpleFragment.stringArg);
     }
 
 }

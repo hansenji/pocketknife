@@ -14,7 +14,7 @@ public class SimpleActivity extends FragmentActivity {
 
         if (savedInstanceState == null) {
             FragmentManager supportFragmentManager = getSupportFragmentManager();
-            supportFragmentManager.beginTransaction().replace(R.id.container, SimpleFragment.newInstance()).commit();
+            supportFragmentManager.beginTransaction().replace(R.id.container, SimpleFragment.newInstance("I AM AWESOME")).commit();
         }
 
     }
