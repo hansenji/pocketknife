@@ -35,7 +35,7 @@ final class BundleAdapterGenerator {
         fields.add(binding);
     }
 
-    public void generate(JavaWriter writer) throws IOException, IllegalBundleTypeException {
+    public void generate(JavaWriter writer) throws IOException {
         writer.emitSingleLineComment(AdapterJavadoc.GENERATED_BY_POCKETKNIFE);
         writer.emitPackage(classPackage);
         writer.emitImports("android.os.Bundle");
@@ -61,7 +61,7 @@ final class BundleAdapterGenerator {
         }
     }
 
-    private void writeSaveState(JavaWriter writer) throws IOException, IllegalBundleTypeException {
+    private void writeSaveState(JavaWriter writer) throws IOException {
         writer.emitJavadoc(AdapterJavadoc.SAVE_INSTANCE_STATE_METHOD, targetType);
         writer.beginMethod("void", GeneratedAdapters.SAVE_METHOD, EnumSet.of(PUBLIC), targetType, "target", "Bundle", "bundle");
         for (BundleFieldBinding field : fields) {
@@ -72,12 +72,12 @@ final class BundleAdapterGenerator {
         writer.endMethod();
     }
 
-    private void writeSaveFieldState(JavaWriter writer, BundleFieldBinding field) throws IOException, IllegalBundleTypeException {
+    private void writeSaveFieldState(JavaWriter writer, BundleFieldBinding field) throws IOException {
         writer.emitSingleLineComment(field.getDescription());
         writer.emitStatement("bundle.put%s(%s, target.%s)", field.getBundleType(), field.getKey(), field.getName());
     }
 
-    private void writeRestoreState(JavaWriter writer) throws IOException, IllegalBundleTypeException {
+    private void writeRestoreState(JavaWriter writer) throws IOException {
         writer.emitJavadoc(AdapterJavadoc.RESTORE_INSTANCE_STATE_METHOD, targetType);
         writer.beginMethod("void", GeneratedAdapters.RESTORE_METHOD, EnumSet.of(PUBLIC), targetType, "target", "Bundle", "bundle");
         writer.beginControlFlow("if (bundle != null)");
@@ -90,8 +90,34 @@ final class BundleAdapterGenerator {
         writer.endMethod();
     }
 
-    private void writeRestoreFieldState(JavaWriter writer, BundleFieldBinding field) throws IOException, IllegalBundleTypeException {
+    private void writeRestoreFieldState(JavaWriter writer, BundleFieldBinding field) throws IOException {
         writer.emitSingleLineComment(field.getDescription());
+        if (field.isRequired()) {
+            writeRequiredRestoreFieldState(writer, field);
+        } else {
+            writeOptionalRestoreFieldState(writer, field);
+        }
+    }
+
+    private void writeRequiredRestoreFieldState(JavaWriter writer, BundleFieldBinding field) throws IOException {
+        List<String> stmtArgs = new ArrayList<String>();
+        writer.beginControlFlow("if (bundle.containsKey(%s))", field.getKey());
+        String stmt = "target.".concat(field.getName()).concat(" = ");
+        if (field.needsToBeCast()) {
+            stmt = stmt.concat(("(%s) "));
+            stmtArgs.add(field.getType());
+        }
+        stmt = stmt.concat("bundle.get%s(%s)");
+        stmtArgs.add(field.getBundleType());
+        stmtArgs.add(field.getKey());
+        writer.emitStatement(stmt, stmtArgs.toArray(new Object[stmtArgs.size()]));
+        writer.nextControlFlow("else");
+        writer.emitStatement("throw new IllegalStateException(\"Required Bundle value with key '%s' was not found for '%s'. "
+                + "If this field is not required add '@NotRequired' annotation\")", field.getKey(), field.getName());
+        writer.endControlFlow();
+    }
+
+    private void writeOptionalRestoreFieldState(JavaWriter writer, BundleFieldBinding field) throws IOException {
         List<String> stmtArgs = new ArrayList<String>();
         String stmt = "target.".concat(field.getName()).concat(" = ");
         if (field.needsToBeCast()) {
@@ -108,7 +134,7 @@ final class BundleAdapterGenerator {
         writer.emitStatement(stmt, stmtArgs.toArray(new Object[stmtArgs.size()]));
     }
 
-    private void writeInjectArguments(JavaWriter writer) throws IOException, IllegalBundleTypeException {
+    private void writeInjectArguments(JavaWriter writer) throws IOException {
         writer.emitJavadoc(AdapterJavadoc.INJECT_ARGUMENTS_METHOD, targetType);
         writer.beginMethod("void", GeneratedAdapters.INJECT_ARGUMENTS_METHOD, EnumSet.of(PUBLIC), targetType, "target", "Bundle", "bundle");
         writer.beginControlFlow("if (bundle != null)");
@@ -121,7 +147,7 @@ final class BundleAdapterGenerator {
         writer.endMethod();
     }
 
-    private void writeInjectArgumentFiled(JavaWriter writer, BundleFieldBinding field) throws IOException, IllegalBundleTypeException {
+    private void writeInjectArgumentFiled(JavaWriter writer, BundleFieldBinding field) throws IOException {
         writer.emitSingleLineComment(field.getDescription());
         if (field.isRequired()) {
             writeRequiredInjectArgumentField(writer, field);
@@ -130,7 +156,7 @@ final class BundleAdapterGenerator {
         }
     }
 
-    private void writeRequiredInjectArgumentField(JavaWriter writer, BundleFieldBinding field) throws IOException, IllegalBundleTypeException {
+    private void writeRequiredInjectArgumentField(JavaWriter writer, BundleFieldBinding field) throws IOException {
         List<String> stmtArgs = new ArrayList<String>();
         writer.beginControlFlow("if (bundle.containsKey(%s))", field.getKey());
         String stmt = "target.".concat(field.getName()).concat(" = ");
@@ -149,7 +175,7 @@ final class BundleAdapterGenerator {
 
     }
 
-    private void writeOptionalInjectArgumentField(JavaWriter writer, BundleFieldBinding field) throws IOException, IllegalBundleTypeException {
+    private void writeOptionalInjectArgumentField(JavaWriter writer, BundleFieldBinding field) throws IOException {
         List<String> stmtArgs = new ArrayList<String>();
         String stmt = "target.".concat(field.getName()).concat(" = ");
         if (field.needsToBeCast()) {
