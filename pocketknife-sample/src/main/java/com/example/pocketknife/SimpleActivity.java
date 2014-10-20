@@ -4,11 +4,13 @@ import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
 import pocketknife.InjectExtra;
+import pocketknife.NotRequired;
 import pocketknife.PocketKnife;
 
 
 public class SimpleActivity extends FragmentActivity {
 
+    @NotRequired
     @InjectExtra("Key")
     String s;
 
