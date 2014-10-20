@@ -9,7 +9,6 @@ import pocketknife.internal.GeneratedAdapters;
 import javax.annotation.processing.Messager;
 import javax.annotation.processing.RoundEnvironment;
 import javax.lang.model.element.Element;
-import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.DeclaredType;
@@ -20,20 +19,11 @@ import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.lang.annotation.Annotation;
 import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
-import static javax.lang.model.element.ElementKind.CLASS;
-import static javax.lang.model.element.Modifier.PRIVATE;
-import static javax.lang.model.element.Modifier.STATIC;
-import static pocketknife.internal.GeneratedAdapters.ANDROID_PREFIX;
-import static pocketknife.internal.GeneratedAdapters.JAVA_PREFIX;
-
-public class BundleProcessor extends AbsProcessor {
+public class BundleProcessor extends PKProcessor {
 
     public BundleProcessor(Messager messager, Elements elements, Types types) {
         super(messager, elements, types);
@@ -41,16 +31,14 @@ public class BundleProcessor extends AbsProcessor {
 
     public Map<TypeElement, BundleAdapterGenerator> findAndParseTargets(RoundEnvironment env) {
         Map<TypeElement, BundleAdapterGenerator> targetClassMap = new LinkedHashMap<TypeElement, BundleAdapterGenerator>();
-        Set<String> erasedTargetNames = new LinkedHashSet<String>();
 
         // Process each @SaveState
         for (Element element : env.getElementsAnnotatedWith(SaveState.class)) {
             try {
-                parseSaveState(element, targetClassMap, erasedTargetNames);
+                parseSaveState(element, targetClassMap);
             } catch (Exception e) {
                 StringWriter stackTrace = new StringWriter();
                 e.printStackTrace(new PrintWriter(stackTrace));
-
                 error(element, "Unable to generate bundle adapter for @SaveState.\n\n%s", stackTrace);
             }
         }
@@ -58,11 +46,10 @@ public class BundleProcessor extends AbsProcessor {
         // Process each @InjectAnnotation
         for (Element element : env.getElementsAnnotatedWith(InjectArgument.class)) {
             try {
-                parseInjectAnnotation(element, targetClassMap, erasedTargetNames);
+                parseInjectAnnotation(element, targetClassMap);
             } catch (Exception e) {
                 StringWriter stackTrace = new StringWriter();
                 e.printStackTrace(new PrintWriter(stackTrace));
-
                 error(element, "Unable to generate bundle adapter for @InjectAnnotation.\n\n%s", stackTrace);
             }
         }
@@ -70,7 +57,7 @@ public class BundleProcessor extends AbsProcessor {
         return targetClassMap;
     }
 
-    private void parseSaveState(Element element, Map<TypeElement, BundleAdapterGenerator> targetClassMap, Set<String> erasedTargetNames)
+    private void parseSaveState(Element element, Map<TypeElement, BundleAdapterGenerator> targetClassMap)
             throws ClassNotFoundException {
         TypeElement enclosingElement = (TypeElement) element.getEnclosingElement();
 
@@ -107,12 +94,9 @@ public class BundleProcessor extends AbsProcessor {
         BundleAdapterGenerator bundleAdapterGenerator = getOrCreateTargetClass(targetClassMap, enclosingElement);
         BundleFieldBinding binding = new BundleFieldBinding(name, elementType.toString(), bundleType, needsToBeCast, canHaveDefault, required);
         bundleAdapterGenerator.addField(binding);
-
-        // Add the type-erased version to the valid injection targets set.
-        erasedTargetNames.add(enclosingElement.toString());
     }
 
-    private void parseInjectAnnotation(Element element, Map<TypeElement, BundleAdapterGenerator> targetClassMap, Set<String> erasedTargetNames) {
+    private void parseInjectAnnotation(Element element, Map<TypeElement, BundleAdapterGenerator> targetClassMap) {
         TypeElement enclosingElement = (TypeElement) element.getEnclosingElement();
 
         // Verify that the target has all the appropriate information for type
@@ -123,9 +107,11 @@ public class BundleProcessor extends AbsProcessor {
         }
 
         String bundleType = getBundleType(element, elementType);
+        Boolean needsToBeCast = needsToBeCast(element, elementType);
 
         boolean hasError = !areInjectArgumentArgumentsValid(element);
         hasError |= bundleType == null;
+        hasError |= needsToBeCast == null;
         hasError |= !isValidForGeneratedCode(InjectArgument.class, "fields", element);
         hasError |= isBindingInWrongPackage(InjectArgument.class, element);
 
@@ -146,11 +132,8 @@ public class BundleProcessor extends AbsProcessor {
         boolean canHaveDefault = !required && canHaveDefault(elementType, minSdk);
 
         BundleAdapterGenerator bundleAdapterGenerator = getOrCreateTargetClass(targetClassMap, enclosingElement);
-        BundleFieldBinding binding = new BundleFieldBinding(name, elementType.toString(), bundleType, key, isPrimitive(elementType), canHaveDefault, required);
+        BundleFieldBinding binding = new BundleFieldBinding(name, elementType.toString(), bundleType, key, needsToBeCast, canHaveDefault, required);
         bundleAdapterGenerator.addField(binding);
-
-        // Add the type-erased version to the valid injection targets set.
-        erasedTargetNames.add(enclosingElement.toString());
     }
 
     private boolean areSaveStateArgumentsValid(Element element) {
@@ -174,55 +157,6 @@ public class BundleProcessor extends AbsProcessor {
             return false;
         }
         return true;
-    }
-
-    private boolean isValidForGeneratedCode(Class<? extends Annotation> annotationClass, String targetThing, Element element) {
-        boolean isValid = true;
-        TypeElement enclosingElement = (TypeElement) element.getEnclosingElement();
-
-        // Verify method modifiers
-        Set<Modifier> modifiers = element.getModifiers();
-        if (modifiers.contains(PRIVATE) || modifiers.contains(STATIC)) {
-            error(element, "@%s %s must not be private, protected, or static. (%s.%s)",
-                    annotationClass.getSimpleName(), targetThing, enclosingElement.getQualifiedName(),
-                    element.getSimpleName());
-            isValid = false;
-        }
-
-        // Verify Containing type.
-        if (enclosingElement.getKind() != CLASS) {
-            error(enclosingElement, "@%s %s may only be contained in classes. (%s.%s)",
-                    annotationClass.getSimpleName(), targetThing, enclosingElement.getQualifiedName(),
-                    element.getSimpleName());
-            isValid = false;
-        }
-
-        // Verify containing class visibility is not private
-        if (enclosingElement.getModifiers().contains(PRIVATE)) {
-            error(enclosingElement, "@%s %s may not be contained in private classes (%s.%s)", annotationClass.getSimpleName(), targetThing,
-                    enclosingElement.getQualifiedName(), element.getSimpleName());
-            isValid = false;
-        }
-
-        return isValid;
-    }
-
-    private boolean isBindingInWrongPackage(Class<? extends Annotation> annotationClass, Element element) {
-        TypeElement enclosingElement = (TypeElement) element.getEnclosingElement();
-        String qualifiedName = enclosingElement.getQualifiedName().toString();
-
-        if (qualifiedName.startsWith(ANDROID_PREFIX)) {
-            error(element, "@%s-annotated class incorrectly in Android framework package. (%s)",
-                    annotationClass.getSimpleName(), qualifiedName);
-            return true;
-        }
-        if (qualifiedName.startsWith(JAVA_PREFIX)) {
-            error(element, "@%s-annotated class incorrectly in Java framework package. (%s)",
-                    annotationClass.getSimpleName(), qualifiedName);
-            return true;
-        }
-
-        return false;
     }
 
     private boolean canHaveDefault(TypeMirror type, int minSdk) {
@@ -392,14 +326,15 @@ public class BundleProcessor extends AbsProcessor {
         }
 
         // Other types
+        if (types.isAssignable(type, typeUtil.bundleType)) {
+            return !types.isSameType(type, typeUtil.bundleType);
+        }
+
         Boolean result = needToCastAggregateBundleType(type);
         if (result != null) {
             return result;
         }
 
-        if (types.isAssignable(type, typeUtil.bundleType)) {
-            return !types.isSameType(type, typeUtil.bundleType);
-        }
 
         if (types.isAssignable(type, typeUtil.serializableType)) {
             return !types.isSameType(type, typeUtil.serializableType);

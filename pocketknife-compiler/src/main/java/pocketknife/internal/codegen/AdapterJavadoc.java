@@ -6,7 +6,9 @@ public class AdapterJavadoc {
     public static final String SAVE_INSTANCE_STATE_METHOD = "Save instance state of %s to bundle.";
     public static final String RESTORE_INSTANCE_STATE_METHOD = "Restore instance state of %s from bundle.";
     public static final String INJECT_ARGUMENTS_METHOD = "Inject arguments for %s from bundle.";
+    public static final String INJECT_EXTRAS_METHOD = "Inject extras for %s from intent.";
     public static final String BUNDLE_KEYS = "Bundle Keys";
+    public static final String INTENT_KEYS = "Intent Keys";
 
     private AdapterJavadoc() {
     }

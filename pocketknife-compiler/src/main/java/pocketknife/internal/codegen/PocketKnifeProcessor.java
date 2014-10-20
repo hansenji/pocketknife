@@ -31,6 +31,7 @@ public class PocketKnifeProcessor extends AbstractProcessor {
     private Filer filer;
 
     private BundleProcessor bundleProcessor;
+    private IntentProcessor intentProcessor;
 
     @Override
     public SourceVersion getSupportedSourceVersion() {
@@ -45,6 +46,7 @@ public class PocketKnifeProcessor extends AbstractProcessor {
         Elements elements = processingEnv.getElementUtils();
         Types types = processingEnv.getTypeUtils();
         bundleProcessor = new BundleProcessor(messager, elements, types);
+        intentProcessor = new IntentProcessor(messager, elements, types);
     }
 
     @Override
@@ -54,9 +56,10 @@ public class PocketKnifeProcessor extends AbstractProcessor {
 
     @Override
     public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
-        Map<TypeElement, BundleAdapterGenerator> targetClassMap = bundleProcessor.findAndParseTargets(roundEnv);
+        // Bundle Injections
+        Map<TypeElement, BundleAdapterGenerator> bundleTargetClassMap = bundleProcessor.findAndParseTargets(roundEnv);
 
-        for (Map.Entry<TypeElement, BundleAdapterGenerator> entry : targetClassMap.entrySet()) {
+        for (Map.Entry<TypeElement, BundleAdapterGenerator> entry : bundleTargetClassMap.entrySet()) {
             TypeElement typeElement = entry.getKey();
             BundleAdapterGenerator bundleAdapterGenerator = entry.getValue();
             JavaWriter javaWriter = null;
@@ -64,6 +67,30 @@ public class PocketKnifeProcessor extends AbstractProcessor {
                 JavaFileObject jfo = filer.createSourceFile(bundleAdapterGenerator.getFqcn(), typeElement);
                 javaWriter = new JavaWriter(jfo.openWriter());
                 bundleAdapterGenerator.generate(javaWriter);
+            } catch (Exception e) {
+                error(typeElement, "Unable to write adapter for type %s: %s", typeElement, e.getMessage());
+            } finally {
+                if (javaWriter != null) {
+                    try {
+                        javaWriter.close();
+                    } catch (IOException e) {
+                        error(null, e.getMessage());
+                    }
+                }
+            }
+        }
+
+        // Intent Injections
+        Map<TypeElement, IntentAdapterGenerator> intentTargetClassMap = intentProcessor.findAndParseTargets(roundEnv);
+
+        for (Map.Entry<TypeElement, IntentAdapterGenerator> entry : intentTargetClassMap.entrySet()) {
+            TypeElement typeElement = entry.getKey();
+            IntentAdapterGenerator intentAdapterGenerator = entry.getValue();
+            JavaWriter javaWriter = null;
+            try {
+                JavaFileObject jfo = filer.createSourceFile(intentAdapterGenerator.getFqcn(), typeElement);
+                javaWriter = new JavaWriter(jfo.openWriter());
+                intentAdapterGenerator.generate(javaWriter);
             } catch (Exception e) {
                 error(typeElement, "Unable to write adapter for type %s: %s", typeElement, e.getMessage());
             } finally {

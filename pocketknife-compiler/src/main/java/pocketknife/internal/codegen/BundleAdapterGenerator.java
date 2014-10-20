@@ -140,14 +140,14 @@ final class BundleAdapterGenerator {
         writer.beginControlFlow("if (bundle != null)");
         for (BundleFieldBinding field : fields) {
             if (ARGUMENT == field.getAnnotationType()) {
-                writeInjectArgumentFiled(writer, field);
+                writeInjectArgumentField(writer, field);
             }
         }
         writer.endControlFlow();
         writer.endMethod();
     }
 
-    private void writeInjectArgumentFiled(JavaWriter writer, BundleFieldBinding field) throws IOException {
+    private void writeInjectArgumentField(JavaWriter writer, BundleFieldBinding field) throws IOException {
         writer.emitSingleLineComment(field.getDescription());
         if (field.isRequired()) {
             writeRequiredInjectArgumentField(writer, field);

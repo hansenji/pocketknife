@@ -63,7 +63,7 @@ public class BundleFieldBinding implements Binding {
 
     @Override
     public String getDescription() {
-        return "Field '" + getType() + " " + name + "'";
+        return "Field '" + type + " " + name + "'";
     }
 
     public String getName() {
