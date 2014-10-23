@@ -10,23 +10,13 @@ import pocketknife.internal.Memoizer;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.util.LinkedHashMap;
-import java.util.Map;
 
-import static pocketknife.internal.GeneratedAdapters.ANDROID_PREFIX;
 import static pocketknife.internal.GeneratedAdapters.BUNDLE_ADAPTER_SUFFIX;
 import static pocketknife.internal.GeneratedAdapters.INTENT_ADAPTER_SUFFIX;
-import static pocketknife.internal.GeneratedAdapters.JAVA_PREFIX;
-import static pocketknife.internal.GeneratedAdapters.RESTORE_METHOD;
-import static pocketknife.internal.GeneratedAdapters.SAVE_METHOD;
 
 
 public final class PocketKnife {
     private static final String TAG = "PocketKnife";
-    private static final Map<Class<?>, Method> SAVERS = new LinkedHashMap<Class<?>, Method>();
-    private static final Map<Class<?>, Method> RESTORERS = new LinkedHashMap<Class<?>, Method>();
-    private static final Method NO_OP = null;
     private static boolean debug;
 
     private PocketKnife() {
@@ -38,121 +28,6 @@ public final class PocketKnife {
      */
     public static void setDebug(boolean debug) {
         PocketKnife.debug = debug;
-    }
-
-    /**
-     * Save annotated fields in the specified {@code target} to the {@link Bundle}.
-     *
-     * @param target Target class for field saving.
-     * @param bundle Bundle to save the field values.
-     */
-    public static <T> T saveInstanceStateReflexive(T target, Bundle bundle) {
-        Class<?> targetClass = target.getClass();
-        try {
-            if (debug) {
-                Log.d(TAG, "Looking up backup adapter for " + targetClass.getName());
-            }
-            Method saveInstanceState = findSaverForClass(targetClass);
-            if (saveInstanceState != null) {
-                saveInstanceState.invoke(null, target, bundle);
-            }
-        } catch (RuntimeException e) {
-            throw e;
-        } catch (Exception e) {
-            Throwable t = e;
-            if (t instanceof InvocationTargetException) {
-                t = t.getCause();
-            }
-            throw new RuntimeException("Unable to save state for " + target, t);
-        }
-        return target;
-    }
-
-    /**
-     * Restore annotated fields in the specified {@code target} from the {@link Bundle}.
-     *
-     * @param target Target class to restore fields
-     * @param bundle Bundle to restore field values.
-     */
-    public static <T> T restoreInstanceStateReflexive(T target, Bundle bundle) {
-        Class<?> targetClass = target.getClass();
-        try {
-            if (debug) {
-                Log.d(TAG, "Looking up backup adapter for " + targetClass.getName());
-            }
-            Method restoreInstanceState = findRestorerForClass(targetClass);
-            if (restoreInstanceState != null) {
-                restoreInstanceState.invoke(null, target, bundle);
-            }
-        } catch (RuntimeException e) {
-            throw e;
-        } catch (Exception e) {
-            Throwable t = e;
-            if (t instanceof InvocationTargetException) {
-                t = t.getCause();
-            }
-            throw new RuntimeException("Unable to restore state for " + target, t);
-        }
-        return target;
-    }
-
-    private static Method findSaverForClass(Class<?> cls) throws NoSuchMethodException {
-        Method save = SAVERS.get(cls);
-        if (save != null) {
-            if (debug) {
-                Log.d(TAG, "HIT: Cached in saver map");
-            }
-            return save;
-        }
-        String clsName = cls.getName();
-        if (clsName.startsWith(ANDROID_PREFIX) || clsName.startsWith(JAVA_PREFIX)) {
-            if (debug) Log.d(TAG, "MISS: Reached framework class. Abandoning search.");
-            return NO_OP;
-        }
-
-        try {
-            Class<?> bundleBinding = Class.forName(clsName.concat(BUNDLE_ADAPTER_SUFFIX));
-            save = bundleBinding.getMethod(SAVE_METHOD, cls, Bundle.class);
-            if (debug) {
-                Log.d(TAG, "HIT: Class loaded bundleBinding class");
-            }
-        } catch (ClassNotFoundException e) {
-            if (debug) {
-                Log.d(TAG, "Not found. Trying superclass " + cls.getSuperclass().getName());
-            }
-            save = findSaverForClass(cls.getSuperclass());
-        }
-        SAVERS.put(cls, save);
-        return save;
-    }
-
-    private static Method findRestorerForClass(Class<?> cls) throws NoSuchMethodException {
-        Method restore = RESTORERS.get(cls);
-        if (restore != null) {
-            if (debug) {
-                Log.d(TAG, "HIT: Cached in restorer map");
-            }
-            return restore;
-        }
-        String clsName = cls.getName();
-        if (clsName.startsWith(ANDROID_PREFIX) || clsName.startsWith(JAVA_PREFIX)) {
-            if (debug) Log.d(TAG, "MISS: Reached framework class. Abandoning search.");
-            return NO_OP;
-        }
-        try {
-            Class<?> bundleBinding = Class.forName(clsName.concat(BUNDLE_ADAPTER_SUFFIX));
-            restore = bundleBinding.getMethod(RESTORE_METHOD, cls, Bundle.class);
-            if (debug) {
-                Log.d(TAG, "HIT: Class loaded bundleBinding class");
-            }
-        } catch (ClassNotFoundException e) {
-            if (debug) {
-                Log.d(TAG, "Not found. Trying superclass " + cls.getSuperclass().getName());
-            }
-            restore = findRestorerForClass(cls.getSuperclass());
-        }
-        RESTORERS.put(cls, restore);
-        return restore;
     }
 
     /**
