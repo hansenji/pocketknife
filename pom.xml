@@ -31,7 +31,7 @@
         <java.version>1.6</java.version>
         <android.version>4.1.1.4</android.version>
         <android.platform>16</android.platform>
-        <support-v4.version>19.1.0</support-v4.version>
+        <support-v4.version>r7</support-v4.version>
         <javawriter.version>2.5.0</javawriter.version>
         <guava.version>18.0</guava.version>
         <fest.version>2.0M10</fest.version>
@@ -68,7 +68,7 @@
                 <version>${android.version}</version>
             </dependency>
             <dependency>
-                <groupId>com.android.support</groupId>
+                <groupId>com.google.android</groupId>
                 <artifactId>support-v4</artifactId>
                 <version>${support-v4.version}</version>
             </dependency>
