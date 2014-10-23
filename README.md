@@ -1,3 +1,5 @@
+https://travis-ci.org/hansenji/pocketknife.svg?branch=master
+
 Pocket Knife
 ============
 
