@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/hansenji/pocketknife.svg?branch=master)](https://travis-ci.org/hansenji/pocketknife)
+
 Pocket Knife
 ============
 
