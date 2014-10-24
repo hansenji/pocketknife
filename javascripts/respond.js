@@ -285,7 +285,8 @@ ops[n]=[];
 }
 ops[n][ops[n].length]=ods[i];
 }
-el.cssHelperParsed=o;
+el.cssHelper
+    Parsed=o;
 _4[_4.length]=el;
 return o;
 };
