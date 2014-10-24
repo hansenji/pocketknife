@@ -1,0 +1,130 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <title>Pocketknife by hansenji</title>
+    <link rel="stylesheet" href="stylesheets/styles.css">
+    <link rel="stylesheet" href="stylesheets/pygment_trac.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+    <script src="javascripts/respond.js"></script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <!--[if lt IE 8]>
+    <link rel="stylesheet" href="stylesheets/ie.css">
+    <![endif]-->
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+
+  </head>
+  <body>
+      <div id="header">
+        <nav>
+          <li class="fork"><a href="https://github.com/hansenji/pocketknife">View On GitHub</a></li>
+          <li class="downloads"><a href="https://github.com/hansenji/pocketknife/zipball/master">ZIP</a></li>
+          <li class="downloads"><a href="https://github.com/hansenji/pocketknife/tarball/master">TAR</a></li>
+          <li class="title">DOWNLOADS</li>
+        </nav>
+      </div><!-- end header -->
+
+    <div class="wrapper">
+
+      <section>
+        <div id="title">
+          <h1>Pocketknife</h1>
+          <p>&quot;Injection&quot; utility for Android</p>
+          <hr>
+          <span class="credits left">Project maintained by <a href="https://github.com/hansenji">hansenji</a></span>
+          <span class="credits right">Hosted on GitHub Pages &mdash; Theme by <a href="https://twitter.com/michigangraham">mattgraham</a></span>
+        </div>
+
+        <h1>
+<a name="pocket-knife" class="anchor" href="#pocket-knife"><span class="octicon octicon-link"></span></a>Pocket Knife</h1>
+
+<p>Intent and Bundle "injection" library for Android which uses annotation processing to generate boilerplate code
+for you. This library is based on <a href="http://jakewharton.github.com/butterknife/">ButterKnife</a> and <a href="http://square.github.com/dagger/">Dagger</a></p>
+
+<div class="highlight highlight-java"><pre><span class="kd">class</span> <span class="nc">ExampleActivity</span> <span class="kd">extends</span> <span class="n">Activity</span> <span class="o">{</span>
+  <span class="nd">@InjectExtra</span><span class="o">(</span><span class="s">"EXTRA_ID"</span><span class="o">)</span>
+  <span class="kt">int</span> <span class="n">id</span><span class="o">;</span>
+
+  <span class="nd">@SaveState</span>
+  <span class="kt">int</span> <span class="n">listPosition</span><span class="o">;</span>
+
+  <span class="kd">public</span> <span class="kt">void</span> <span class="nf">onCreate</span><span class="o">(</span><span class="n">Bundle</span> <span class="n">savedInstanceState</span><span class="o">)</span> <span class="o">{</span>
+    <span class="o">...</span>
+    <span class="n">PocketKnife</span><span class="o">.</span><span class="na">injectExtras</span><span class="o">(</span><span class="k">this</span><span class="o">);</span>
+    <span class="n">PocketKnife</span><span class="o">.</span><span class="na">restoreInstanceState</span><span class="o">(</span><span class="k">this</span><span class="o">,</span> <span class="n">savedInstanceState</span><span class="o">);</span>
+    <span class="o">...</span>
+  <span class="o">}</span>
+
+  <span class="kd">public</span> <span class="kt">void</span> <span class="nf">onSaveInstanceState</span><span class="o">(</span><span class="n">Bundle</span> <span class="n">outState</span><span class="o">)</span> <span class="o">{</span>
+    <span class="o">...</span>
+    <span class="n">PocketKnife</span><span class="o">.</span><span class="na">saveInstanceState</span><span class="o">(</span><span class="k">this</span><span class="o">,</span> <span class="n">outState</span><span class="o">);</span>
+    <span class="o">...</span>
+  <span class="o">}</span>
+<span class="o">}</span>
+</pre></div>
+
+<p>For documentation and additional information see <a href="%7Bwebsite%7D">the website</a>.</p>
+
+<p><strong>Remember: A pocket knife is like <a href="http://square.github.com/dagger/">a dagger</a> or <a href="http://jakewharton.github.com/butterknife/">a butter knife</a> but has more gadgets.</strong></p>
+
+<h2>
+<a name="download" class="anchor" href="#download"><span class="octicon octicon-link"></span></a>Download</h2>
+
+<p>Download the latest JARs <a href="http://repository.sonatype.org/service/local/artifact/maven/redirect?r=central-proxy&amp;g=com.vikingsen&amp;a=pocketknife-core&amp;v=LATEST">core</a> and <a href="http://repository.sonatype.org/service/local/artifact/maven/redirect?r=central-proxy&amp;g=com.vikingsen&amp;a=pocketknife-core&amp;v=LATEST">compiler</a> or grab via Maven:</p>
+
+<div class="highlight highlight-xml"><pre><span class="nt">&lt;dependency&gt;</span>
+  <span class="nt">&lt;groupId&gt;</span>com.vikingsen<span class="nt">&lt;/groupId&gt;</span>
+  <span class="nt">&lt;artifactId&gt;</span>pocketknife-core<span class="nt">&lt;/artifactId&gt;</span>
+  <span class="nt">&lt;version&gt;</span>0.5.1<span class="nt">&lt;/version&gt;</span>
+<span class="nt">&lt;/dependency&gt;</span>
+<span class="nt">&lt;dependency&gt;</span>
+  <span class="nt">&lt;groupId&gt;</span>com.vikingsen<span class="nt">&lt;/groupId&gt;</span>
+  <span class="nt">&lt;artifactId&gt;</span>pocketknife-compiler<span class="nt">&lt;/artifactId&gt;</span>
+  <span class="nt">&lt;version&gt;</span>0.5.1<span class="nt">&lt;/version&gt;</span>
+  <span class="nt">&lt;scope&gt;</span>provided<span class="nt">&lt;/scope&gt;</span>
+<span class="nt">&lt;/dependency&gt;</span>
+</pre></div>
+
+<p>or Gradle:</p>
+
+<div class="highlight highlight-groovy"><pre><span class="n">compile</span> <span class="s1">'com.vikingsen:pocketknife-core:0.5.1'</span>
+<span class="n">provided</span> <span class="s1">'com.vikingsen:pocketknife-compiler:0.5.1'</span>
+</pre></div>
+
+<h2>
+<a name="license" class="anchor" href="#license"><span class="octicon octicon-link"></span></a>License</h2>
+
+<pre><code>Copyright 2014 Jordan Hansen
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+   http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+</code></pre>
+      </section>
+
+    </div>
+    <!--[if !IE]><script>fixScale(document);</script><![endif]-->
+              <script type="text/javascript">
+            var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+            document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+          </script>
+          <script type="text/javascript">
+            try {
+              var pageTracker = _gat._getTracker("UA-56055098-1");
+            pageTracker._trackPageview();
+            } catch(err) {}
+          </script>
+
+  </body>
+</html>
