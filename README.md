@@ -82,4 +82,4 @@ License
  [2]: http://jakewharton.github.com/butterknife/
  [3]: http://repository.sonatype.org/service/local/artifact/maven/redirect?r=central-proxy&g=com.vikingsen&a=pocketknife-core&v=LATEST
  [4]: http://repository.sonatype.org/service/local/artifact/maven/redirect?r=central-proxy&g=com.vikingsen&a=pocketknife-core&v=LATEST
- [5]: {website}
+ [5]: http://hansenji.github.io/pocketknife
