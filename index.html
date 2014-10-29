@@ -1,135 +1,229 @@
 <!doctype html>
 <html>
 <head>
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="chrome=1">
-    <title>Pocketknife</title>
-    <link rel="stylesheet" href="stylesheet/styles.css">
-    <link rel="stylesheet" href="stylesheet/pygment_trac.css">
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
-    <script src="javascript/respond.js"></script>
-    <!--[if lt IE 9]>
-    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
-    <![endif]-->
-    <!--[if lt IE 8]>
-    <link rel="stylesheet" href="stylesheet/ie.css">
-    <![endif]-->
-    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="chrome=1">
+<title>Pocket Knife</title>
+<link rel="stylesheet" href="stylesheet/styles.css">
+<link rel="stylesheet" href="stylesheet/pygment_trac.css">
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+<script src="javascript/respond.js"></script>
+<!--[if lt IE 9]>
+<script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+<![endif]-->
+<!--[if lt IE 8]>
+<link rel="stylesheet" href="stylesheet/ie.css">
+<![endif]-->
+<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
 
 </head>
 <body>
 <div id="header">
     <nav>
-        <li class="fork"><a href="https://github.com/hansenji/pocketknife">View On GitHub</a></li>
-        <li class="downloads"><a
-                href="http://repository.sonatype.org/service/local/artifact/maven/redirect?r=central-proxy&g=com.vikingsen&a=pocketknife-core&v=LATEST"
-                class="dl core-version-href"><span class="version-tag">Latest</span> Core JAR</a></li>
-        <li class="downloads"><a
-                href="http://repository.sonatype.org/service/local/artifact/maven/redirect?r=central-proxy&g=com.vikingsen&a=pocketknife-compiler&v=LATEST"
-                class="dl compiler-version-href"><span class="version-tag">Latest</span> Compiler JAR</a></li>
-        <li class="title">DOWNLOADS</li>
+        <li class="title">Pocket Knife</li>
+        <li class="button"><a href=http://stackoverflow.com/questions/ask?tags=pocketknife">StackOverflow</a></li>
+        <li class="button"><a href="javadoc">Javadoc</a></li>
+        <li class="button"><a href="https://github.com/hansenji/pocketknife">View On GitHub</a></li>
     </nav>
 </div>
 <!-- end header -->
 
 <div class="wrapper">
 
-    <section>
-        <div id="title">
-            <h1>Pocketknife</h1>
+<section>
+<div id="title">
+    <h1>Pocket Knife</h1>
 
-            <p>&quot;Injection&quot; utility for Android</p>
-            <hr/>
+    <p>&quot;Injection&quot; utility for Android</p>
+    <hr id="introduction"/>
+</div>
+<h2>Introduction </h2>
 
-        </div>
+<p>Intent and Bundle "injection" library for Android; which uses annotation processing to generate the boilerplate code
+   for you. This library is based heavily on <a href="http://jakewharton.github.com/butterknife/">ButterKnife</a> and
+    <a href="http://square.github.com/dagger/">Dagger</a>.</p>
 
-        <h1>
-            <a name="pocket-knife" class="anchor" href="#pocket-knife"><span class="octicon octicon-link"></span></a>Pocket Knife</h1>
+<p>The generated code is debuggable and looks similar to this:</p>
 
-        <p>Intent and Bundle "injection" library for Android which uses annotation processing to generate boilerplate code
-            for you. This library is based on <a href="http://jakewharton.github.com/butterknife/">ButterKnife</a> and <a
-                    href="http://square.github.com/dagger/">Dagger</a></p>
+<div class="highlight highlight-java">
+<pre>
+<span class="c1">// Bundle Keys</span>
+<span class="kd">private</span> <span class="kd">static</span> <span class="kd">final</span> <span class="n">String</span> <span class="n">BUNDLE_COUNTER</span> <span
+        class="o">=</span> <span class="s">"BUNDLE_COUNTER"</span><span class="o">;</span>
 
-        <div class="highlight highlight-java"><pre><span class="kd">class</span> <span class="nc">ExampleActivity</span> <span class="kd">extends</span> <span
-                class="n">Activity</span> <span class="o">{</span>
-  <span class="nd">@InjectExtra</span><span class="o">(</span><span class="s">"EXTRA_ID"</span><span class="o">)</span>
-  <span class="kt">int</span> <span class="n">id</span><span class="o">;</span>
-
-  <span class="nd">@SaveState</span>
-  <span class="kt">int</span> <span class="n">listPosition</span><span class="o">;</span>
-
-  <span class="kd">public</span> <span class="kt">void</span> <span class="nf">onCreate</span><span class="o">(</span><span class="n">Bundle</span> <span
-                    class="n">savedInstanceState</span><span class="o">)</span> <span class="o">{</span>
-    <span class="o">...</span>
-    <span class="n">PocketKnife</span><span class="o">.</span><span class="na">injectExtras</span><span class="o">(</span><span class="k">this</span><span
-                    class="o">);</span>
-    <span class="n">PocketKnife</span><span class="o">.</span><span class="na">restoreInstanceState</span><span class="o">(</span><span
-                    class="k">this</span><span class="o">,</span> <span class="n">savedInstanceState</span><span class="o">);</span>
-    <span class="o">...</span>
-  <span class="o">}</span>
-
-  <span class="kd">public</span> <span class="kt">void</span> <span class="nf">onSaveInstanceState</span><span class="o">(</span><span
-                    class="n">Bundle</span> <span class="n">outState</span><span class="o">)</span> <span class="o">{</span>
-    <span class="o">...</span>
-    <span class="n">PocketKnife</span><span class="o">.</span><span class="na">saveInstanceState</span><span class="o">(</span><span class="k">this</span><span
-                    class="o">,</span> <span class="n">outState</span><span class="o">);</span>
-    <span class="o">...</span>
-  <span class="o">}</span>
+<span class="kd">public</span> <span class="kt">void</span> <span class="nf">saveInstanceState</span><span class="o">(</span><span
+        class="n">Fragment</span> <span class="n">fragment</span><span class="o">,</span> <span class="n">Bundle</span> <span class="n">bundle</span><span
+        class="o">)</span> <span class="o">{</span>
+    <span class="n">bundle</span><span class="o">.</span><span class="na">putInt</span><span class="o">(</span><span class="n">BUNDLE_COUNTER</span><span
+        class="o">,</span> <span class="n">fragment</span><span class="o">.</span><span class="na">counter</span><span class="o">);</span>
 <span class="o">}</span>
 </pre>
-        </div>
+</div>
 
-        <p><strong>Remember: A pocket knife is like <a href="http://square.github.com/dagger/">a dagger</a> or <a
-                href="http://jakewharton.github.com/butterknife/">a butter knife</a> but has more gadgets.</strong></p>
+<h2 id="bundle_injection" class="nav_anchor">Bundle Injection </h2>
 
-        <h2>
-            <a name="download" class="anchor" href="#download"><span class="octicon octicon-link"></span></a>Download</h2>
+<p>The main use cases for bundles are saving state in ui pieces and passing arguments to a fragment. Pocket Knife makes both of these easy with the
+   following annotations respectively:</p>
 
-        <p>Download the latest JARs <a
-                href="http://repository.sonatype.org/service/local/artifact/maven/redirect?r=central-proxy&amp;g=com.vikingsen&amp;a=pocketknife-core&amp;v=LATEST">core</a>
-            and
-            <a href="http://repository.sonatype.org/service/local/artifact/maven/redirect?r=central-proxy&amp;g=com.vikingsen&amp;a=pocketknife-core&amp;v=LATEST">compiler</a>
-            or grab via Maven:</p>
+<div class="highlight">
+    <ul class="no_bullet">
+        <li><span class="nd">@SaveState</span></li>
+        <li><span class="nd">@InjectArgument</span></li>
+    </ul>
+</div>
+<h3>Saving and Restoring State</h3>
 
-        <div class="highlight highlight-xml"><pre><span class="nt">&lt;dependency&gt;</span>
+<div class="highlight highlight-java">
+<p>To save a field to the save state bundle in activities and fragments first annotate the field with <span class="nd">@SaveState</span></p>
+<pre>
+<span class="o">...</span>
+<span class="nd">@SaveState</span>
+<span class="kt">int</span> <span class="n">anInt</span><span class="o">;</span>
+<span class="o">...</span></pre>
+<p>Then in <span class="nf">onSaveInstanceState</span> call <span class="n">PocketKnife</span><span class="o">.</span><span
+        class="na">saveInstanceState</span><span class="o">(</span><span class="k">this</span><span class="o">,</span> <span class="n">outState</span><span
+        class="o">);</span> to save annotated fields to the bundle.</p>
+<pre>
+<span class="kd">public</span> <span class="kt">void</span> <span class="nf">onSaveInstanceState</span><span class="o">(</span><span
+        class="n">Bundle</span> <span class="n">outState</span><span class="o">)</span> <span class="o">{</span>
+  <span class="o">...</span>
+  <span class="n">PocketKnife</span><span class="o">.</span><span class="na">saveInstanceState</span><span class="o">(</span><span class="k">this</span><span
+        class="o">,</span> <span class="n">outState</span><span class="o">);</span>
+  <span class="o">...</span>
+<span class="o">}</span>
+</pre>
+<p>To restore from the bundle call <span class="n">PocketKnife</span><span class="o">.</span><span class="na">restoreInstanceState</span><span
+        class="o">(</span><span class="k">this</span><span class="o">,</span> <span class="n">savedInstanceState</span><span class="o">);</span> in <span
+        class="nf">onCreate</span>.</p>
+
+<pre>
+<span class="kd">public</span> <span class="kt">void</span> <span class="nf">onCreate</span><span class="o">(</span><span class="n">Bundle</span> <span
+        class="n">savedInstanceState</span><span class="o">)</span> <span class="o">{</span>
+  <span class="o">...</span>
+  <span class="n">PocketKnife</span><span class="o">.</span><span class="na">restoreInstanceState</span><span class="o">(</span><span class="k">this</span><span
+        class="o">,</span> <span class="n">savedInstanceState</span><span class="o">);</span>
+  <span class="o">...</span>
+<span class="o">}</span>
+</pre>
+</div>
+<h3>Injecting Arguments</h3>
+
+<div class="highlight highlight-java">
+<p>To inject arguments into a field for a Fragment first annotate the field with <span class="nd">@InjectArgument</span> and a bundle key. Pocket Knife will
+   find and automatically cast the corresponding value.</p>
+    <pre>
+<span class="o">...</span>
+<span class="nd">@InjectArgument</span><span class="o">(</span><span class="s">"ARG_KEY"</span><span class="o">)</span>
+<span class="kt">int</span> <span class="n">anInt</span><span class="o">;</span>
+<span class="o">...</span></pre>
+<p>Then in <span class="nf">onActivityCreated</span> or another appropriate method call in a fragment <span class="n">PocketKnife</span><span class="o">.</span><span
+        class="na">injectArguments</span><span class="o">(</span><span class="k">this</span><span class="o">);</span></p>
+<pre>
+<span class="kd">public</span> <span class="kt">void</span> <span class="nf">onActivityCreated</span><span class="o">(</span><span class="n">Bundle</span> <span
+        class="n">savedInstanceState</span><span class="o">)</span> <span class="o">{</span>
+  <span class="o">...</span>
+  <span class="n">PocketKnife</span><span class="o">.</span><span class="na">injectArguments</span><span class="o">(</span><span class="k">this</span><span
+        class="o">);</span>
+  <span class="o">...</span>
+<span class="o">}</span>
+</pre>
+</div>
+
+<h2 id="intent_injection" class="nav_anchor">Intent Injection </h2>
+
+<div class="highlight highlight-java">
+<p>To inject extras into a field for an activity first annotate the field with <span class="nd">@InjectExtra</span> and an extra key. Pocket Knife will
+   find and automatically cast the corresponding value.</p>
+    <pre>
+<span class="o">...</span>
+<span class="nd">@InjectExtra</span><span class="o">(</span><span class="s">"EXTRA_INT"</span><span class="o">)</span>
+<span class="kt">int</span> <span class="n">anInt</span><span class="o">;</span>
+<span class="o">...</span></pre>
+<p>Then in <span class="nf">onCreate</span> or another appropriate method call in an activity <span class="n">PocketKnife</span><span class="o">.</span><span
+        class="na">injectExtras</span><span class="o">(</span><span class="k">this</span><span class="o">);</span></p>
+<pre>
+<span class="kd">public</span> <span class="kt">void</span> <span class="nf">onActivityCreated</span><span class="o">(</span><span class="n">Bundle</span> <span
+        class="n">savedInstanceState</span><span class="o">)</span> <span class="o">{</span>
+  <span class="o">...</span>
+  <span class="n">PocketKnife</span><span class="o">.</span><span class="na">injectExtras</span><span class="o">(</span><span class="k">this</span><span
+        class="o">);</span>
+  <span class="o">...</span>
+<span class="o">}</span>
+</pre>
+</div>
+
+<h2 id="download" class="nav_anchor">Download</h2>
+
+<p class="download">
+    <a href="http://repository.sonatype.org/service/local/artifact/maven/redirect?r=central-proxy&g=com.vikingsen&a=pocketknife-core&v=LATEST"
+       class="dl core-version-href"><span class="version-tag">Latest</span> Core JAR
+    </a>
+    <a href="http://repository.sonatype.org/service/local/artifact/maven/redirect?r=central-proxy&g=com.vikingsen&a=pocketknife-compiler&v=LATEST"
+       class="dl compiler-version-href"><span class="version-tag">Latest</span> Compiler JAR
+    </a>
+</p>
+
+<p>
+    You will need to include the core JAR in your application's runtime. In order to activate code generation you will need to include the compiler JAR
+    in your build at compile time. </p>
+
+<p>
+    The source code to Pocket Knife, its sample, and this website is <a href="http://github.com/hansenji/pocketknife">available on GitHub</a>. </p>
+
+<h3>Maven</h3>
+
+<div class="highlight highlight-xml">
+<pre><span class="nt">&lt;dependency&gt;</span>
   <span class="nt">&lt;groupId&gt;</span>com.vikingsen<span class="nt">&lt;/groupId&gt;</span>
   <span class="nt">&lt;artifactId&gt;</span>pocketknife-core<span class="nt">&lt;/artifactId&gt;</span>
-  <span class="nt">&lt;version&gt;</span>0.5.1<span class="nt">&lt;/version&gt;</span>
+  <span class="nt">&lt;version&gt;</span><span class="version"><em>(insert latest version)</em></span><span class="nt">&lt;/version&gt;</span>
 <span class="nt">&lt;/dependency&gt;</span>
 <span class="nt">&lt;dependency&gt;</span>
   <span class="nt">&lt;groupId&gt;</span>com.vikingsen<span class="nt">&lt;/groupId&gt;</span>
   <span class="nt">&lt;artifactId&gt;</span>pocketknife-compiler<span class="nt">&lt;/artifactId&gt;</span>
-  <span class="nt">&lt;version&gt;</span>0.5.1<span class="nt">&lt;/version&gt;</span>
+  <span class="nt">&lt;version&gt;</span><span class="version"><em>(insert latest version)</em></span><span class="nt">&lt;/version&gt;</span>
   <span class="nt">&lt;scope&gt;</span>provided<span class="nt">&lt;/scope&gt;</span>
 <span class="nt">&lt;/dependency&gt;</span>
 </pre>
-        </div>
+</div>
 
-        <p>or Gradle:</p>
+<h3>Gradle</h3>
 
-        <div class="highlight highlight-groovy"><pre><span class="n">compile</span> <span class="s1">'com.vikingsen:pocketknife-core:0.5.1'</span>
-<span class="n">provided</span> <span class="s1">'com.vikingsen:pocketknife-compiler:0.5.1'</span>
+<div class="highlight highlight-groovy"><pre><span class="n">compile</span> <span class="s1">'com.vikingsen:pocketknife-core:<span class="version"><em>(insert
+                                                                                                                                                       latest
+                                                                                                                                                       version)</em></span>'</span>
+<span class="n">provided</span> <span class="s1">'com.vikingsen:pocketknife-compiler:<span class="version"><em>(insert latest version)</em></span>'</span>
 </pre>
-        </div>
+</div>
 
-        <h2>
-            <a name="license" class="anchor" href="#license"><span class="octicon octicon-link"></span></a>License</h2>
+<h2 id="license" class="nav_anchor">License</h2>
 
-<pre><code>Copyright 2014 Jordan Hansen
+<pre>Copyright 2014 Jordan Hansen
 
-    Licensed under the Apache License, Version 2.0 (the "License");
-    you may not use this file except in compliance with the License.
-    You may obtain a copy of the License at
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
 
-    http://www.apache.org/licenses/LICENSE-2.0
+http://www.apache.org/licenses/LICENSE-2.0
 
-    Unless required by applicable law or agreed to in writing, software
-    distributed under the License is distributed on an "AS IS" BASIS,
-    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-    See the License for the specific language governing permissions and
-    limitations under the License.
-</code></pre>
-    </section>
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+</pre>
+<!--<div class="span3">-->
+<!--<div class="content-nav" data-spy="affix" data-offset-top="80">-->
+    <!--<ul class="nav nav-tabs nav-stacked primary">-->
+        <!--<li><a href="#introduction">Introduction</a></li>-->
+        <!--<li><a href="#bundle_injection">Bundle Injection</a></li>-->
+        <!--<li><a href="#intent_injection">Intent Injection</a></li>-->
+        <!--<li><a href="#download">Download</a></li>-->
+        <!--<li><a href="#license">License</a></li>-->
+    <!--</ul>-->
+<!--</div>-->
+<!--</div>-->
+</section>
 
 </div>
 <!--[if !IE]>
@@ -146,17 +240,17 @@
     }
 </script>
 <script type="text/javascript">
-    $(function () {
-        // Look up the latest version of the library.
-        $.fn.artifactVersion('com.vikingsen', 'pocketknife-core', function (version, url) {
-            $('.version').text(version);
-            $('.version-tag').text('v' + version);
-            $('.core-version-href').attr('href', url);
-        });
-        $.fn.artifactVersion('com.vikingsen', 'pocketknife-compiler', function (version, url) {
-            $('.compiler-version-href').attr('href', url);
-        });
+$(function () {
+    // Look up the latest version of the library.
+    $.fn.artifactVersion('com.vikingsen', 'pocketknife-core', function (version, url) {
+        $('.version').text(version);
+        $('.version-tag').text('v' + version);
+        $('.core-version-href').attr('href', url);
     });
+    $.fn.artifactVersion('com.vikingsen', 'pocketknife-compiler', function (version, url) {
+        $('.compiler-version-href').attr('href', url);
+    });
+});
 </script>
 <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
 <script src="javascript/jquery-maven-artifact.min.js"></script>
