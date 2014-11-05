@@ -22,6 +22,12 @@
 
     <dependencies>
         <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
             <groupId>com.vikingsen</groupId>
             <artifactId>pocketknife-core</artifactId>
             <version>${project.version}</version>
@@ -34,11 +40,6 @@
             <optional>true</optional>
         </dependency>
 
-        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <scope>test</scope>
-        </dependency>
         <dependency>
             <groupId>org.easytesting</groupId>
             <artifactId>fest-assert-core</artifactId>

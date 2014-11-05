@@ -355,10 +355,14 @@ public class BundleProcessor extends PKProcessor {
         if (type instanceof DeclaredType) {
             List<? extends TypeMirror> typeArguments = ((DeclaredType) type).getTypeArguments();
             if (typeArguments.size() == 1) {
-                if (types.isAssignable(type, typeUtil.integerType)) {
-                    return !types.isSameType(type, typeUtil.integerType);
+                TypeMirror argType = typeArguments.get(0);
+                if (types.isAssignable(argType, typeUtil.parcelableType)) {
+                    return false;
                 }
-                Boolean result = needToCastAggregateBundleType(type);
+                if (types.isAssignable(argType, typeUtil.integerType)) {
+                    return !types.isSameType(argType, typeUtil.integerType);
+                }
+                Boolean result = needToCastAggregateBundleType(argType);
                 if (result != null) {
                     return result;
                 }

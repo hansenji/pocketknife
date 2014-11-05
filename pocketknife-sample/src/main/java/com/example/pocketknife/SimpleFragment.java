@@ -44,6 +44,8 @@ public class SimpleFragment extends Fragment {
     String message = "Default Value";
     @SaveState
     MyOtherObj myOtherObj;
+    @SaveState
+    ArrayList<MyParcelable> myParcelableArrayList = null;
 
     public static Fragment newInstance(String stringArg) {
         Fragment fragment = new SimpleFragment();

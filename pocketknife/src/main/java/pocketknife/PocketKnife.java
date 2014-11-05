@@ -39,7 +39,9 @@ public final class PocketKnife {
     public static <T> void saveInstanceState(T target, Bundle bundle) {
         @SuppressWarnings("unchecked")
         BundleBinding<T> binding = (BundleBinding<T>) getBundleBinding(target.getClass().getClassLoader(), target.getClass().getName());
-        binding.saveInstanceState(target, bundle);
+        if (binding != null) {
+            binding.saveInstanceState(target, bundle);
+        }
     }
 
     /**
@@ -51,7 +53,9 @@ public final class PocketKnife {
     public static <T> void restoreInstanceState(T target, Bundle bundle) {
         @SuppressWarnings("unchecked")
         BundleBinding<T> binding = (BundleBinding<T>) getBundleBinding(target.getClass().getClassLoader(), target.getClass().getName());
-        binding.restoreInstanceState(target, bundle);
+        if (binding != null) {
+            binding.restoreInstanceState(target, bundle);
+        }
     }
 
     /**
@@ -81,7 +85,9 @@ public final class PocketKnife {
     public static <T> void injectArguments(T target, Bundle bundle) {
         @SuppressWarnings("unchecked")
         BundleBinding<T> binding = (BundleBinding<T>) getBundleBinding(target.getClass().getClassLoader(), target.getClass().getName());
-        binding.injectArguments(target, bundle);
+        if (binding != null) {
+            binding.injectArguments(target, bundle);
+        }
     }
 
     /**
@@ -102,7 +108,9 @@ public final class PocketKnife {
     public static <T> void injectExtras(T target, Intent intent) {
         @SuppressWarnings("unchecked")
         IntentBinding<T> binding = (IntentBinding<T>) getIntentBinding(target.getClass().getClassLoader(), target.getClass().getName());
-        binding.injectExtras(target, intent);
+        if (binding != null) {
+            binding.injectExtras(target, intent);
+        }
     }
 
     private static BundleBinding<?> getBundleBinding(ClassLoader classLoader, String className) {
@@ -131,7 +139,7 @@ public final class PocketKnife {
             }
         }
         if (debug) {
-            Log.wtf(TAG, "Unable to find loadable bundle adapter for " + className);
+            Log.w(TAG, "Unable to find loadable bundle adapter for " + className);
         }
         return null;
     }
@@ -162,7 +170,7 @@ public final class PocketKnife {
             }
         }
         if (debug) {
-            Log.wtf(TAG, "Unable to find loadable intent adapter for " + className);
+            Log.w(TAG, "Unable to find loadable intent adapter for " + className);
         }
         return null;
     }
