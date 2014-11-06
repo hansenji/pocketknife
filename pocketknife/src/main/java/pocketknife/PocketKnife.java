@@ -59,24 +59,6 @@ public final class PocketKnife {
     }
 
     /**
-     * Inject annotated fields in the specified {@link android.app.Fragment} from its arguments.
-     *
-     * @param fragment fragment to inject the arguments;
-     */
-    public static void injectArguments(android.app.Fragment fragment) {
-       injectArguments(fragment, fragment.getArguments());
-    }
-
-    /**
-     * Inject annotated fields in the specified {@link android.support.v4.app.Fragment} from its arguments.
-     *
-     * @param fragment fragment to inject the arguments;
-     */
-    public static void injectArguments(android.support.v4.app.Fragment fragment) {
-        injectArguments(fragment, fragment.getArguments());
-    }
-
-    /**
      * Inject annotated fields in the specified {@code target} from the {@link android.os.Bundle}.
      *
      * @param target Target object for inject arguments

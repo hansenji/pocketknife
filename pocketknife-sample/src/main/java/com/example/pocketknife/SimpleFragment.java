@@ -63,7 +63,7 @@ public class SimpleFragment extends Fragment {
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-        PocketKnife.injectArguments(this);
+        PocketKnife.injectArguments(this, getArguments());
 
         PocketKnife.restoreInstanceState(this, savedInstanceState);
 
