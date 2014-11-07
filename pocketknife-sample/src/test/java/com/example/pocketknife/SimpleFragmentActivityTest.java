@@ -25,6 +25,11 @@ public class SimpleFragmentActivityTest {
         Assert.assertEquals(1, simpleFragment.counter);
     }
 
+    @Test (expected = IllegalStateException.class)
+    public void verifySaveRestoreExceptionThrown() {
+        Robolectric.buildActivity(SimpleFragmentActivity.class).create(new Bundle());
+    }
+
     @Test
     public void verifyArgumentInjection() {
         ActivityController<SimpleFragmentActivity> initialController = Robolectric.buildActivity(SimpleFragmentActivity.class).create();

@@ -28,7 +28,7 @@ public abstract class PKProcessor {
         this.messager = messager;
         this.elements = elements;
         this.types = types;
-        this.typeUtil = TypeUtil.getInstance(elements, types);
+        this.typeUtil = TypeUtil.getInstance(elements);
     }
 
     protected String getPackageName(TypeElement type) {

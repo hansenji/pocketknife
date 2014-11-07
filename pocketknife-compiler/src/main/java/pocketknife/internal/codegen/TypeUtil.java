@@ -3,7 +3,6 @@ package pocketknife.internal.codegen;
 import javax.lang.model.element.Element;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Elements;
-import javax.lang.model.util.Types;
 
 public class TypeUtil {
     private static final CharSequence SERIALIZABLE = "java.io.Serializable";
@@ -28,14 +27,14 @@ public class TypeUtil {
 
     private static TypeUtil instance;
 
-    public static synchronized TypeUtil getInstance(Elements elements, Types types) {
+    public static synchronized TypeUtil getInstance(Elements elements) {
         if (instance == null) {
-            instance = new TypeUtil(elements, types);
+            instance = new TypeUtil(elements);
         }
         return instance;
     }
 
-    public TypeUtil(Elements elements, Types types) {
+    public TypeUtil(Elements elements) {
         Element element = elements.getTypeElement(SERIALIZABLE);
         if (element == null) {
             throw new IllegalStateException("Unable to find Serializable type");
