@@ -311,10 +311,7 @@ public class BundleProcessor extends PKProcessor {
 
         // ArrayList
         if (types.isAssignable(types.erasure(type), typeUtil.arrayListType)) {
-            Boolean result = needToCastArrayList(type);
-            if (result != null) {
-                return result;
-            }
+            return false;
         }
 
         // Sparse Parcelable Array
@@ -349,26 +346,6 @@ public class BundleProcessor extends PKProcessor {
             return false;
         }
         return needToCastAggregateBundleType(type);
-    }
-
-    private Boolean needToCastArrayList(TypeMirror type) {
-        if (type instanceof DeclaredType) {
-            List<? extends TypeMirror> typeArguments = ((DeclaredType) type).getTypeArguments();
-            if (typeArguments.size() == 1) {
-                TypeMirror argType = typeArguments.get(0);
-                if (types.isAssignable(argType, typeUtil.parcelableType)) {
-                    return false;
-                }
-                if (types.isAssignable(argType, typeUtil.integerType)) {
-                    return !types.isSameType(argType, typeUtil.integerType);
-                }
-                Boolean result = needToCastAggregateBundleType(argType);
-                if (result != null) {
-                    return result;
-                }
-            }
-        }
-        return null;
     }
 
     private Boolean needToCastAggregateBundleType(TypeMirror type) {
