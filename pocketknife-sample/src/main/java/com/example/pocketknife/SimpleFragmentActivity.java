@@ -1,8 +1,8 @@
 package com.example.pocketknife;
 
 import android.os.Bundle;
+import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
-import android.support.v4.app.FragmentManager;
 import pocketknife.PocketKnife;
 import pocketknife.SaveState;
 
@@ -18,16 +18,15 @@ public class SimpleFragmentActivity extends FragmentActivity {
         setContentView(R.layout.simple_activity);
 
         PocketKnife.restoreInstanceState(this, savedInstanceState);
-
-        if (savedInstanceState == null) {
-            FragmentManager supportFragmentManager = getSupportFragmentManager();
-            supportFragmentManager.beginTransaction().replace(R.id.container, SimpleFragment.newInstance("I AM AWESOME")).commit();
-        }
     }
 
     @Override
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
         PocketKnife.saveInstanceState(this, outState);
+    }
+
+    public void replaceFragment(Fragment fragment) {
+        getSupportFragmentManager().beginTransaction().replace(R.id.container, fragment).commit();
     }
 }
