@@ -9,7 +9,6 @@ import pocketknife.PocketKnife;
 import java.io.Serializable;
 import java.util.ArrayList;
 
-
 public class SimpleActivity extends FragmentActivity {
 
     public static final String BOOLEAN_EXTRA = "BOOLEAN_EXTRA";

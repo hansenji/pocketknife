@@ -24,6 +24,7 @@ final class BundleAdapterGenerator {
     private final String classPackage;
     private final String className;
     private final String targetType;
+    private boolean required = false;
 
     public BundleAdapterGenerator(String classPackage, String className, String targetType) {
         this.classPackage = classPackage;
@@ -33,6 +34,10 @@ final class BundleAdapterGenerator {
 
     public void addField(BundleFieldBinding binding) {
         fields.add(binding);
+    }
+
+    public void orRequired(boolean required) {
+        this.required |= required;
     }
 
     public void generate(JavaWriter writer) throws IOException {
@@ -137,13 +142,18 @@ final class BundleAdapterGenerator {
     private void writeInjectArguments(JavaWriter writer) throws IOException {
         writer.emitJavadoc(AdapterJavadoc.INJECT_ARGUMENTS_METHOD, targetType);
         writer.beginMethod("void", GeneratedAdapters.INJECT_ARGUMENTS_METHOD, EnumSet.of(PUBLIC), targetType, "target", "Bundle", "bundle");
-        writer.beginControlFlow("if (bundle != null)");
+        writer.beginControlFlow("if (bundle == null)");
+        if (required) {
+            writer.emitStatement("throw new IllegalStateException(\"Argument bundle is null\")");
+        } else {
+            writer.emitStatement("bundle = new Bundle()");
+        }
+        writer.endControlFlow();
         for (BundleFieldBinding field : fields) {
             if (ARGUMENT == field.getAnnotationType()) {
                 writeInjectArgumentField(writer, field);
             }
         }
-        writer.endControlFlow();
         writer.endMethod();
     }
 

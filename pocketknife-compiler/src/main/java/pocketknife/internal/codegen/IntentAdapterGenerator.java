@@ -59,11 +59,12 @@ public class IntentAdapterGenerator {
     private void writeInjectExtras(JavaWriter writer) throws IOException {
         writer.emitJavadoc(AdapterJavadoc.INJECT_EXTRAS_METHOD, targetType);
         writer.beginMethod("void", GeneratedAdapters.INJECT_EXTRAS_METHOD, EnumSet.of(PUBLIC), targetType, "target", "Intent", "intent");
-        writer.beginControlFlow("if (intent != null)");
+        writer.beginControlFlow("if (intent == null)");
+        writer.emitStatement("throw new IllegalStateException(\"Intent is null\")");
+        writer.endControlFlow();
         for (IntentFieldBinding field : fields) {
             writeInjectExtraField(writer, field);
         }
-        writer.endControlFlow();
         writer.endMethod();
     }
 

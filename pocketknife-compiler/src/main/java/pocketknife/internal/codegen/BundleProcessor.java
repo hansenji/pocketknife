@@ -133,6 +133,7 @@ public class BundleProcessor extends PKProcessor {
 
         BundleAdapterGenerator bundleAdapterGenerator = getOrCreateTargetClass(targetClassMap, enclosingElement);
         BundleFieldBinding binding = new BundleFieldBinding(name, elementType.toString(), bundleType, key, needsToBeCast, canHaveDefault, required);
+        bundleAdapterGenerator.orRequired(required);
         bundleAdapterGenerator.addField(binding);
     }
 

@@ -14,13 +14,10 @@ import java.util.UUID;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
 @RunWith(RobolectricTestRunner.class)
-public class SimpleActivityTest {
-    private static final String BUNDLE_INT_ARG = "BUNDLE_INT_ARG";
-    private static final String BUNDLE_SERIALIZABLE_ARG = "BUNDLE_SERIALIZABLE_ARG";
+public class SimpleActivityTest extends BaseTest {
 
     @Test
     public void verifyExtraInjection() {
@@ -182,46 +179,15 @@ public class SimpleActivityTest {
 
     }
 
-    private static void assertBundleEquals(Bundle expected, Bundle actual) {
-        if (expected == null) {
-            assertNull(actual);
-        } else {
-            assertNotNull(actual);
-            assertEquals(expected.getInt(BUNDLE_INT_ARG), actual.getInt(BUNDLE_INT_ARG));
-            assertEquals(expected.getSerializable(BUNDLE_SERIALIZABLE_ARG), actual.getSerializable(BUNDLE_SERIALIZABLE_ARG));
-        }
-    }
-
-    private static void assertBooleanArrayEquals(boolean[] expected, boolean[] actual) {
-        if (expected == null) {
-            assertNull(actual);
-        } else {
-            assertNotNull(actual);
-            assertEquals(expected.length, actual.length);
-            int count = expected.length;
-            for (int i = 0; i < count; i++) {
-                assertEquals("Arrays not equals for item: " + i, expected[i], actual[i]);
-            }
-        }
-    }
-
-    private static void assertArrayListEquals(ArrayList<?> expected, ArrayList<?> actual) {
-        if (expected == null) {
-            assertNull(actual);
-        } else {
-            assertNotNull(actual);
-            assertEquals(expected.size(), actual.size());
-            int count = expected.size();
-            for (int i = 0; i < count; i++) {
-                assertEquals("ArrayLists not equals for item: " + i, expected.get(i), actual.get(i));
-            }
-        }
-    }
-
     @Test(expected = IllegalStateException.class)
     public void verifyExceptionThrown() {
         Intent intent = new Intent(Robolectric.application, SimpleActivity.class);
         Robolectric.buildActivity(SimpleActivity.class).withIntent(intent).create().get();
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void verifyNullIntentException() {
+        Robolectric.buildActivity(SimpleActivity.class).create().get();
     }
 
 }

@@ -14,33 +14,11 @@ import java.util.UUID;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
 
 @RunWith(RobolectricTestRunner.class)
-public class SimpleFragmentActivityTest {
-    private static final String BUNDLE_INT_ARG = "BUNDLE_INT_ARG";
-    private static final String BUNDLE_SERIALIZABLE_ARG = "BUNDLE_SERIALIZABLE_ARG";
-
-//    @Test
-//    public void verifySaveRestoreState() {
-//        ActivityController<SimpleFragmentActivity> initialController = Robolectric.buildActivity(SimpleFragmentActivity.class).create();
-//        initialController.start().restart().visible().get();
-//        Bundle bundle = new Bundle();
-//        initialController.saveInstanceState(bundle);
-//        ActivityController<SimpleFragmentActivity> secondaryController = Robolectric.buildActivity(SimpleFragmentActivity.class).create(bundle);
-//        SimpleFragmentActivity simpleActivity = secondaryController.start().restart().visible().get();
-//        SimpleFragment simpleFragment = (SimpleFragment) simpleActivity.getSupportFragmentManager().findFragmentById(R.id.container);
-//
-//        // Make sure all saved objects are restored.
-//        Assert.assertEquals(1, simpleFragment.counter);
-//    }
-//
-//    @Test (expected = IllegalStateException.class)
-//    public void verifySaveRestoreExceptionThrown() {
-//        Robolectric.buildActivity(SimpleFragmentActivity.class).create(new Bundle());
-//    }
+public class SimpleFragmentActivityTest extends BaseTest {
 
     @Test
     public void verifyArgumentInjection() {
@@ -206,40 +184,32 @@ public class SimpleFragmentActivityTest {
 
     }
 
-    private static void assertBundleEquals(Bundle expected, Bundle actual) {
-        if (expected == null) {
-            assertNull(actual);
-        } else {
-            assertNotNull(actual);
-            assertEquals(expected.getInt(BUNDLE_INT_ARG), actual.getInt(BUNDLE_INT_ARG));
-            assertEquals(expected.getSerializable(BUNDLE_SERIALIZABLE_ARG), actual.getSerializable(BUNDLE_SERIALIZABLE_ARG));
-        }
+    @Test (expected = IllegalStateException.class)
+    public void verifyNullBundleException() {
+        ActivityController<SimpleFragmentActivity> initialController = Robolectric.buildActivity(SimpleFragmentActivity.class).create();
+        SimpleFragmentActivity simpleActivity = initialController.start().restart().visible().get();
+        SimpleFragment simpleFragment = SimpleFragment.newInstance();
+        simpleActivity.replaceFragment(simpleFragment);
     }
 
-    private static void assertBooleanArrayEquals(boolean[] expected, boolean[] actual) {
-        if (expected == null) {
-            assertNull(actual);
-        } else {
-            assertNotNull(actual);
-            assertEquals(expected.length, actual.length);
-            int count = expected.length;
-            for (int i = 0; i < count; i++) {
-                assertEquals("Arrays not equals for item: " + i, expected[i], actual[i]);
-            }
-        }
+    @Test (expected = IllegalStateException.class)
+    public void verifyArgumentInjectionException() {
+        Bundle bundle = new Bundle();
+        ActivityController<SimpleFragmentActivity> initialController = Robolectric.buildActivity(SimpleFragmentActivity.class).create();
+        SimpleFragmentActivity simpleActivity = initialController.start().restart().visible().get();
+        SimpleFragment simpleFragment = SimpleFragment.newInstance();
+        simpleFragment.setArguments(bundle);
+        simpleActivity.replaceFragment(simpleFragment);
     }
 
-    private static void assertArrayListEquals(ArrayList<?> expected, ArrayList<?> actual) {
-        if (expected == null) {
-            assertNull(actual);
-        } else {
-            assertNotNull(actual);
-            assertEquals(expected.size(), actual.size());
-            int count = expected.size();
-            for (int i = 0; i < count; i++) {
-                assertEquals("ArrayLists not equals for item: " + i, expected.get(i), actual.get(i));
-            }
-        }
+    @Test
+    public void verifyNotRequiredArgumentInjection() {
+        ActivityController<SimpleFragmentActivity> initialController = Robolectric.buildActivity(SimpleFragmentActivity.class).create();
+        SimpleFragmentActivity simpleActivity = initialController.start().restart().visible().get();
+        NotRequiredArgFragment fragment = new NotRequiredArgFragment();
+        simpleActivity.replaceFragment(fragment);
+
+        assertEquals(1, fragment.i);
     }
 
 }
