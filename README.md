@@ -43,19 +43,19 @@ Download the latest JARs [core][3] and [compiler][4] or grab via Maven:
 <dependency>
   <groupId>com.vikingsen</groupId>
   <artifactId>pocketknife-core</artifactId>
-  <version>0.5.1</version>
+  <version>1.0.1</version>
 </dependency>
 <dependency>
   <groupId>com.vikingsen</groupId>
   <artifactId>pocketknife-compiler</artifactId>
-  <version>0.5.1</version>
+  <version>1.0.1</version>
   <scope>provided</scope>
 </dependency>
 ```
 or Gradle:
 ```groovy
-compile 'com.vikingsen:pocketknife-core:0.5.1'
-provided 'com.vikingsen:pocketknife-compiler:0.5.1'
+compile 'com.vikingsen:pocketknife-core:1.0.1'
+provided 'com.vikingsen:pocketknife-compiler:1.0.1'
 ```
 
 
