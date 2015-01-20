@@ -2,6 +2,7 @@ package pocketknife.internal.codegen;
 
 import com.squareup.javawriter.JavaWriter;
 import pocketknife.InjectArgument;
+import pocketknife.InjectExtra;
 import pocketknife.SaveState;
 
 import javax.annotation.processing.AbstractProcessor;
@@ -24,7 +25,6 @@ import java.util.Set;
 import static javax.tools.Diagnostic.Kind.ERROR;
 
 public class PocketKnifeProcessor extends AbstractProcessor {
-
 
 
     private Messager messager;
@@ -51,7 +51,8 @@ public class PocketKnifeProcessor extends AbstractProcessor {
 
     @Override
     public Set<String> getSupportedAnnotationTypes() {
-        return new HashSet<String>(Arrays.asList(SaveState.class.getCanonicalName(), InjectArgument.class.getCanonicalName()));
+        return new HashSet<String>(Arrays.asList(SaveState.class.getCanonicalName(), InjectArgument.class.getCanonicalName(),
+                InjectExtra.class.getCanonicalName()));
     }
 
     @Override
