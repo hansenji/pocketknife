@@ -62,7 +62,7 @@ provided 'com.vikingsen:pocketknife-compiler:1.0.1'
 License
 -------
 
-    Copyright 2014 Jordan Hansen
+    Copyright 2015 Jordan Hansen
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
