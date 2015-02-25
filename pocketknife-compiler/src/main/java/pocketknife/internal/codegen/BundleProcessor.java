@@ -4,7 +4,6 @@ import android.os.Build;
 import pocketknife.InjectArgument;
 import pocketknife.NotRequired;
 import pocketknife.SaveState;
-import pocketknife.internal.GeneratedAdapters;
 
 import javax.annotation.processing.Messager;
 import javax.annotation.processing.RoundEnvironment;
@@ -20,8 +19,12 @@ import javax.lang.model.util.Types;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+
+import static pocketknife.internal.GeneratedAdapters.BUNDLE_ADAPTER_SUFFIX;
 
 public class BundleProcessor extends PKProcessor {
 
@@ -31,11 +34,12 @@ public class BundleProcessor extends PKProcessor {
 
     public Map<TypeElement, BundleAdapterGenerator> findAndParseTargets(RoundEnvironment env) {
         Map<TypeElement, BundleAdapterGenerator> targetClassMap = new LinkedHashMap<TypeElement, BundleAdapterGenerator>();
+        Set<String> erasedTargetNames = new LinkedHashSet<String>(); // used for parent lookup.
 
         // Process each @SaveState
         for (Element element : env.getElementsAnnotatedWith(SaveState.class)) {
             try {
-                parseSaveState(element, targetClassMap);
+                parseSaveState(element, targetClassMap, erasedTargetNames);
             } catch (Exception e) {
                 StringWriter stackTrace = new StringWriter();
                 e.printStackTrace(new PrintWriter(stackTrace));
@@ -46,7 +50,7 @@ public class BundleProcessor extends PKProcessor {
         // Process each @InjectAnnotation
         for (Element element : env.getElementsAnnotatedWith(InjectArgument.class)) {
             try {
-                parseInjectAnnotation(element, targetClassMap);
+                parseInjectAnnotation(element, targetClassMap, erasedTargetNames);
             } catch (Exception e) {
                 StringWriter stackTrace = new StringWriter();
                 e.printStackTrace(new PrintWriter(stackTrace));
@@ -54,10 +58,18 @@ public class BundleProcessor extends PKProcessor {
             }
         }
 
+        // Try to find a parent adapter for each adapter
+        for (Map.Entry<TypeElement, BundleAdapterGenerator> entry : targetClassMap.entrySet()) {
+            String parentClassFqcn = findParentFqcn(entry.getKey(), erasedTargetNames);
+            if (parentClassFqcn != null) {
+                entry.getValue().setParentAdapter(parentClassFqcn + BUNDLE_ADAPTER_SUFFIX);
+            }
+        }
+
         return targetClassMap;
     }
 
-    private void parseSaveState(Element element, Map<TypeElement, BundleAdapterGenerator> targetClassMap)
+    private void parseSaveState(Element element, Map<TypeElement, BundleAdapterGenerator> targetClassMap, Set<String> erasedTargetNames)
             throws ClassNotFoundException {
         TypeElement enclosingElement = (TypeElement) element.getEnclosingElement();
 
@@ -94,9 +106,12 @@ public class BundleProcessor extends PKProcessor {
         BundleAdapterGenerator bundleAdapterGenerator = getOrCreateTargetClass(targetClassMap, enclosingElement);
         BundleFieldBinding binding = new BundleFieldBinding(name, elementType.toString(), bundleType, needsToBeCast, canHaveDefault, required);
         bundleAdapterGenerator.addField(binding);
+
+        // Add the type-erased version to the valid targets set.
+        erasedTargetNames.add(enclosingElement.toString());
     }
 
-    private void parseInjectAnnotation(Element element, Map<TypeElement, BundleAdapterGenerator> targetClassMap) {
+    private void parseInjectAnnotation(Element element, Map<TypeElement, BundleAdapterGenerator> targetClassMap, Set<String> erasedTargetNames) {
         TypeElement enclosingElement = (TypeElement) element.getEnclosingElement();
 
         // Verify that the target has all the appropriate information for type
@@ -135,6 +150,9 @@ public class BundleProcessor extends PKProcessor {
         BundleFieldBinding binding = new BundleFieldBinding(name, elementType.toString(), bundleType, key, needsToBeCast, canHaveDefault, required);
         bundleAdapterGenerator.orRequired(required);
         bundleAdapterGenerator.addField(binding);
+
+        // Add the type-erased version to the valid targets set.
+        erasedTargetNames.add(enclosingElement.toString());
     }
 
     private boolean areSaveStateArgumentsValid(Element element) {
@@ -377,7 +395,7 @@ public class BundleProcessor extends PKProcessor {
         if (bundleAdapterGenerator == null) {
             String targetType = enclosingElement.getQualifiedName().toString();
             String classPackage = getPackageName(enclosingElement);
-            String className = getClassName(enclosingElement, classPackage) + GeneratedAdapters.BUNDLE_ADAPTER_SUFFIX;
+            String className = getClassName(enclosingElement, classPackage) + BUNDLE_ADAPTER_SUFFIX;
 
             bundleAdapterGenerator = new BundleAdapterGenerator(classPackage, className, targetType);
             targetClassMap.put(enclosingElement, bundleAdapterGenerator);

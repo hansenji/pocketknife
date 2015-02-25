@@ -3,7 +3,6 @@ package pocketknife.internal.codegen;
 import android.os.Build;
 import pocketknife.InjectExtra;
 import pocketknife.NotRequired;
-import pocketknife.internal.GeneratedAdapters;
 
 import javax.annotation.processing.Messager;
 import javax.annotation.processing.RoundEnvironment;
@@ -19,8 +18,12 @@ import javax.lang.model.util.Types;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+
+import static pocketknife.internal.GeneratedAdapters.INTENT_ADAPTER_SUFFIX;
 
 public class IntentProcessor extends PKProcessor {
 
@@ -30,11 +33,12 @@ public class IntentProcessor extends PKProcessor {
 
     public Map<TypeElement, IntentAdapterGenerator> findAndParseTargets(RoundEnvironment env) {
         Map<TypeElement, IntentAdapterGenerator> targetClassMap = new LinkedHashMap<TypeElement, IntentAdapterGenerator>();
+        Set<String> erasedTargetNames = new LinkedHashSet<String>();
 
         // Process each @InjectExtra
         for (Element element : env.getElementsAnnotatedWith(InjectExtra.class)) {
             try {
-                parseInjectExtra(element, targetClassMap);
+                parseInjectExtra(element, targetClassMap, erasedTargetNames);
             } catch (Exception e) {
                 StringWriter stackTrace = new StringWriter();
                 e.printStackTrace(new PrintWriter(stackTrace));
@@ -42,10 +46,18 @@ public class IntentProcessor extends PKProcessor {
             }
         }
 
+        // Try to find a parent adapter for each adapter
+        for (Map.Entry<TypeElement, IntentAdapterGenerator> entry : targetClassMap.entrySet()) {
+            String parentClassFqcn = findParentFqcn(entry.getKey(), erasedTargetNames);
+            if (parentClassFqcn != null) {
+                entry.getValue().setParentAdapter(parentClassFqcn + INTENT_ADAPTER_SUFFIX);
+            }
+        }
+
         return targetClassMap;
     }
 
-    private void parseInjectExtra(Element element, Map<TypeElement, IntentAdapterGenerator> targetClassMap) {
+    private void parseInjectExtra(Element element, Map<TypeElement, IntentAdapterGenerator> targetClassMap, Set<String> erasedTargetNames) {
         TypeElement enclosingElement = (TypeElement) element.getEnclosingElement();
 
         // Verify that the target has all the appropriate information for type
@@ -79,6 +91,9 @@ public class IntentProcessor extends PKProcessor {
         IntentAdapterGenerator intentAdapterGenerator = getOrCreateTargetClass(targetClassMap, enclosingElement);
         IntentFieldBinding binding = new IntentFieldBinding(name, elementType.toString(), intentType, key, needsToBeCast, hasDefault, required);
         intentAdapterGenerator.addField(binding);
+
+        // Add the type-erased version to the valid targets set.
+        erasedTargetNames.add(enclosingElement.toString());
     }
 
     private String getIntentType(Element element, TypeMirror type) {
@@ -278,7 +293,7 @@ public class IntentProcessor extends PKProcessor {
         if (intentAdapterGenerator == null) {
             String targetType = enclosingElement.getQualifiedName().toString();
             String classPackage = getPackageName(enclosingElement);
-            String className = getClassName(enclosingElement, classPackage) + GeneratedAdapters.INTENT_ADAPTER_SUFFIX;
+            String className = getClassName(enclosingElement, classPackage) + INTENT_ADAPTER_SUFFIX;
 
             intentAdapterGenerator = new IntentAdapterGenerator(classPackage, className, targetType);
             targetClassMap.put(enclosingElement, intentAdapterGenerator);

@@ -2,7 +2,6 @@ package pocketknife.internal.codegen;
 
 import com.squareup.javawriter.JavaWriter;
 import pocketknife.internal.BundleBinding;
-import pocketknife.internal.GeneratedAdapters;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -15,6 +14,9 @@ import static javax.lang.model.element.Modifier.FINAL;
 import static javax.lang.model.element.Modifier.PRIVATE;
 import static javax.lang.model.element.Modifier.PUBLIC;
 import static javax.lang.model.element.Modifier.STATIC;
+import static pocketknife.internal.GeneratedAdapters.INJECT_ARGUMENTS_METHOD;
+import static pocketknife.internal.GeneratedAdapters.RESTORE_METHOD;
+import static pocketknife.internal.GeneratedAdapters.SAVE_METHOD;
 import static pocketknife.internal.codegen.BundleFieldBinding.AnnotationType.ARGUMENT;
 import static pocketknife.internal.codegen.BundleFieldBinding.AnnotationType.SAVE_STATE;
 
@@ -25,6 +27,7 @@ final class BundleAdapterGenerator {
     private final String className;
     private final String targetType;
     private boolean required = false;
+    private String parentAdapter;
 
     public BundleAdapterGenerator(String classPackage, String className, String targetType) {
         this.classPackage = classPackage;
@@ -45,7 +48,11 @@ final class BundleAdapterGenerator {
         writer.emitPackage(classPackage);
         writer.emitImports("android.os.Bundle");
         writer.emitEmptyLine();
-        writer.beginType(className, "class", EnumSet.of(PUBLIC, FINAL), JavaWriter.type(BundleBinding.class, targetType));
+        if (parentAdapter != null) {
+            writer.beginType(className + "<T extends " + targetType + ">", "class", EnumSet.of(PUBLIC), parentAdapter + "<T>");
+        } else {
+            writer.beginType(className + "<T extends " + targetType + ">", "class", EnumSet.of(PUBLIC), null, JavaWriter.type(BundleBinding.class, "T"));
+        }
         writer.emitEmptyLine();
         writeBundleKeys(writer);
         // write Save State
@@ -68,7 +75,10 @@ final class BundleAdapterGenerator {
 
     private void writeSaveState(JavaWriter writer) throws IOException {
         writer.emitJavadoc(AdapterJavadoc.SAVE_INSTANCE_STATE_METHOD, targetType);
-        writer.beginMethod("void", GeneratedAdapters.SAVE_METHOD, EnumSet.of(PUBLIC), targetType, "target", "Bundle", "bundle");
+        writer.beginMethod("void", SAVE_METHOD, EnumSet.of(PUBLIC), "T", "target", "Bundle", "bundle");
+        if (parentAdapter != null) {
+            writer.emitStatement("super.%s(%s, %s)", SAVE_METHOD, "target", "bundle");
+        }
         for (BundleFieldBinding field : fields) {
             if (SAVE_STATE == field.getAnnotationType()) {
                 writeSaveFieldState(writer, field);
@@ -84,7 +94,10 @@ final class BundleAdapterGenerator {
 
     private void writeRestoreState(JavaWriter writer) throws IOException {
         writer.emitJavadoc(AdapterJavadoc.RESTORE_INSTANCE_STATE_METHOD, targetType);
-        writer.beginMethod("void", GeneratedAdapters.RESTORE_METHOD, EnumSet.of(PUBLIC), targetType, "target", "Bundle", "bundle");
+        writer.beginMethod("void", RESTORE_METHOD, EnumSet.of(PUBLIC), "T", "target", "Bundle", "bundle");
+        if (parentAdapter != null) {
+            writer.emitStatement("super.%s(%s, %s)", RESTORE_METHOD, "target", "bundle");
+        }
         writer.beginControlFlow("if (bundle != null)");
         for (BundleFieldBinding field : fields) {
             if (SAVE_STATE == field.getAnnotationType()) {
@@ -141,7 +154,10 @@ final class BundleAdapterGenerator {
 
     private void writeInjectArguments(JavaWriter writer) throws IOException {
         writer.emitJavadoc(AdapterJavadoc.INJECT_ARGUMENTS_METHOD, targetType);
-        writer.beginMethod("void", GeneratedAdapters.INJECT_ARGUMENTS_METHOD, EnumSet.of(PUBLIC), targetType, "target", "Bundle", "bundle");
+        writer.beginMethod("void", INJECT_ARGUMENTS_METHOD, EnumSet.of(PUBLIC), "T", "target", "Bundle", "bundle");
+        if (parentAdapter != null) {
+            writer.emitStatement("super.%s(%s, %s)", INJECT_ARGUMENTS_METHOD, "target", "bundle");
+        }
         writer.beginControlFlow("if (bundle == null)");
         if (required) {
             writer.emitStatement("throw new IllegalStateException(\"Argument bundle is null\")");
@@ -204,5 +220,9 @@ final class BundleAdapterGenerator {
 
     public CharSequence getFqcn() {
         return classPackage + "." + className;
+    }
+
+    public void setParentAdapter(String parentAdapter) {
+        this.parentAdapter = parentAdapter;
     }
 }

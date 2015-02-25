@@ -83,8 +83,6 @@ public class SaveStateActivityTest extends BaseTest {
         ActivityController<SaveStateActivity> secondaryController = Robolectric.buildActivity(SaveStateActivity.class).create(saveState);
         SaveStateActivity activity = secondaryController.start().restart().visible().get();
 
-        
-        
         // Boolean
         assertEquals(original.aBoolean, activity.aBoolean);
         // Array

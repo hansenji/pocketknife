@@ -1,7 +1,6 @@
 package pocketknife.internal.codegen;
 
 import com.squareup.javawriter.JavaWriter;
-import pocketknife.internal.GeneratedAdapters;
 import pocketknife.internal.IntentBinding;
 
 import java.io.IOException;
@@ -15,6 +14,7 @@ import static javax.lang.model.element.Modifier.FINAL;
 import static javax.lang.model.element.Modifier.PRIVATE;
 import static javax.lang.model.element.Modifier.PUBLIC;
 import static javax.lang.model.element.Modifier.STATIC;
+import static pocketknife.internal.GeneratedAdapters.INJECT_EXTRAS_METHOD;
 
 public class IntentAdapterGenerator {
 
@@ -22,6 +22,8 @@ public class IntentAdapterGenerator {
     private final String classPackage;
     private final String className;
     private final String targetType;
+    private String parentAdapter;
+
 
     public IntentAdapterGenerator(String classPackage, String className, String targetType) {
         this.classPackage = classPackage;
@@ -38,7 +40,11 @@ public class IntentAdapterGenerator {
         writer.emitPackage(classPackage);
         writer.emitImports("android.content.Intent");
         writer.emitEmptyLine();
-        writer.beginType(className, "class", EnumSet.of(PUBLIC, FINAL), JavaWriter.type(IntentBinding.class, targetType));
+        if (parentAdapter != null) {
+            writer.beginType(className + "<T extends " + targetType + ">", "class", EnumSet.of(PUBLIC), parentAdapter + "<T>");
+        } else {
+            writer.beginType(className + "<T extends " + targetType + ">", "class", EnumSet.of(PUBLIC), null, JavaWriter.type(IntentBinding.class, "T"));
+        }
         writer.emitEmptyLine();
 
         writeIntentKeys(writer);
@@ -58,7 +64,10 @@ public class IntentAdapterGenerator {
 
     private void writeInjectExtras(JavaWriter writer) throws IOException {
         writer.emitJavadoc(AdapterJavadoc.INJECT_EXTRAS_METHOD, targetType);
-        writer.beginMethod("void", GeneratedAdapters.INJECT_EXTRAS_METHOD, EnumSet.of(PUBLIC), targetType, "target", "Intent", "intent");
+        writer.beginMethod("void", INJECT_EXTRAS_METHOD, EnumSet.of(PUBLIC), "T", "target", "Intent", "intent");
+        if (parentAdapter != null) {
+            writer.emitStatement("super.%s(%s, %s)", INJECT_EXTRAS_METHOD, "target", "intent");
+        }
         writer.beginControlFlow("if (intent == null)");
         writer.emitStatement("throw new IllegalStateException(\"Intent is null\")");
         writer.endControlFlow();
@@ -118,5 +127,9 @@ public class IntentAdapterGenerator {
 
     public CharSequence getFqcn() {
         return classPackage + "." + className;
+    }
+
+    public void setParentAdapter(String parentAdapter) {
+        this.parentAdapter = parentAdapter;
     }
 }
