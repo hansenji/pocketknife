@@ -11,8 +11,10 @@ import pocketknife.internal.Memoizer;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 
+import static pocketknife.internal.GeneratedAdapters.ANDROID_PREFIX;
 import static pocketknife.internal.GeneratedAdapters.BUNDLE_ADAPTER_SUFFIX;
 import static pocketknife.internal.GeneratedAdapters.INTENT_ADAPTER_SUFFIX;
+import static pocketknife.internal.GeneratedAdapters.JAVA_PREFIX;
 
 
 public final class PocketKnife {
@@ -38,7 +40,7 @@ public final class PocketKnife {
      */
     public static <T> void saveInstanceState(T target, Bundle bundle) {
         @SuppressWarnings("unchecked")
-        BundleBinding<T> binding = (BundleBinding<T>) getBundleBinding(target.getClass().getClassLoader(), target.getClass().getName());
+        BundleBinding<T> binding = (BundleBinding<T>) getBundleBinding(target.getClass().getClassLoader(), target.getClass());
         if (binding != null) {
             binding.saveInstanceState(target, bundle);
         }
@@ -52,7 +54,7 @@ public final class PocketKnife {
      */
     public static <T> void restoreInstanceState(T target, Bundle bundle) {
         @SuppressWarnings("unchecked")
-        BundleBinding<T> binding = (BundleBinding<T>) getBundleBinding(target.getClass().getClassLoader(), target.getClass().getName());
+        BundleBinding<T> binding = (BundleBinding<T>) getBundleBinding(target.getClass().getClassLoader(), target.getClass());
         if (binding != null) {
             binding.restoreInstanceState(target, bundle);
         }
@@ -64,7 +66,7 @@ public final class PocketKnife {
      * @param fragment fragment to inject the arguments;
      */
     public static void injectArguments(android.app.Fragment fragment) {
-       injectArguments(fragment, fragment.getArguments());
+        injectArguments(fragment, fragment.getArguments());
     }
 
     /**
@@ -84,7 +86,7 @@ public final class PocketKnife {
      */
     public static <T> void injectArguments(T target, Bundle bundle) {
         @SuppressWarnings("unchecked")
-        BundleBinding<T> binding = (BundleBinding<T>) getBundleBinding(target.getClass().getClassLoader(), target.getClass().getName());
+        BundleBinding<T> binding = (BundleBinding<T>) getBundleBinding(target.getClass().getClassLoader(), target.getClass());
         if (binding != null) {
             binding.injectArguments(target, bundle);
         }
@@ -107,17 +109,24 @@ public final class PocketKnife {
      */
     public static <T> void injectExtras(T target, Intent intent) {
         @SuppressWarnings("unchecked")
-        IntentBinding<T> binding = (IntentBinding<T>) getIntentBinding(target.getClass().getClassLoader(), target.getClass().getName());
+        IntentBinding<T> binding = (IntentBinding<T>) getIntentBinding(target.getClass().getClassLoader(), target.getClass());
         if (binding != null) {
             binding.injectExtras(target, intent);
         }
     }
 
-    private static BundleBinding<?> getBundleBinding(ClassLoader classLoader, String className) {
-        Class<?> adapterClass = loadClass(classLoader, className.concat(BUNDLE_ADAPTER_SUFFIX));
+    private static BundleBinding<?> getBundleBinding(ClassLoader classLoader, Class<?> cls) {
+        String clsName = cls.getName();
+        if (clsName.startsWith(ANDROID_PREFIX) || clsName.startsWith(JAVA_PREFIX)) {
+            if (debug) {
+                Log.d(TAG, "MISS: Reached framework class. Abandoning search.");
+            }
+            return null;
+        }
+        Class<?> adapterClass = loadClass(classLoader, clsName.concat(BUNDLE_ADAPTER_SUFFIX));
         if (!adapterClass.equals(Void.class)) {
             if (debug) {
-                Log.d(TAG, "Found loadable bundle adapter for " + className);
+                Log.d(TAG, "Found loadable bundle adapter for " + clsName);
             }
             try {
                 @SuppressWarnings("unchecked")
@@ -126,29 +135,37 @@ public final class PocketKnife {
             } catch (NoSuchMethodException e) {
                 throw new IllegalStateException(
                         "Couldn't find default constructor in the generated bundle adapter for class "
-                                + className);
+                                + clsName);
             } catch (InvocationTargetException e) {
                 throw new IllegalStateException(
-                        "Could not create an instance of the bundle adapter for class " + className, e);
+                        "Could not create an instance of the bundle adapter for class " + clsName, e);
             } catch (InstantiationException e) {
                 throw new IllegalStateException(
-                        "Could not create an instance of the bundle adapter for class " + className, e);
+                        "Could not create an instance of the bundle adapter for class " + clsName, e);
             } catch (IllegalAccessException e) {
                 throw new IllegalStateException(
-                        "Could not create an instance of the bundle adapter for class " + className, e);
+                        "Could not create an instance of the bundle adapter for class " + clsName, e);
             }
         }
+        // Search for Parent Class adapter
         if (debug) {
-            Log.w(TAG, "Unable to find loadable bundle adapter for " + className);
+            Log.d(TAG, String.format("%s not found. Trying superclass %s", clsName, cls.getSuperclass().getName()));
         }
-        return null;
+        return getBundleBinding(classLoader, cls.getSuperclass());
     }
 
-    private static IntentBinding<?> getIntentBinding(ClassLoader classLoader, String className) {
-        Class<?> adapterClass = loadClass(classLoader, className.concat(INTENT_ADAPTER_SUFFIX));
+    private static IntentBinding<?> getIntentBinding(ClassLoader classLoader, Class cls) {
+        String clsName = cls.getName();
+        if (clsName.startsWith(ANDROID_PREFIX) || clsName.startsWith(JAVA_PREFIX)) {
+            if (debug) {
+                Log.d(TAG, "MISS: Reached framework class. Abandoning search.");
+            }
+            return null;
+        }
+        Class<?> adapterClass = loadClass(classLoader, clsName.concat(INTENT_ADAPTER_SUFFIX));
         if (!adapterClass.equals(Void.class)) {
             if (debug) {
-                Log.d(TAG, "Found loadable intent adapter for " + className);
+                Log.d(TAG, "Found loadable intent adapter for " + clsName);
             }
             try {
                 @SuppressWarnings("unchecked")
@@ -157,22 +174,23 @@ public final class PocketKnife {
             } catch (NoSuchMethodException e) {
                 throw new IllegalStateException(
                         "Couldn't find default constructor in the generated intent adapter for class "
-                                + className);
+                                + clsName);
             } catch (InvocationTargetException e) {
                 throw new IllegalStateException(
-                        "Could not create an instance of the intent adapter for class " + className, e);
+                        "Could not create an instance of the intent adapter for class " + clsName, e);
             } catch (InstantiationException e) {
                 throw new IllegalStateException(
-                        "Could not create an instance of the intent adapter for class " + className, e);
+                        "Could not create an instance of the intent adapter for class " + clsName, e);
             } catch (IllegalAccessException e) {
                 throw new IllegalStateException(
-                        "Could not create an instance of the intent adapter for class " + className, e);
+                        "Could not create an instance of the intent adapter for class " + clsName, e);
             }
         }
+        // Search for Parent Class adapter
         if (debug) {
-            Log.w(TAG, "Unable to find loadable intent adapter for " + className);
+            Log.d(TAG, String.format("%s not found. Trying superclass %s", clsName, cls.getSuperclass().getName()));
         }
-        return null;
+        return getIntentBinding(classLoader, cls.getSuperclass());
     }
 
     private static Class<?> loadClass(ClassLoader classLoader, String name) {
@@ -208,4 +226,4 @@ public final class PocketKnife {
             };
         }
     };
- }
+}

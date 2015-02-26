@@ -25,15 +25,15 @@ public class InheritanceTest {
         args.putInt(ChildFragment.CHILD_ARG, childArg);
         args.putInt(ParentFragment.PARENT_ARG, parentArg);
 
-        Intent intent = new Intent(Robolectric.application, ChildActivity.class);
+        Intent intent = new Intent(Robolectric.application, GrandchildActivity.class);
         int parentExtra = random.nextInt();
         int childExtra = random.nextInt();
         intent.putExtra(ParentActivity.PARENT_EXTRA, parentExtra);
         intent.putExtra(ChildActivity.CHILD_EXTRA, childExtra);
         intent.putExtra(ChildActivity.FRAGMENT_ARGS, args);
 
-        ActivityController<ChildActivity> initialController = Robolectric.buildActivity(ChildActivity.class).withIntent(intent).create();
-        ChildActivity originalActivity = initialController.start().restart().visible().get();
+        ActivityController<GrandchildActivity> initialController = Robolectric.buildActivity(GrandchildActivity.class).withIntent(intent).create();
+        GrandchildActivity originalActivity = initialController.start().restart().visible().get();
 
         assertEquals(childExtra, originalActivity.childExtra);
         assertEquals(parentExtra, originalActivity.parentExtra);
@@ -55,13 +55,13 @@ public class InheritanceTest {
         copyArgs.putInt(ChildFragment.CHILD_ARG, random.nextInt() - childArg);
         copyArgs.putInt(ParentFragment.PARENT_ARG, random.nextInt() - parentArg);
 
-        Intent copyIntent = new Intent(Robolectric.application, ChildActivity.class);
+        Intent copyIntent = new Intent(Robolectric.application, GrandchildActivity.class);
         copyIntent.putExtra(ParentActivity.PARENT_EXTRA, random.nextInt() - parentExtra);
         copyIntent.putExtra(ChildActivity.CHILD_EXTRA, random.nextInt() - childExtra);
         copyIntent.putExtra(ChildActivity.FRAGMENT_ARGS, copyArgs);
 
-        ActivityController<ChildActivity> secondaryController = Robolectric.buildActivity(ChildActivity.class).withIntent(copyIntent).create(saveState);
-        ChildActivity copyActivity = secondaryController.start().restart().visible().get();
+        ActivityController<GrandchildActivity> secondaryController = Robolectric.buildActivity(GrandchildActivity.class).withIntent(copyIntent).create(saveState);
+        GrandchildActivity copyActivity = secondaryController.start().restart().visible().get();
 
         assertEquals(originalActivity.caInt, copyActivity.caInt);
         assertEquals(originalActivity.paInt, copyActivity.paInt);

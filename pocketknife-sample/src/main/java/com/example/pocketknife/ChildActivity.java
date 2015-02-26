@@ -18,18 +18,18 @@ public class ChildActivity extends ParentActivity {
     @SaveState
     int caInt;
 
-    ChildFragment fragment;
+    GrandchildFragment fragment;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         if (savedInstanceState == null) {
-            fragment = ChildFragment.newInstance();
+            fragment = GrandchildFragment.newInstance();
             fragment.setArguments(args);
             getSupportFragmentManager().beginTransaction().replace(R.id.container, fragment).commit();
         } else {
-            fragment = (ChildFragment) getSupportFragmentManager().findFragmentById(R.id.container);
+            fragment = (GrandchildFragment) getSupportFragmentManager().findFragmentById(R.id.container);
         }
     }
 }

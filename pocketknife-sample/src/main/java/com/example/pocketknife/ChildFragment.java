@@ -13,7 +13,4 @@ public class ChildFragment extends ParentFragment {
     @SaveState
     int cfInt;
 
-    public static ChildFragment newInstance() {
-        return new ChildFragment();
-    }
 }
