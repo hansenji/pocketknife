@@ -18,5 +18,3 @@ branches:
 notifications:
   email: false
 
-before_install:
-  - sudo apt-get update
