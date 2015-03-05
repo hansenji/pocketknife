@@ -100,12 +100,14 @@ public class BundleFieldBinding implements Binding {
 
     @Override
     public boolean equals(Object obj) {
-        return obj instanceof BundleFieldBinding && name.equals(((BundleFieldBinding) obj).name);
+        return obj instanceof BundleFieldBinding
+                && this.annotationType == ((BundleFieldBinding) obj).annotationType
+                && this.name.equals(((BundleFieldBinding) obj).name);
     }
 
     @Override
     public int hashCode() {
-        return name.hashCode();
+        return (annotationType + name).hashCode();
     }
 
     private String generateKey() {

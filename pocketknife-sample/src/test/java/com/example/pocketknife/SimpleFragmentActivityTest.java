@@ -5,6 +5,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.RobolectricTestRunner;
+import org.robolectric.annotation.Config;
 import org.robolectric.util.ActivityController;
 
 import java.io.Serializable;
@@ -18,6 +19,7 @@ import static org.junit.Assert.assertNull;
 
 
 @RunWith(RobolectricTestRunner.class)
+@Config(manifest = "src/main/AndroidManifest.xml")
 public class SimpleFragmentActivityTest extends BaseTest {
 
     @Test
