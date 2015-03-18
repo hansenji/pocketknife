@@ -110,6 +110,7 @@ public class IntentAdapterGenerator {
 
     private void writeOptionalInjectExtraField(JavaWriter writer, IntentFieldBinding field) throws IOException {
         List<String> stmtArgs = new ArrayList<String>();
+        writer.beginControlFlow("if (intent.hasExtra(%s))", field.getKey());
         String stmt = "target.".concat(field.getName()).concat(" = ");
         if (field.needsToBeCast()) {
             stmt = stmt.concat("(%s) ");
@@ -123,6 +124,7 @@ public class IntentAdapterGenerator {
         }
         stmt = stmt.concat(")");
         writer.emitStatement(stmt, stmtArgs.toArray(new Object[stmtArgs.size()]));
+        writer.endControlFlow();
     }
 
     public CharSequence getFqcn() {

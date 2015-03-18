@@ -203,6 +203,7 @@ final class BundleAdapterGenerator {
 
     private void writeOptionalInjectArgumentField(JavaWriter writer, BundleFieldBinding field) throws IOException {
         List<String> stmtArgs = new ArrayList<String>();
+        writer.beginControlFlow("if (bundle.containsKey(%s))", field.getKey());
         String stmt = "target.".concat(field.getName()).concat(" = ");
         if (field.needsToBeCast()) {
             stmt = stmt.concat("(%s) ");
@@ -216,6 +217,7 @@ final class BundleAdapterGenerator {
         }
         stmt = stmt.concat(")");
         writer.emitStatement(stmt, stmtArgs.toArray(new Object[stmtArgs.size()]));
+        writer.endControlFlow();
     }
 
     public CharSequence getFqcn() {

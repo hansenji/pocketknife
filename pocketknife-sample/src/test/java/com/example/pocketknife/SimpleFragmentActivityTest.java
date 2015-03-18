@@ -212,6 +212,7 @@ public class SimpleFragmentActivityTest extends BaseTest {
         simpleActivity.replaceFragment(fragment);
 
         assertEquals(1, fragment.i);
+        assertEquals("NOT_REQUIRED", fragment.s);
     }
 
 }

@@ -36,15 +36,15 @@ public class SimpleActivityTest extends BaseTest {
         bundle.putSerializable(BUNDLE_SERIALIZABLE_ARG, UUID.randomUUID().toString());
         intent.putExtra(SimpleActivity.BUNDLE_EXTRA, bundle);
 
-        byte aByte = (byte)random.nextInt();
+        byte aByte = (byte) random.nextInt();
         intent.putExtra(SimpleActivity.BYTE_EXTRA, aByte);
         byte[] bytes = new byte[random.nextInt(10)];
         random.nextBytes(bytes);
         intent.putExtra(SimpleActivity.BYTE_ARRAY_EXTRA, bytes);
 
-        char aChar = (char)random.nextInt();
+        char aChar = (char) random.nextInt();
         intent.putExtra(SimpleActivity.CHAR_EXTRA, aChar);
-        char[] chars = {(char)random.nextInt(), (char)random.nextInt()};
+        char[] chars = {(char) random.nextInt(), (char) random.nextInt()};
         intent.putExtra(SimpleActivity.CHAR_ARRAY_EXTRA, chars);
 
         CharSequence charSequence = UUID.randomUUID().toString();
@@ -89,9 +89,9 @@ public class SimpleActivityTest extends BaseTest {
         Serializable serializable = UUID.randomUUID().toString();
         intent.putExtra(SimpleActivity.SERIALIZABLE_EXTRA, serializable);
 
-        short aShort = (short)random.nextInt();
+        short aShort = (short) random.nextInt();
         intent.putExtra(SimpleActivity.SHORT_EXTRA, aShort);
-        short[] shorts = {(short)random.nextInt(), (short)random.nextInt(), (short)random.nextInt(), (short)random.nextInt()};
+        short[] shorts = {(short) random.nextInt(), (short) random.nextInt(), (short) random.nextInt(), (short) random.nextInt()};
         intent.putExtra(SimpleActivity.SHORT_ARRAY_EXTRA, shorts);
 
         String string = UUID.randomUUID().toString();
@@ -160,7 +160,7 @@ public class SimpleActivityTest extends BaseTest {
 
         // Serializable
         String s1 = (String) serializable;
-        String s2 = (String)simpleActivity.serializable;
+        String s2 = (String) simpleActivity.serializable;
         assertEquals(s1, s2);
 
         // Shorts
@@ -192,4 +192,11 @@ public class SimpleActivityTest extends BaseTest {
         Robolectric.buildActivity(SimpleActivity.class).create().get();
     }
 
+    @Test
+    public void verifyNotRequiredExtraInjection() {
+        SimpleFragmentActivity activity = Robolectric.buildActivity(SimpleFragmentActivity.class).create().get();
+
+        assertEquals(2, activity.intExtra);
+        assertEquals("NOT_REQUIRED", activity.stringExtra);
+    }
 }

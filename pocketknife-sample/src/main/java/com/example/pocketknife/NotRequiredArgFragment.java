@@ -12,6 +12,10 @@ public class NotRequiredArgFragment extends Fragment {
     @NotRequired
     int i = 1;
 
+    @InjectArgument("STRING")
+    @NotRequired
+    String s = "NOT_REQUIRED";
+
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
