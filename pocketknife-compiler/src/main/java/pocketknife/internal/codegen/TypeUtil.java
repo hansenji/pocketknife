@@ -13,7 +13,7 @@ public class TypeUtil {
     private static final String SERIALIZABLE = "java.io.Serializable";
     private static final String PARCELABLE = "android.os.Parcelable";
     //    private static final CharSequence BINDER = "android.os.IBinder"; // Api 18+
-    private static final String BUNDLE = "android.os.Bundle";
+    public static final String BUNDLE = "android.os.Bundle";
     private static final String STRING = "java.lang.String";
     private static final String CHAR_SEQUENCE = "java.lang.CharSequence";
     private static final String INTEGER = "java.lang.Integer";
@@ -102,20 +102,56 @@ public class TypeUtil {
         intentType = element.asType();
     }
 
-    public String getIntentType(TypeMirror type) throws InvalidTypeException {
+    public String getBundleType(TypeMirror type) throws InvalidTypeException {
         // Primitive
         if (isPrimitive(type)) {
-            return getPrimitiveIntentType(type);
+            return getPrimitiveType(type);
         }
 
         // Array
-        if (isIntentArrayType(type)) {
-            return getIntentArrayType((ArrayType) type);
+        if (isArrayType(type)) {
+            return getArrayType((ArrayType) type);
         }
 
         // ArrayList
-        if (isIntentArrayListType(type)) {
-            return getIntentArrayListType((DeclaredType) type);
+        if (isArrayListType(type)) {
+            return getArrayListType((DeclaredType) type);
+        }
+
+        // Sparse ParcelableArray
+        if (isSparseParcelableArray(type)) {
+            return "SparseParcelableArray";
+        }
+
+        // Other types
+        if (types.isAssignable(type, bundleType)) {
+            return "Bundle";
+        }
+
+        if (isAggregateType(type)) {
+            return getAggregateType(type);
+        }
+
+        if (types.isAssignable(type, serializableType)) {
+            return "Serializable";
+        }
+        throw new InvalidTypeException(InvalidTypeException.Container.BUNDLE, type);
+    }
+
+    public String getIntentType(TypeMirror type) throws InvalidTypeException {
+        // Primitive
+        if (isPrimitive(type)) {
+            return getPrimitiveType(type);
+        }
+
+        // Array
+        if (isArrayType(type)) {
+            return getArrayType((ArrayType) type);
+        }
+
+        // ArrayList
+        if (isArrayListType(type)) {
+            return getArrayListType((DeclaredType) type);
         }
 
         if (types.isAssignable(type, bundleType)) {
@@ -123,25 +159,13 @@ public class TypeUtil {
         }
 
         if (isAggregateType(type)) {
-            return getAggregateIntentType(type);
+            return getAggregateType(type);
         }
 
         if (types.isAssignable(type, serializableType)) {
             return "Serializable";
         }
         throw new InvalidTypeException(InvalidTypeException.Container.INTENT, type);
-    }
-
-    private String getIntentArrayListType(DeclaredType type) throws InvalidTypeException {
-        TypeMirror arg = type.getTypeArguments().get(0);
-        if (types.isAssignable(arg, integerType)) {
-            return "IntegerArrayList";
-        }
-        try {
-            return getAggregateIntentType(arg).concat("ArrayList");
-        } catch (InvalidTypeException e) {
-            throw new InvalidTypeException("ArrayList", type);
-        }
     }
 
     private boolean isPrimitive(TypeMirror type) {
@@ -152,7 +176,7 @@ public class TypeUtil {
         return types.isAssignable(type, stringType) || types.isAssignable(type, charSequenceType) || types.isAssignable(type, parcelableType);
     }
 
-    private boolean isIntentArrayType(TypeMirror type) {
+    private boolean isArrayType(TypeMirror type) {
         if (TypeKind.ARRAY == type.getKind() && type instanceof ArrayType) {
             TypeMirror componentType = ((ArrayType) type).getComponentType();
             return isPrimitive(componentType) || isAggregateType(componentType);
@@ -160,7 +184,7 @@ public class TypeUtil {
         return false;
     }
 
-    private boolean isIntentArrayListType(TypeMirror type) {
+    private boolean isArrayListType(TypeMirror type) {
         if (types.isAssignable(types.erasure(type), arrayListType)) {
             List<? extends TypeMirror> typeArguments = ((DeclaredType) type).getTypeArguments();
             if (typeArguments.size() == 1) {
@@ -176,36 +200,17 @@ public class TypeUtil {
         return false;
     }
 
-    private String getIntentArrayType(ArrayType type) throws InvalidTypeException {
-        TypeMirror componentType = type.getComponentType();
-        if (isPrimitive(componentType)) {
-            try {
-                return getPrimitiveIntentType(componentType);
-            } catch (InvalidTypeException e) {
-                throw new InvalidTypeException("Array", type);
+    private boolean isSparseParcelableArray(TypeMirror type) {
+        if (types.isAssignable(types.erasure(type), sparseArrayType) && type instanceof DeclaredType) {
+            List<? extends TypeMirror> typeArguments = ((DeclaredType) type).getTypeArguments();
+            if (typeArguments.size() == 1) {
+                return types.isAssignable(typeArguments.get(0), parcelableType);
             }
         }
-        try {
-            return getAggregateIntentType(componentType);
-        } catch (InvalidTypeException e) {
-            throw new InvalidTypeException("Array", type);
-        }
+        return false;
     }
 
-    private String getAggregateIntentType(TypeMirror type) throws InvalidTypeException {
-        if (types.isAssignable(type, stringType)) { // String is subtype of CharSequence should go first
-            return "String";
-        }
-        if (types.isAssignable(type, charSequenceType)) {
-            return "CharSequence";
-        }
-        if (types.isAssignable(type, parcelableType)) {
-            return "Parcelable";
-        }
-        throw new InvalidTypeException(InvalidTypeException.Container.INTENT, type);
-    }
-
-    private String getPrimitiveIntentType(TypeMirror type) throws InvalidTypeException {
+    private String getPrimitiveType(TypeMirror type) throws InvalidTypeException {
         // No unboxing due to the nullable nature of boxed primitives
         switch (type.getKind()) {
             case BOOLEAN:
@@ -227,5 +232,46 @@ public class TypeUtil {
             default:
                 throw new InvalidTypeException("Primitive", type);
         }
+    }
+
+    private String getArrayType(ArrayType type) throws InvalidTypeException {
+        TypeMirror componentType = type.getComponentType();
+        if (isPrimitive(componentType)) {
+            try {
+                return getPrimitiveType(componentType).concat("Array");
+            } catch (InvalidTypeException e) {
+                throw new InvalidTypeException("Array", type);
+            }
+        }
+        try {
+            return getAggregateType(componentType).concat("Array");
+        } catch (InvalidTypeException e) {
+            throw new InvalidTypeException("Array", type);
+        }
+    }
+
+    private String getArrayListType(DeclaredType type) throws InvalidTypeException {
+        TypeMirror arg = type.getTypeArguments().get(0);
+        if (types.isAssignable(arg, integerType)) {
+            return "IntegerArrayList";
+        }
+        try {
+            return getAggregateType(arg).concat("ArrayList");
+        } catch (InvalidTypeException e) {
+            throw new InvalidTypeException("ArrayList", type);
+        }
+    }
+
+    private String getAggregateType(TypeMirror type) throws InvalidTypeException {
+        if (types.isAssignable(type, stringType)) { // String is subtype of CharSequence should go first
+            return "String";
+        }
+        if (types.isAssignable(type, charSequenceType)) {
+            return "CharSequence";
+        }
+        if (types.isAssignable(type, parcelableType)) {
+            return "Parcelable";
+        }
+        throw new InvalidTypeException(InvalidTypeException.Container.INTENT, type);
     }
 }

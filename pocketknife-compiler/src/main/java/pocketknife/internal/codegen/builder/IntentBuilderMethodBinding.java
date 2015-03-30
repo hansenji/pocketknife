@@ -1,13 +1,14 @@
 package pocketknife.internal.codegen.builder;
 
 import com.google.common.base.Strings;
+import pocketknife.internal.codegen.MethodBinding;
 
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
-public class IntentBuilderMethodBinding {
+public class IntentBuilderMethodBinding extends MethodBinding {
     private final String name;
     private final String className;
     private final String action;

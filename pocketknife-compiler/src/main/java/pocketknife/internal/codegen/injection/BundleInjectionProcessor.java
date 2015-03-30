@@ -209,7 +209,7 @@ public class BundleInjectionProcessor extends InjectionProcessor {
             }
 
             // Check Sparse Parcelable Array
-            if (isSparesParcelableArray(type)) {
+            if (isSparseParcelableArray(type)) {
                 return "SparseParcelableArray";
             }
 
@@ -308,7 +308,7 @@ public class BundleInjectionProcessor extends InjectionProcessor {
         return null;
     }
 
-    private boolean isSparesParcelableArray(TypeMirror type) {
+    private boolean isSparseParcelableArray(TypeMirror type) {
         if (types.isAssignable(types.erasure(type), typeUtil.sparseArrayType) && type instanceof DeclaredType) {
             List<? extends TypeMirror> typeArguments = ((DeclaredType) type).getTypeArguments();
             if (typeArguments.size() == 1) {

@@ -27,11 +27,11 @@ public interface Intents {
     @IntentBuilder(action = "TEST", categories = "ONE")
     Intent getSingleCategory();
 
-    @IntentBuilder(action = "TEST", categories = {"ONE", "TWO", "THREE", "FOUR"})
+    @IntentBuilder(action = "TEST", categories = {"ONE", "TWO", "THREE", "FOUR" })
     Intent getCategories();
 
     @IntentBuilder(action = "TEST",
-            categories = {"ONE", "TWO", "THREE", "FOUR"},
+            categories = {"ONE", "TWO", "THREE", "FOUR" },
             cls = SimpleActivity.class,
             data = "data",
             flags = Intent.FLAG_ACTIVITY_CLEAR_WHEN_TASK_RESET | Intent.FLAG_ACTIVITY_NEW_TASK,
@@ -45,10 +45,12 @@ public interface Intents {
     Intent getExtras(int i, int j);
 
     @IntentBuilder(action = "TEST")
+    Intent getNameCollisionExtra(int intent);
+
+    @IntentBuilder(action = "TEST")
     Intent getExtras(boolean aBoolean, boolean[] booleans, Bundle bundle, byte aByte, byte[] bytes, char aChar, char[] chars, CharSequence charSequence,
                      CharSequence[] charSequences, ArrayList<CharSequence> charSequenceArrayList, double aDouble, double[] doubles, float aFloat,
                      float[] floats, int anInt, int[] ints, ArrayList<Integer> integerArrayList, long aLong, long[] longs, MyParcelable parcelable,
                      MyParcelable[] parcelables, ArrayList<MyParcelable> parcelableArrayList, Serializable serializable, short aShort, short[] shorts,
                      String string, String[] strings, ArrayList<String> stringArrayList);
-
 }

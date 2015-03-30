@@ -1,6 +1,5 @@
 package pocketknife.internal.codegen.builder;
 
-import com.google.common.base.CaseFormat;
 import pocketknife.IntentBuilder;
 import pocketknife.internal.codegen.InvalidTypeException;
 
@@ -26,7 +25,6 @@ import static javax.lang.model.element.ElementKind.METHOD;
 public class IntentBuilderProcessor extends BuilderProcessor {
 
 
-    private static final String GENERATOR_PREFIX = "PocketKnife_";
     private static final String EXTRA_KEY_PREFIX = "EXTRA_";
     private static final String INTENT_BUILDER = IntentBuilder.class.getName();
 
@@ -114,13 +112,9 @@ public class IntentBuilderProcessor extends BuilderProcessor {
         String name = parameter.getSimpleName().toString();
         String type = parameterType.toString();
         String intentType = typeUtil.getIntentType(parameterType);
-        String key = generateKey(name);
+        String key = generateKey(EXTRA_KEY_PREFIX, name);
         boolean arrayList = isIntentArrayList(intentType);
         return new IntentFieldBinding(name, type, intentType, key, arrayList);
-    }
-
-    private String generateKey(String name) {
-        return EXTRA_KEY_PREFIX + CaseFormat.LOWER_CAMEL.to(CaseFormat.UPPER_UNDERSCORE, name);
     }
 
     private boolean isIntentArrayList(String intentType) {

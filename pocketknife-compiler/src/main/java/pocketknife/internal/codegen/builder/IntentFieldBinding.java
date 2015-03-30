@@ -1,6 +1,8 @@
 package pocketknife.internal.codegen.builder;
 
-public class IntentFieldBinding {
+import pocketknife.internal.codegen.FieldBinding;
+
+public class IntentFieldBinding extends FieldBinding {
     private String name;
     private String type;
     private String intentType;

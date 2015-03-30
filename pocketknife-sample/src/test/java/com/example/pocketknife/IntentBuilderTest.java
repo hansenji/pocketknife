@@ -122,6 +122,9 @@ public class IntentBuilderTest extends BaseTest{
         assertEquals("SAME TYPE I", i, intent.getIntExtra(PocketKnife_Intents.EXTRA_I, 0));
         assertEquals("SAME TYPE J", j, intent.getIntExtra(PocketKnife_Intents.EXTRA_J, 0));
 
+        intent = intents.getNameCollisionExtra(i);
+        assertEquals("NAME COLLISION", i, intent.getIntExtra(PocketKnife_Intents.EXTRA_INTENT, 0));
+
         boolean aBoolean = random.nextBoolean();
         boolean[] booleans = {random.nextBoolean(), random.nextBoolean(), random.nextBoolean(), random.nextBoolean(), random.nextBoolean()};
         Bundle bundle = new Bundle();

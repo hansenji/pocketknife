@@ -2,10 +2,13 @@ package pocketknife.internal.codegen;
 
 import com.google.common.collect.ImmutableSet;
 import com.squareup.javawriter.JavaWriter;
+import pocketknife.BundleBuilder;
 import pocketknife.InjectArgument;
 import pocketknife.InjectExtra;
 import pocketknife.IntentBuilder;
 import pocketknife.SaveState;
+import pocketknife.internal.codegen.builder.BundleBuilderGenerator;
+import pocketknife.internal.codegen.builder.BundleBuilderProcessor;
 import pocketknife.internal.codegen.builder.IntentBuilderGenerator;
 import pocketknife.internal.codegen.builder.IntentBuilderProcessor;
 import pocketknife.internal.codegen.injection.BundleInjectionAdapterGenerator;
@@ -41,6 +44,7 @@ public class PocketKnifeProcessor extends AbstractProcessor {
     private BundleInjectionProcessor bundleInjectionProcessor;
     private IntentInjectionProcessor intentInjectionProcessor;
     private IntentBuilderProcessor intentBuilderProcessor;
+    private BundleBuilderProcessor bundleBuilderProcessor;
 
     @Override
     public SourceVersion getSupportedSourceVersion() {
@@ -55,6 +59,7 @@ public class PocketKnifeProcessor extends AbstractProcessor {
         Elements elements = processingEnv.getElementUtils();
         Types types = processingEnv.getTypeUtils();
         bundleInjectionProcessor = new BundleInjectionProcessor(messager, elements, types);
+        bundleBuilderProcessor = new BundleBuilderProcessor(messager, elements, types);
         intentInjectionProcessor = new IntentInjectionProcessor(messager, elements, types);
         intentBuilderProcessor = new IntentBuilderProcessor(messager, elements, types);
     }
@@ -65,7 +70,9 @@ public class PocketKnifeProcessor extends AbstractProcessor {
                 SaveState.class.getCanonicalName(),
                 InjectArgument.class.getCanonicalName(),
                 InjectExtra.class.getCanonicalName(),
-                IntentBuilder.class.getCanonicalName());
+                IntentBuilder.class.getCanonicalName(),
+                BundleBuilder.class.getCanonicalName()
+        );
     }
 
     @Override
@@ -75,12 +82,12 @@ public class PocketKnifeProcessor extends AbstractProcessor {
 
         for (Map.Entry<TypeElement, BundleInjectionAdapterGenerator> entry : bundleInjectionMap.entrySet()) {
             TypeElement typeElement = entry.getKey();
-            BundleInjectionAdapterGenerator bundleInjectionAdapterGenerator = entry.getValue();
+            BundleInjectionAdapterGenerator generator = entry.getValue();
             JavaWriter javaWriter = null;
             try {
-                JavaFileObject jfo = filer.createSourceFile(bundleInjectionAdapterGenerator.getFqcn(), typeElement);
+                JavaFileObject jfo = filer.createSourceFile(generator.getFqcn(), typeElement);
                 javaWriter = new JavaWriter(jfo.openWriter());
-                bundleInjectionAdapterGenerator.generate(javaWriter);
+                generator.generate(javaWriter);
             } catch (Exception e) {
                 error(typeElement, "Unable to write adapter for type %s: %s", typeElement, e.getMessage());
             } finally {
@@ -93,14 +100,34 @@ public class PocketKnifeProcessor extends AbstractProcessor {
 
         for (Map.Entry<TypeElement, IntentInjectionAdapterGenerator> entry : intentInjectionMap.entrySet()) {
             TypeElement typeElement = entry.getKey();
-            IntentInjectionAdapterGenerator intentInjectionAdapterGenerator = entry.getValue();
+            IntentInjectionAdapterGenerator generator = entry.getValue();
             JavaWriter javaWriter = null;
             try {
-                JavaFileObject jfo = filer.createSourceFile(intentInjectionAdapterGenerator.getFqcn(), typeElement);
+                JavaFileObject jfo = filer.createSourceFile(generator.getFqcn(), typeElement);
                 javaWriter = new JavaWriter(jfo.openWriter());
-                intentInjectionAdapterGenerator.generate(javaWriter);
+                generator.generate(javaWriter);
             } catch (Exception e) {
                 error(typeElement, "Unable to write adapter for type %s: %s", typeElement, e.getMessage());
+            } finally {
+                close(javaWriter);
+            }
+        }
+
+        // Bundle Builder
+        Map<TypeElement, BundleBuilderGenerator> bundleBuilderMap = bundleBuilderProcessor.findAndParseTargets(roundEnv);
+
+        for (Map.Entry<TypeElement, BundleBuilderGenerator> entry : bundleBuilderMap.entrySet()) {
+            TypeElement typeElement = entry.getKey();
+            BundleBuilderGenerator generator = entry.getValue();
+            JavaWriter javaWriter = null;
+            try {
+                JavaFileObject jfo = filer.createSourceFile(generator.getFqcn());
+                javaWriter = new JavaWriter(jfo.openWriter());
+                generator.generate(javaWriter);
+            } catch (Exception e) {
+                StringWriter stackTrace = new StringWriter();
+                e.printStackTrace(new PrintWriter(stackTrace));
+                error(typeElement, "Unable to write bundle builder for type %s: %s", typeElement, stackTrace.toString());
             } finally {
                 close(javaWriter);
             }
@@ -111,16 +138,16 @@ public class PocketKnifeProcessor extends AbstractProcessor {
 
         for (Map.Entry<TypeElement, IntentBuilderGenerator> entry : intentBuilderMap.entrySet()) {
             TypeElement typeElement = entry.getKey();
-            IntentBuilderGenerator intentBuilderGenerator = entry.getValue();
+            IntentBuilderGenerator generator = entry.getValue();
             JavaWriter javaWriter = null;
             try {
-                JavaFileObject jfo = filer.createSourceFile(intentBuilderGenerator.getFqcn(), typeElement);
+                JavaFileObject jfo = filer.createSourceFile(generator.getFqcn(), typeElement);
                 javaWriter = new JavaWriter(jfo.openWriter());
-                intentBuilderGenerator.generate(javaWriter);
+                generator.generate(javaWriter);
             } catch (Exception e) {
                 StringWriter stackTrace = new StringWriter();
                 e.printStackTrace(new PrintWriter(stackTrace));
-                error(typeElement, "Unable to write adapter for type %s: %s", typeElement, stackTrace.toString());
+                error(typeElement, "Unable to write intent builder for type %s: %s", typeElement, stackTrace.toString());
             } finally {
                 close(javaWriter);
             }

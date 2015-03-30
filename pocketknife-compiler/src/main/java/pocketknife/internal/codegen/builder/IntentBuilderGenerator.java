@@ -2,26 +2,25 @@ package pocketknife.internal.codegen.builder;
 
 import com.squareup.javawriter.JavaWriter;
 import com.squareup.javawriter.StringLiteral;
+import pocketknife.internal.codegen.BaseGenerator;
 import pocketknife.internal.codegen.TypeUtil;
 
 import javax.annotation.Generated;
 import java.io.IOException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.EnumSet;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Locale;
-import java.util.Map;
 import java.util.Set;
 
 import static javax.lang.model.element.Modifier.FINAL;
 import static javax.lang.model.element.Modifier.PUBLIC;
 import static javax.lang.model.element.Modifier.STATIC;
 
-public class IntentBuilderGenerator {
+public class IntentBuilderGenerator extends BaseGenerator {
+
+    private static final String RETURN_VAR_NAME_ROOT = "intent";
+
     private final String classPackage;
     private final String className;
     private final String interfaceName;
@@ -31,7 +30,6 @@ public class IntentBuilderGenerator {
         this.classPackage = classPackage;
         this.className = className;
         this.interfaceName = interfaceName;
-
     }
 
     public CharSequence getFqcn() {
@@ -42,8 +40,9 @@ public class IntentBuilderGenerator {
         writer.emitPackage(classPackage);
         writer.emitImports(TypeUtil.INTENT, TypeUtil.CONTEXT, TypeUtil.BUILD, TypeUtil.URI);
         writer.emitEmptyLine();
-        writer.emitAnnotation(Generated.class, getGeneratedMap());
+        writer.emitAnnotation(Generated.class, getGeneratedMap(IntentBuilderGenerator.class));
         writer.beginType(className, "class", EnumSet.of(PUBLIC), null, interfaceName);
+        writer.emitEmptyLine();
         writeKeys(writer);
         writer.emitField("Context", "context");
         writer.emitEmptyLine();
@@ -55,13 +54,6 @@ public class IntentBuilderGenerator {
         writeMethods(writer);
 
         writer.endType();
-    }
-
-    private Map<String, Object> getGeneratedMap() {
-        Map<String, Object> map = new HashMap<String, Object>();
-        map.put("value", StringLiteral.forValue(IntentBuilderGenerator.class.getName()));
-        map.put("date", StringLiteral.forValue(new SimpleDateFormat("yyyy-MM-dd'T'HH:mmZ", Locale.getDefault()).format(new Date())));
-        return map;
     }
 
     private void writeKeys(JavaWriter writer) throws IOException {
@@ -87,53 +79,51 @@ public class IntentBuilderGenerator {
         writer.emitAnnotation(Override.class);
         writer.beginMethod("Intent", method.getName(), EnumSet.of(PUBLIC), method.getWriterParameters(), null);
 
-        writer.emitStatement("Intent intent = new Intent()");
+        String returnVarName = getReturnVarName(RETURN_VAR_NAME_ROOT, method);
+
+        writer.emitStatement("Intent %s = new Intent()", returnVarName);
         if (method.getAction() != null) {
-            writer.emitStatement("intent.setAction(%s)", StringLiteral.forValue(method.getAction()));
+            writer.emitStatement("%s.setAction(%s)", returnVarName, StringLiteral.forValue(method.getAction()));
         }
         if (method.getData() != null && method.getType() != null) {
             writer.beginControlFlow("if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN)");
-            writer.emitStatement("intent.setDataAndTypeAndNormalize(Uri.parse(%s), %s)", StringLiteral.forValue(method.getData()),
+            writer.emitStatement("%s.setDataAndTypeAndNormalize(Uri.parse(%s), %s)", returnVarName, StringLiteral.forValue(method.getData()),
                     StringLiteral.forValue(method.getType()));
             writer.nextControlFlow("else");
-            writer.emitStatement("intent.setDataAndType(Uri.parse(%s), %s)", StringLiteral.forValue(method.getData()),
+            writer.emitStatement("%s.setDataAndType(Uri.parse(%s), %s)", returnVarName, StringLiteral.forValue(method.getData()),
                     StringLiteral.forValue(method.getType()));
             writer.endControlFlow();
         } else if (method.getData() != null) {
             writer.beginControlFlow("if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN)");
-            writer.emitStatement("intent.setDataAndNormalize(Uri.parse(%s))", StringLiteral.forValue(method.getData()));
+            writer.emitStatement("%s.setDataAndNormalize(Uri.parse(%s))", returnVarName, StringLiteral.forValue(method.getData()));
             writer.nextControlFlow("else");
-            writer.emitStatement("intent.setData(Uri.parse(%s))", StringLiteral.forValue(method.getData()));
+            writer.emitStatement("%s.setData(Uri.parse(%s))", returnVarName, StringLiteral.forValue(method.getData()));
             writer.endControlFlow();
         } else if (method.getType() != null) {
             writer.beginControlFlow("if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN)");
-            writer.emitStatement("intent.setTypeAndNormalize(%s)", StringLiteral.forValue(method.getType()));
+            writer.emitStatement("%s.setTypeAndNormalize(%s)", returnVarName, StringLiteral.forValue(method.getType()));
             writer.nextControlFlow("else");
-            writer.emitStatement("intent.setType(%s)", StringLiteral.forValue(method.getType()));
+            writer.emitStatement("%s.setType(%s)", returnVarName, StringLiteral.forValue(method.getType()));
             writer.endControlFlow();
         }
         if (method.getClassName() != null) {
-            writer.emitStatement("intent.setClass(context, %s.class)", method.getClassName());
+            writer.emitStatement("%s.setClass(context, %s.class)", returnVarName, method.getClassName());
         }
-        writer.emitStatement("intent.setFlags(%s)", method.getFlags());
+        writer.emitStatement("%s.setFlags(%s)", returnVarName, method.getFlags());
         for (String category : method.getCategories()) {
-            writer.emitStatement("intent.addCategory(%s)", StringLiteral.forValue(category));
+            writer.emitStatement("%s.addCategory(%s)", returnVarName, StringLiteral.forValue(category));
         }
 
         for (IntentFieldBinding fieldBinding : method.getFields()) {
-            writeFieldBinding(fieldBinding, writer);
+            if (fieldBinding.isArrayList()) {
+                writer.emitStatement("%s.put%sExtra(%s, %s)", returnVarName, fieldBinding.getIntentType(), fieldBinding.getKey(), fieldBinding.getName());
+            } else {
+                writer.emitStatement("%s.putExtra(%s, %s)", returnVarName, fieldBinding.getKey(), fieldBinding.getName());
+            }
         }
 
-        writer.emitStatement("return intent");
+        writer.emitStatement("return %s", returnVarName);
         writer.endMethod();
-    }
-
-    private void writeFieldBinding(IntentFieldBinding fieldBinding, JavaWriter writer) throws IOException {
-        if (fieldBinding.isArrayList()) {
-            writer.emitStatement("intent.put%sExtra(%s, %s)", fieldBinding.getIntentType(), fieldBinding.getKey(), fieldBinding.getName());
-        } else {
-            writer.emitStatement("intent.putExtra(%s, %s)", fieldBinding.getKey(), fieldBinding.getName());
-        }
     }
 
     public void addMethod(IntentBuilderMethodBinding methodBinding) {
