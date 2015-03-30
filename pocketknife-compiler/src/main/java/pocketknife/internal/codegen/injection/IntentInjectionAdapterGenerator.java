@@ -1,4 +1,4 @@
-package pocketknife.internal.codegen;
+package pocketknife.internal.codegen.injection;
 
 import com.squareup.javawriter.JavaWriter;
 import pocketknife.internal.IntentBinding;
@@ -16,27 +16,27 @@ import static javax.lang.model.element.Modifier.PUBLIC;
 import static javax.lang.model.element.Modifier.STATIC;
 import static pocketknife.internal.GeneratedAdapters.INJECT_EXTRAS_METHOD;
 
-public class IntentAdapterGenerator {
+public class IntentInjectionAdapterGenerator {
 
-    private final Set<IntentFieldBinding> fields = new LinkedHashSet<IntentFieldBinding>();
+    private final Set<IntentInjectionFieldBinding> fields = new LinkedHashSet<IntentInjectionFieldBinding>();
     private final String classPackage;
     private final String className;
     private final String targetType;
     private String parentAdapter;
 
 
-    public IntentAdapterGenerator(String classPackage, String className, String targetType) {
+    public IntentInjectionAdapterGenerator(String classPackage, String className, String targetType) {
         this.classPackage = classPackage;
         this.className = className;
         this.targetType = targetType;
     }
 
-    public void addField(IntentFieldBinding binding) {
+    public void addField(IntentInjectionFieldBinding binding) {
         fields.add(binding);
     }
 
     public void generate(JavaWriter writer) throws IOException {
-        writer.emitSingleLineComment(AdapterJavadoc.GENERATED_BY_POCKETKNIFE);
+        writer.emitSingleLineComment(InjectionAdapterJavadoc.GENERATED_BY_POCKETKNIFE);
         writer.emitPackage(classPackage);
         writer.emitImports("android.content.Intent");
         writer.emitEmptyLine();
@@ -56,14 +56,14 @@ public class IntentAdapterGenerator {
     }
 
     private void writeIntentKeys(JavaWriter writer) throws IOException {
-        writer.emitSingleLineComment(AdapterJavadoc.INTENT_KEYS);
-        for (IntentFieldBinding field : fields) {
+        writer.emitSingleLineComment(InjectionAdapterJavadoc.INTENT_KEYS);
+        for (IntentInjectionFieldBinding field : fields) {
             writer.emitField(String.class.getCanonicalName(), field.getKey(), EnumSet.of(PRIVATE, STATIC, FINAL), JavaWriter.stringLiteral(field.getKey()));
         }
     }
 
     private void writeInjectExtras(JavaWriter writer) throws IOException {
-        writer.emitJavadoc(AdapterJavadoc.INJECT_EXTRAS_METHOD, targetType);
+        writer.emitJavadoc(InjectionAdapterJavadoc.INJECT_EXTRAS_METHOD, targetType);
         writer.beginMethod("void", INJECT_EXTRAS_METHOD, EnumSet.of(PUBLIC), "T", "target", "Intent", "intent");
         if (parentAdapter != null) {
             writer.emitStatement("super.%s(%s, %s)", INJECT_EXTRAS_METHOD, "target", "intent");
@@ -71,13 +71,13 @@ public class IntentAdapterGenerator {
         writer.beginControlFlow("if (intent == null)");
         writer.emitStatement("throw new IllegalStateException(\"Intent is null\")");
         writer.endControlFlow();
-        for (IntentFieldBinding field : fields) {
+        for (IntentInjectionFieldBinding field : fields) {
             writeInjectExtraField(writer, field);
         }
         writer.endMethod();
     }
 
-    private void writeInjectExtraField(JavaWriter writer, IntentFieldBinding field) throws IOException {
+    private void writeInjectExtraField(JavaWriter writer, IntentInjectionFieldBinding field) throws IOException {
         writer.emitSingleLineComment(field.getDescription());
         if (field.isRequired()) {
             writeRequiredInjectExtraField(writer, field);
@@ -86,7 +86,7 @@ public class IntentAdapterGenerator {
         }
     }
 
-    private void writeRequiredInjectExtraField(JavaWriter writer, IntentFieldBinding field) throws IOException {
+    private void writeRequiredInjectExtraField(JavaWriter writer, IntentInjectionFieldBinding field) throws IOException {
         List<String> stmtArgs = new ArrayList<String>();
         writer.beginControlFlow("if (intent.hasExtra(%s))", field.getKey());
         String stmt = "target.".concat(field.getName()).concat(" = ");
@@ -108,7 +108,7 @@ public class IntentAdapterGenerator {
         writer.endControlFlow();
     }
 
-    private void writeOptionalInjectExtraField(JavaWriter writer, IntentFieldBinding field) throws IOException {
+    private void writeOptionalInjectExtraField(JavaWriter writer, IntentInjectionFieldBinding field) throws IOException {
         List<String> stmtArgs = new ArrayList<String>();
         writer.beginControlFlow("if (intent.hasExtra(%s))", field.getKey());
         String stmt = "target.".concat(field.getName()).concat(" = ");

@@ -1,4 +1,6 @@
-package pocketknife.internal.codegen;
+package pocketknife.internal.codegen.injection;
+
+import pocketknife.internal.codegen.TypeUtil;
 
 import javax.annotation.processing.Messager;
 import javax.lang.model.element.Element;
@@ -20,18 +22,18 @@ import static javax.tools.Diagnostic.Kind.ERROR;
 import static pocketknife.internal.GeneratedAdapters.ANDROID_PREFIX;
 import static pocketknife.internal.GeneratedAdapters.JAVA_PREFIX;
 
-public abstract class PKProcessor {
+public abstract class InjectionProcessor {
 
     protected Messager messager;
     protected Elements elements;
     protected Types types;
     protected TypeUtil typeUtil;
 
-    public PKProcessor(Messager messager, Elements elements, Types types) {
+    public InjectionProcessor(Messager messager, Elements elements, Types types) {
         this.messager = messager;
         this.elements = elements;
         this.types = types;
-        this.typeUtil = TypeUtil.getInstance(elements);
+        this.typeUtil = TypeUtil.getInstance(elements, types);
     }
 
     protected String getPackageName(TypeElement type) {

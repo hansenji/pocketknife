@@ -1,8 +1,9 @@
-package pocketknife.internal.codegen;
+package pocketknife.internal.codegen.injection;
 
 import android.os.Build;
 import pocketknife.InjectExtra;
 import pocketknife.NotRequired;
+import pocketknife.internal.codegen.InvalidTypeException;
 
 import javax.annotation.processing.Messager;
 import javax.annotation.processing.RoundEnvironment;
@@ -25,14 +26,14 @@ import java.util.Set;
 
 import static pocketknife.internal.GeneratedAdapters.INTENT_ADAPTER_SUFFIX;
 
-public class IntentProcessor extends PKProcessor {
+public class IntentInjectionProcessor extends InjectionProcessor {
 
-    public IntentProcessor(Messager messager, Elements elements, Types types) {
+    public IntentInjectionProcessor(Messager messager, Elements elements, Types types) {
         super(messager, elements, types);
     }
 
-    public Map<TypeElement, IntentAdapterGenerator> findAndParseTargets(RoundEnvironment env) {
-        Map<TypeElement, IntentAdapterGenerator> targetClassMap = new LinkedHashMap<TypeElement, IntentAdapterGenerator>();
+    public Map<TypeElement, IntentInjectionAdapterGenerator> findAndParseTargets(RoundEnvironment env) {
+        Map<TypeElement, IntentInjectionAdapterGenerator> targetClassMap = new LinkedHashMap<TypeElement, IntentInjectionAdapterGenerator>();
         Set<String> erasedTargetNames = new LinkedHashSet<String>();
 
         // Process each @InjectExtra
@@ -47,7 +48,7 @@ public class IntentProcessor extends PKProcessor {
         }
 
         // Try to find a parent adapter for each adapter
-        for (Map.Entry<TypeElement, IntentAdapterGenerator> entry : targetClassMap.entrySet()) {
+        for (Map.Entry<TypeElement, IntentInjectionAdapterGenerator> entry : targetClassMap.entrySet()) {
             String parentClassFqcn = findParentFqcn(entry.getKey(), erasedTargetNames);
             if (parentClassFqcn != null) {
                 entry.getValue().setParentAdapter(parentClassFqcn + INTENT_ADAPTER_SUFFIX);
@@ -57,7 +58,7 @@ public class IntentProcessor extends PKProcessor {
         return targetClassMap;
     }
 
-    private void parseInjectExtra(Element element, Map<TypeElement, IntentAdapterGenerator> targetClassMap, Set<String> erasedTargetNames) {
+    private void parseInjectExtra(Element element, Map<TypeElement, IntentInjectionAdapterGenerator> targetClassMap, Set<String> erasedTargetNames) {
         TypeElement enclosingElement = (TypeElement) element.getEnclosingElement();
 
         // Verify that the target has all the appropriate information for type
@@ -88,9 +89,10 @@ public class IntentProcessor extends PKProcessor {
         boolean required = notRequired == null;
         boolean hasDefault = hasDefault(elementType);
 
-        IntentAdapterGenerator intentAdapterGenerator = getOrCreateTargetClass(targetClassMap, enclosingElement);
-        IntentFieldBinding binding = new IntentFieldBinding(name, elementType.toString(), intentType, key, needsToBeCast, hasDefault, required);
-        intentAdapterGenerator.addField(binding);
+        IntentInjectionAdapterGenerator intentInjectionAdapterGenerator = getOrCreateTargetClass(targetClassMap, enclosingElement);
+        IntentInjectionFieldBinding binding = new IntentInjectionFieldBinding(name, elementType.toString(), intentType, key, needsToBeCast, hasDefault,
+                required);
+        intentInjectionAdapterGenerator.addField(binding);
 
         // Add the type-erased version to the valid targets set.
         erasedTargetNames.add(enclosingElement.toString());
@@ -288,16 +290,17 @@ public class IntentProcessor extends PKProcessor {
         return type.getKind().isPrimitive();
     }
 
-    private IntentAdapterGenerator getOrCreateTargetClass(Map<TypeElement, IntentAdapterGenerator> targetClassMap, TypeElement enclosingElement) {
-        IntentAdapterGenerator intentAdapterGenerator = targetClassMap.get(enclosingElement);
-        if (intentAdapterGenerator == null) {
+    private IntentInjectionAdapterGenerator getOrCreateTargetClass(Map<TypeElement, IntentInjectionAdapterGenerator> targetClassMap,
+                                                                   TypeElement enclosingElement) {
+        IntentInjectionAdapterGenerator intentInjectionAdapterGenerator = targetClassMap.get(enclosingElement);
+        if (intentInjectionAdapterGenerator == null) {
             String targetType = enclosingElement.getQualifiedName().toString();
             String classPackage = getPackageName(enclosingElement);
             String className = getClassName(enclosingElement, classPackage) + INTENT_ADAPTER_SUFFIX;
 
-            intentAdapterGenerator = new IntentAdapterGenerator(classPackage, className, targetType);
-            targetClassMap.put(enclosingElement, intentAdapterGenerator);
+            intentInjectionAdapterGenerator = new IntentInjectionAdapterGenerator(classPackage, className, targetType);
+            targetClassMap.put(enclosingElement, intentInjectionAdapterGenerator);
         }
-        return intentAdapterGenerator;
+        return intentInjectionAdapterGenerator;
     }
 }

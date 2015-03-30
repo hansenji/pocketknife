@@ -1,7 +1,7 @@
-package pocketknife.internal.codegen;
+package pocketknife.internal.codegen.injection;
 
 
-interface Binding {
+public interface FieldBinding {
     /** A description of the binding in human readable form (e.g., "field 'foo'"). */
     String getDescription();
 }

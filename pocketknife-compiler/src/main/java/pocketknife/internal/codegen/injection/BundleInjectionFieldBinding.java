@@ -1,10 +1,10 @@
-package pocketknife.internal.codegen;
+package pocketknife.internal.codegen.injection;
 
 import com.google.common.base.CaseFormat;
 
 import static pocketknife.internal.GeneratedAdapters.BUNDLE_KEY_PREFIX;
 
-public class BundleFieldBinding implements Binding {
+public class BundleInjectionFieldBinding implements FieldBinding {
 
     public enum AnnotationType {
         ARGUMENT, SAVE_STATE
@@ -29,7 +29,7 @@ public class BundleFieldBinding implements Binding {
      * @param canHaveDefault can type have a default value
      * @param required is key required to be present in the bundle
      */
-    public BundleFieldBinding(String name, String type, String bundleType, boolean needsToBeCast, boolean canHaveDefault, boolean required) {
+    public BundleInjectionFieldBinding(String name, String type, String bundleType, boolean needsToBeCast, boolean canHaveDefault, boolean required) {
         this.annotationType = AnnotationType.SAVE_STATE;
         this.name = name;
         this.type = type;
@@ -50,7 +50,8 @@ public class BundleFieldBinding implements Binding {
      * @param canHaveDefault can type have a default value
      * @param required is key required to be present in the bundle
      */
-    public BundleFieldBinding(String name, String type, String bundleType, String key, boolean needsToBeCast, boolean canHaveDefault, boolean required) {
+    public BundleInjectionFieldBinding(String name, String type, String bundleType, String key, boolean needsToBeCast, boolean canHaveDefault,
+                                       boolean required) {
         this.annotationType = AnnotationType.ARGUMENT;
         this.name = name;
         this.type = type;
@@ -100,9 +101,9 @@ public class BundleFieldBinding implements Binding {
 
     @Override
     public boolean equals(Object obj) {
-        return obj instanceof BundleFieldBinding
-                && this.annotationType == ((BundleFieldBinding) obj).annotationType
-                && this.name.equals(((BundleFieldBinding) obj).name);
+        return obj instanceof BundleInjectionFieldBinding
+                && this.annotationType == ((BundleInjectionFieldBinding) obj).annotationType
+                && this.name.equals(((BundleInjectionFieldBinding) obj).name);
     }
 
     @Override

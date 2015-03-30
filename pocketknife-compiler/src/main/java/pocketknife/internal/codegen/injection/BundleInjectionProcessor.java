@@ -1,9 +1,10 @@
-package pocketknife.internal.codegen;
+package pocketknife.internal.codegen.injection;
 
 import android.os.Build;
 import pocketknife.InjectArgument;
 import pocketknife.NotRequired;
 import pocketknife.SaveState;
+import pocketknife.internal.codegen.InvalidTypeException;
 
 import javax.annotation.processing.Messager;
 import javax.annotation.processing.RoundEnvironment;
@@ -26,14 +27,14 @@ import java.util.Set;
 
 import static pocketknife.internal.GeneratedAdapters.BUNDLE_ADAPTER_SUFFIX;
 
-public class BundleProcessor extends PKProcessor {
+public class BundleInjectionProcessor extends InjectionProcessor {
 
-    public BundleProcessor(Messager messager, Elements elements, Types types) {
+    public BundleInjectionProcessor(Messager messager, Elements elements, Types types) {
         super(messager, elements, types);
     }
 
-    public Map<TypeElement, BundleAdapterGenerator> findAndParseTargets(RoundEnvironment env) {
-        Map<TypeElement, BundleAdapterGenerator> targetClassMap = new LinkedHashMap<TypeElement, BundleAdapterGenerator>();
+    public Map<TypeElement, BundleInjectionAdapterGenerator> findAndParseTargets(RoundEnvironment env) {
+        Map<TypeElement, BundleInjectionAdapterGenerator> targetClassMap = new LinkedHashMap<TypeElement, BundleInjectionAdapterGenerator>();
         Set<String> erasedTargetNames = new LinkedHashSet<String>(); // used for parent lookup.
 
         // Process each @SaveState
@@ -59,7 +60,7 @@ public class BundleProcessor extends PKProcessor {
         }
 
         // Try to find a parent adapter for each adapter
-        for (Map.Entry<TypeElement, BundleAdapterGenerator> entry : targetClassMap.entrySet()) {
+        for (Map.Entry<TypeElement, BundleInjectionAdapterGenerator> entry : targetClassMap.entrySet()) {
             String parentClassFqcn = findParentFqcn(entry.getKey(), erasedTargetNames);
             if (parentClassFqcn != null) {
                 entry.getValue().setParentAdapter(parentClassFqcn + BUNDLE_ADAPTER_SUFFIX);
@@ -69,7 +70,7 @@ public class BundleProcessor extends PKProcessor {
         return targetClassMap;
     }
 
-    private void parseSaveState(Element element, Map<TypeElement, BundleAdapterGenerator> targetClassMap, Set<String> erasedTargetNames)
+    private void parseSaveState(Element element, Map<TypeElement, BundleInjectionAdapterGenerator> targetClassMap, Set<String> erasedTargetNames)
             throws ClassNotFoundException {
         TypeElement enclosingElement = (TypeElement) element.getEnclosingElement();
 
@@ -103,15 +104,16 @@ public class BundleProcessor extends PKProcessor {
         }
         boolean canHaveDefault = !required && canHaveDefault(elementType, minSdk);
 
-        BundleAdapterGenerator bundleAdapterGenerator = getOrCreateTargetClass(targetClassMap, enclosingElement);
-        BundleFieldBinding binding = new BundleFieldBinding(name, elementType.toString(), bundleType, needsToBeCast, canHaveDefault, required);
-        bundleAdapterGenerator.addField(binding);
+        BundleInjectionAdapterGenerator bundleInjectionAdapterGenerator = getOrCreateTargetClass(targetClassMap, enclosingElement);
+        BundleInjectionFieldBinding binding = new BundleInjectionFieldBinding(name, elementType.toString(), bundleType, needsToBeCast, canHaveDefault,
+                required);
+        bundleInjectionAdapterGenerator.addField(binding);
 
         // Add the type-erased version to the valid targets set.
         erasedTargetNames.add(enclosingElement.toString());
     }
 
-    private void parseInjectAnnotation(Element element, Map<TypeElement, BundleAdapterGenerator> targetClassMap, Set<String> erasedTargetNames) {
+    private void parseInjectAnnotation(Element element, Map<TypeElement, BundleInjectionAdapterGenerator> targetClassMap, Set<String> erasedTargetNames) {
         TypeElement enclosingElement = (TypeElement) element.getEnclosingElement();
 
         // Verify that the target has all the appropriate information for type
@@ -146,10 +148,11 @@ public class BundleProcessor extends PKProcessor {
         }
         boolean canHaveDefault = !required && canHaveDefault(elementType, minSdk);
 
-        BundleAdapterGenerator bundleAdapterGenerator = getOrCreateTargetClass(targetClassMap, enclosingElement);
-        BundleFieldBinding binding = new BundleFieldBinding(name, elementType.toString(), bundleType, key, needsToBeCast, canHaveDefault, required);
-        bundleAdapterGenerator.orRequired(required);
-        bundleAdapterGenerator.addField(binding);
+        BundleInjectionAdapterGenerator bundleInjectionAdapterGenerator = getOrCreateTargetClass(targetClassMap, enclosingElement);
+        BundleInjectionFieldBinding binding = new BundleInjectionFieldBinding(name, elementType.toString(), bundleType, key, needsToBeCast, canHaveDefault,
+                required);
+        bundleInjectionAdapterGenerator.orRequired(required);
+        bundleInjectionAdapterGenerator.addField(binding);
 
         // Add the type-erased version to the valid targets set.
         erasedTargetNames.add(enclosingElement.toString());
@@ -390,17 +393,18 @@ public class BundleProcessor extends PKProcessor {
         return null;
     }
 
-    private BundleAdapterGenerator getOrCreateTargetClass(Map<TypeElement, BundleAdapterGenerator> targetClassMap, TypeElement enclosingElement) {
-        BundleAdapterGenerator bundleAdapterGenerator = targetClassMap.get(enclosingElement);
-        if (bundleAdapterGenerator == null) {
+    private BundleInjectionAdapterGenerator getOrCreateTargetClass(Map<TypeElement, BundleInjectionAdapterGenerator> targetClassMap,
+                                                                   TypeElement enclosingElement) {
+        BundleInjectionAdapterGenerator bundleInjectionAdapterGenerator = targetClassMap.get(enclosingElement);
+        if (bundleInjectionAdapterGenerator == null) {
             String targetType = enclosingElement.getQualifiedName().toString();
             String classPackage = getPackageName(enclosingElement);
             String className = getClassName(enclosingElement, classPackage) + BUNDLE_ADAPTER_SUFFIX;
 
-            bundleAdapterGenerator = new BundleAdapterGenerator(classPackage, className, targetType);
-            targetClassMap.put(enclosingElement, bundleAdapterGenerator);
+            bundleInjectionAdapterGenerator = new BundleInjectionAdapterGenerator(classPackage, className, targetType);
+            targetClassMap.put(enclosingElement, bundleInjectionAdapterGenerator);
         }
-        return bundleAdapterGenerator;
+        return bundleInjectionAdapterGenerator;
     }
 
 }

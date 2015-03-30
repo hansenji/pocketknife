@@ -1,6 +1,6 @@
-package pocketknife.internal.codegen;
+package pocketknife.internal.codegen.injection;
 
-public class IntentFieldBinding implements Binding {
+public class IntentInjectionFieldBinding implements FieldBinding {
 
     private final boolean required;
     private final String key;
@@ -10,7 +10,7 @@ public class IntentFieldBinding implements Binding {
     private final String type;
     private final String intentType;
 
-    public IntentFieldBinding(String name, String type, String intentType, String key, Boolean needsToBeCast, boolean hasDefault, boolean required) {
+    public IntentInjectionFieldBinding(String name, String type, String intentType, String key, Boolean needsToBeCast, boolean hasDefault, boolean required) {
 
         this.name = name;
         this.type = type;
