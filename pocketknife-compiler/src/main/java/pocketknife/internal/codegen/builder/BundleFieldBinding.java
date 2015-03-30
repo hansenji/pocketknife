@@ -3,6 +3,7 @@ package pocketknife.internal.codegen.builder;
 import pocketknife.internal.codegen.FieldBinding;
 
 public class BundleFieldBinding extends FieldBinding {
+    public static final String KEY_PREFIX = "ARG_";
     private final String name;
     private final String type;
     private final String bundleType;

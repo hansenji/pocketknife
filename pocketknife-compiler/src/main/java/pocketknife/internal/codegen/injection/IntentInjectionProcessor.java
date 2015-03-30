@@ -4,6 +4,7 @@ import android.os.Build;
 import pocketknife.InjectExtra;
 import pocketknife.NotRequired;
 import pocketknife.internal.codegen.InvalidTypeException;
+import pocketknife.internal.codegen.builder.IntentFieldBinding;
 
 import javax.annotation.processing.Messager;
 import javax.annotation.processing.RoundEnvironment;
@@ -83,8 +84,7 @@ public class IntentInjectionProcessor extends InjectionProcessor {
 
         // Assemble information on the injection point
         String name = element.getSimpleName().toString();
-        InjectExtra annotation = element.getAnnotation(InjectExtra.class);
-        String key = annotation.value();
+        String key = getKey(element);
         NotRequired notRequired = element.getAnnotation(NotRequired.class);
         boolean required = notRequired == null;
         boolean hasDefault = hasDefault(elementType);
@@ -96,6 +96,13 @@ public class IntentInjectionProcessor extends InjectionProcessor {
 
         // Add the type-erased version to the valid targets set.
         erasedTargetNames.add(enclosingElement.toString());
+    }
+
+    private String getKey(Element element) {
+        if (isDefaultAnnotationElement(element, InjectExtra.class.getName(), "value")) {
+            return generateKey(IntentFieldBinding.KEY_PREFIX, element.getSimpleName().toString());
+        }
+        return element.getAnnotation(InjectExtra.class).value();
     }
 
     private String getIntentType(Element element, TypeMirror type) {
@@ -272,11 +279,6 @@ public class IntentInjectionProcessor extends InjectionProcessor {
         NotRequired notRequired = element.getAnnotation(NotRequired.class);
         if (notRequired != null && notRequired.value() < Build.VERSION_CODES.FROYO) {
             error(element, "NotRequired value must be FROYO(8)+");
-            return false;
-        }
-        InjectExtra injectExtra = element.getAnnotation(InjectExtra.class);
-        if (injectExtra.value() == null || injectExtra.value().trim().isEmpty()) {
-            error(element, "InjectAnnotation value must not be empty");
             return false;
         }
         return true;

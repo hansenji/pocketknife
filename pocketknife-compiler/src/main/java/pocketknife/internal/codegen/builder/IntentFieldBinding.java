@@ -3,6 +3,7 @@ package pocketknife.internal.codegen.builder;
 import pocketknife.internal.codegen.FieldBinding;
 
 public class IntentFieldBinding extends FieldBinding {
+    public static final String KEY_PREFIX = "EXTRA_";
     private String name;
     private String type;
     private String intentType;

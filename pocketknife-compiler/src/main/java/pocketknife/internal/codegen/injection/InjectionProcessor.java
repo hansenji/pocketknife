@@ -1,5 +1,6 @@
 package pocketknife.internal.codegen.injection;
 
+import pocketknife.internal.codegen.BaseProcessor;
 import pocketknife.internal.codegen.TypeUtil;
 
 import javax.annotation.processing.Messager;
@@ -22,7 +23,7 @@ import static javax.tools.Diagnostic.Kind.ERROR;
 import static pocketknife.internal.GeneratedAdapters.ANDROID_PREFIX;
 import static pocketknife.internal.GeneratedAdapters.JAVA_PREFIX;
 
-public abstract class InjectionProcessor {
+public abstract class InjectionProcessor extends BaseProcessor {
 
     protected Messager messager;
     protected Elements elements;

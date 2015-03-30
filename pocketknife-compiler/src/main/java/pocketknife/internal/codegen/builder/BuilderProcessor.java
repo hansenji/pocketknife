@@ -1,6 +1,6 @@
 package pocketknife.internal.codegen.builder;
 
-import com.google.common.base.CaseFormat;
+import pocketknife.internal.codegen.BaseProcessor;
 import pocketknife.internal.codegen.TypeUtil;
 
 import javax.annotation.processing.Messager;
@@ -8,7 +8,6 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
-
 import java.lang.annotation.Annotation;
 
 import static javax.lang.model.element.ElementKind.INTERFACE;
@@ -17,7 +16,7 @@ import static javax.tools.Diagnostic.Kind.ERROR;
 import static pocketknife.internal.GeneratedAdapters.ANDROID_PREFIX;
 import static pocketknife.internal.GeneratedAdapters.JAVA_PREFIX;
 
-public abstract class BuilderProcessor {
+public abstract class BuilderProcessor extends BaseProcessor {
 
     protected static final String GENERATOR_PREFIX = "PocketKnife_";
 
@@ -70,9 +69,5 @@ public abstract class BuilderProcessor {
     protected String getClassName(TypeElement typeElement, String packageName) {
         int packageLen = packageName.length() + 1;
         return typeElement.getQualifiedName().toString().substring(packageLen).replace('.', '$');
-    }
-
-    protected String generateKey(String prefix, String name) {
-        return prefix + CaseFormat.LOWER_CAMEL.to(CaseFormat.UPPER_UNDERSCORE, name);
     }
 }

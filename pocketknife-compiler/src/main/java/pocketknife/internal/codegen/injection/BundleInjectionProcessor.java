@@ -5,6 +5,7 @@ import pocketknife.InjectArgument;
 import pocketknife.NotRequired;
 import pocketknife.SaveState;
 import pocketknife.internal.codegen.InvalidTypeException;
+import pocketknife.internal.codegen.builder.BundleFieldBinding;
 
 import javax.annotation.processing.Messager;
 import javax.annotation.processing.RoundEnvironment;
@@ -138,8 +139,7 @@ public class BundleInjectionProcessor extends InjectionProcessor {
 
         // Assemble information on the injection point
         String name = element.getSimpleName().toString();
-        InjectArgument annotation = element.getAnnotation(InjectArgument.class);
-        String key = annotation.value();
+        String key = getKey(element);
         NotRequired notRequired = element.getAnnotation(NotRequired.class);
         boolean required = notRequired == null;
         int minSdk = Build.VERSION_CODES.FROYO;
@@ -158,6 +158,13 @@ public class BundleInjectionProcessor extends InjectionProcessor {
         erasedTargetNames.add(enclosingElement.toString());
     }
 
+    private String getKey(Element element) {
+        if (isDefaultAnnotationElement(element, InjectArgument.class.getName(), "value")) {
+            return generateKey(BundleFieldBinding.KEY_PREFIX, element.getSimpleName().toString());
+        }
+        return element.getAnnotation(InjectArgument.class).value();
+    }
+
     private boolean areSaveStateArgumentsValid(Element element) {
         NotRequired notRequired = element.getAnnotation(NotRequired.class);
         if (notRequired != null && notRequired.value() < Build.VERSION_CODES.FROYO) {
@@ -171,11 +178,6 @@ public class BundleInjectionProcessor extends InjectionProcessor {
         NotRequired notRequired = element.getAnnotation(NotRequired.class);
         if (notRequired != null && notRequired.value() < Build.VERSION_CODES.FROYO) {
             error(element, "NotRequired value must be FROYO(8)+");
-            return false;
-        }
-        InjectArgument injectArgument = element.getAnnotation(InjectArgument.class);
-        if (injectArgument.value() == null || injectArgument.value().trim().isEmpty()) {
-            error(element, "InjectAnnotation value must not be empty");
             return false;
         }
         return true;

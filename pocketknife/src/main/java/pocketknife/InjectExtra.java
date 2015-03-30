@@ -17,5 +17,5 @@ import static java.lang.annotation.RetentionPolicy.CLASS;
 @Retention(CLASS)
 @Target(FIELD)
 public @interface InjectExtra {
-    String value();
+    String value() default "";
 }
