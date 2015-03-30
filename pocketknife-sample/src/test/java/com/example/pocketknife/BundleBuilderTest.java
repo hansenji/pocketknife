@@ -46,7 +46,7 @@ public class BundleBuilderTest extends BaseTest {
         assertEquals("SAME TYPE I", i, bundle.getInt(PocketKnife_Bundles.ARG_I, 0));
         assertEquals("SAME TYPE J", j, bundle.getInt(PocketKnife_Bundles.ARG_J, 0));
 
-        bundle = bundles.getReturnCollisionBundle(0, 1, 2);
+        bundle = bundles.getNameCollisionBundle(0, 1, 2);
         assertEquals("NAME COLLISION", 0, bundle.getInt(PocketKnife_Bundles.ARG_BUNDLE, 0));
         assertEquals("NAME COLLISION", 1, bundle.getInt(PocketKnife_Bundles.ARG_BUNDLE1, 0));
         assertEquals("NAME COLLISION", 2, bundle.getInt(PocketKnife_Bundles.ARG_BUNDLE2, 0));
