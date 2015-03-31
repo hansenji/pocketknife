@@ -1,6 +1,7 @@
 package pocketknife.internal.codegen.builder;
 
 import pocketknife.IntentBuilder;
+import pocketknife.internal.codegen.IntentFieldBinding;
 import pocketknife.internal.codegen.InvalidTypeException;
 
 import javax.annotation.processing.Messager;

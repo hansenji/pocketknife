@@ -1,5 +1,6 @@
 package pocketknife.internal.codegen.builder;
 
+import pocketknife.internal.codegen.BundleFieldBinding;
 import pocketknife.internal.codegen.MethodBinding;
 
 import java.util.ArrayList;

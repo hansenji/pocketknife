@@ -3,6 +3,7 @@ package pocketknife.internal.codegen.builder;
 import com.squareup.javawriter.JavaWriter;
 import com.squareup.javawriter.StringLiteral;
 import pocketknife.internal.codegen.BaseGenerator;
+import pocketknife.internal.codegen.IntentFieldBinding;
 import pocketknife.internal.codegen.TypeUtil;
 
 import javax.annotation.Generated;

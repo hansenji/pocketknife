@@ -5,7 +5,7 @@ import pocketknife.InjectArgument;
 import pocketknife.NotRequired;
 import pocketknife.SaveState;
 import pocketknife.internal.codegen.InvalidTypeException;
-import pocketknife.internal.codegen.builder.BundleFieldBinding;
+import pocketknife.internal.codegen.BundleFieldBinding;
 
 import javax.annotation.processing.Messager;
 import javax.annotation.processing.RoundEnvironment;
@@ -27,6 +27,8 @@ import java.util.Map;
 import java.util.Set;
 
 import static pocketknife.internal.GeneratedAdapters.BUNDLE_ADAPTER_SUFFIX;
+import static pocketknife.internal.codegen.BundleFieldBinding.AnnotationType.SAVE_STATE;
+import static pocketknife.internal.codegen.BundleFieldBinding.SAVE_STATE_KEY_PREFIX;
 
 public class BundleInjectionProcessor extends InjectionProcessor {
 
@@ -106,8 +108,8 @@ public class BundleInjectionProcessor extends InjectionProcessor {
         boolean canHaveDefault = !required && canHaveDefault(elementType, minSdk);
 
         BundleInjectionAdapterGenerator bundleInjectionAdapterGenerator = getOrCreateTargetClass(targetClassMap, enclosingElement);
-        BundleInjectionFieldBinding binding = new BundleInjectionFieldBinding(name, elementType.toString(), bundleType, needsToBeCast, canHaveDefault,
-                required);
+        BundleFieldBinding binding = new BundleFieldBinding(SAVE_STATE, name, elementType.toString(), bundleType, generateKey(SAVE_STATE_KEY_PREFIX, name),
+                needsToBeCast, canHaveDefault, required);
         bundleInjectionAdapterGenerator.addField(binding);
 
         // Add the type-erased version to the valid targets set.
@@ -149,8 +151,8 @@ public class BundleInjectionProcessor extends InjectionProcessor {
         boolean canHaveDefault = !required && canHaveDefault(elementType, minSdk);
 
         BundleInjectionAdapterGenerator bundleInjectionAdapterGenerator = getOrCreateTargetClass(targetClassMap, enclosingElement);
-        BundleInjectionFieldBinding binding = new BundleInjectionFieldBinding(name, elementType.toString(), bundleType, key, needsToBeCast, canHaveDefault,
-                required);
+        BundleFieldBinding binding = new BundleFieldBinding(BundleFieldBinding.AnnotationType.ARGUMENT, name, elementType.toString(), bundleType, key,
+                needsToBeCast, canHaveDefault, required);
         bundleInjectionAdapterGenerator.orRequired(required);
         bundleInjectionAdapterGenerator.addField(binding);
 
@@ -160,7 +162,7 @@ public class BundleInjectionProcessor extends InjectionProcessor {
 
     private String getKey(Element element) {
         if (isDefaultAnnotationElement(element, InjectArgument.class.getName(), "value")) {
-            return generateKey(BundleFieldBinding.KEY_PREFIX, element.getSimpleName().toString());
+            return generateKey(BundleFieldBinding.ARGUMENT_KEY_PREFIX, element.getSimpleName().toString());
         }
         return element.getAnnotation(InjectArgument.class).value();
     }

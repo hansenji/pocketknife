@@ -1,7 +1,9 @@
 package pocketknife.internal.codegen.injection;
 
 import com.squareup.javawriter.JavaWriter;
+import com.squareup.javawriter.StringLiteral;
 import pocketknife.internal.BundleBinding;
+import pocketknife.internal.codegen.BundleFieldBinding;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -17,12 +19,12 @@ import static javax.lang.model.element.Modifier.STATIC;
 import static pocketknife.internal.GeneratedAdapters.INJECT_ARGUMENTS_METHOD;
 import static pocketknife.internal.GeneratedAdapters.RESTORE_METHOD;
 import static pocketknife.internal.GeneratedAdapters.SAVE_METHOD;
-import static pocketknife.internal.codegen.injection.BundleInjectionFieldBinding.AnnotationType.ARGUMENT;
-import static pocketknife.internal.codegen.injection.BundleInjectionFieldBinding.AnnotationType.SAVE_STATE;
+import static pocketknife.internal.codegen.BundleFieldBinding.AnnotationType.ARGUMENT;
+import static pocketknife.internal.codegen.BundleFieldBinding.AnnotationType.SAVE_STATE;
 
 public final class BundleInjectionAdapterGenerator {
 
-    private final Set<BundleInjectionFieldBinding> fields = new LinkedHashSet<BundleInjectionFieldBinding>();
+    private final Set<BundleFieldBinding> fields = new LinkedHashSet<BundleFieldBinding>();
     private final String classPackage;
     private final String className;
     private final String targetType;
@@ -35,7 +37,7 @@ public final class BundleInjectionAdapterGenerator {
         this.targetType = targetType;
     }
 
-    public void addField(BundleInjectionFieldBinding binding) {
+    public void addField(BundleFieldBinding binding) {
         fields.add(binding);
     }
 
@@ -68,8 +70,9 @@ public final class BundleInjectionAdapterGenerator {
 
     private void writeBundleKeys(JavaWriter writer) throws IOException {
         writer.emitSingleLineComment(InjectionAdapterJavadoc.BUNDLE_KEYS);
-        for (BundleInjectionFieldBinding field : fields) {
-            writer.emitField(String.class.getCanonicalName(), field.getKey(), EnumSet.of(PRIVATE, STATIC, FINAL), JavaWriter.stringLiteral(field.getKey()));
+        for (BundleFieldBinding field : fields) {
+            writer.emitField(String.class.getCanonicalName(), field.getKey(), EnumSet.of(PRIVATE, STATIC, FINAL),
+                    StringLiteral.forValue(field.getKey()).toString());
         }
     }
 
@@ -79,7 +82,7 @@ public final class BundleInjectionAdapterGenerator {
         if (parentAdapter != null) {
             writer.emitStatement("super.%s(%s, %s)", SAVE_METHOD, "target", "bundle");
         }
-        for (BundleInjectionFieldBinding field : fields) {
+        for (BundleFieldBinding field : fields) {
             if (SAVE_STATE == field.getAnnotationType()) {
                 writeSaveFieldState(writer, field);
             }
@@ -87,7 +90,7 @@ public final class BundleInjectionAdapterGenerator {
         writer.endMethod();
     }
 
-    private void writeSaveFieldState(JavaWriter writer, BundleInjectionFieldBinding field) throws IOException {
+    private void writeSaveFieldState(JavaWriter writer, BundleFieldBinding field) throws IOException {
         writer.emitSingleLineComment(field.getDescription());
         writer.emitStatement("bundle.put%s(%s, target.%s)", field.getBundleType(), field.getKey(), field.getName());
     }
@@ -99,7 +102,7 @@ public final class BundleInjectionAdapterGenerator {
             writer.emitStatement("super.%s(%s, %s)", RESTORE_METHOD, "target", "bundle");
         }
         writer.beginControlFlow("if (bundle != null)");
-        for (BundleInjectionFieldBinding field : fields) {
+        for (BundleFieldBinding field : fields) {
             if (SAVE_STATE == field.getAnnotationType()) {
                 writeRestoreFieldState(writer, field);
             }
@@ -108,7 +111,7 @@ public final class BundleInjectionAdapterGenerator {
         writer.endMethod();
     }
 
-    private void writeRestoreFieldState(JavaWriter writer, BundleInjectionFieldBinding field) throws IOException {
+    private void writeRestoreFieldState(JavaWriter writer, BundleFieldBinding field) throws IOException {
         writer.emitSingleLineComment(field.getDescription());
         if (field.isRequired()) {
             writeRequiredRestoreFieldState(writer, field);
@@ -117,7 +120,7 @@ public final class BundleInjectionAdapterGenerator {
         }
     }
 
-    private void writeRequiredRestoreFieldState(JavaWriter writer, BundleInjectionFieldBinding field) throws IOException {
+    private void writeRequiredRestoreFieldState(JavaWriter writer, BundleFieldBinding field) throws IOException {
         List<String> stmtArgs = new ArrayList<String>();
         writer.beginControlFlow("if (bundle.containsKey(%s))", field.getKey());
         String stmt = "target.".concat(field.getName()).concat(" = ");
@@ -135,7 +138,7 @@ public final class BundleInjectionAdapterGenerator {
         writer.endControlFlow();
     }
 
-    private void writeOptionalRestoreFieldState(JavaWriter writer, BundleInjectionFieldBinding field) throws IOException {
+    private void writeOptionalRestoreFieldState(JavaWriter writer, BundleFieldBinding field) throws IOException {
         List<String> stmtArgs = new ArrayList<String>();
         String stmt = "target.".concat(field.getName()).concat(" = ");
         if (field.needsToBeCast()) {
@@ -165,7 +168,7 @@ public final class BundleInjectionAdapterGenerator {
             writer.emitStatement("bundle = new Bundle()");
         }
         writer.endControlFlow();
-        for (BundleInjectionFieldBinding field : fields) {
+        for (BundleFieldBinding field : fields) {
             if (ARGUMENT == field.getAnnotationType()) {
                 writeInjectArgumentField(writer, field);
             }
@@ -173,7 +176,7 @@ public final class BundleInjectionAdapterGenerator {
         writer.endMethod();
     }
 
-    private void writeInjectArgumentField(JavaWriter writer, BundleInjectionFieldBinding field) throws IOException {
+    private void writeInjectArgumentField(JavaWriter writer, BundleFieldBinding field) throws IOException {
         writer.emitSingleLineComment(field.getDescription());
         if (field.isRequired()) {
             writeRequiredInjectArgumentField(writer, field);
@@ -182,7 +185,7 @@ public final class BundleInjectionAdapterGenerator {
         }
     }
 
-    private void writeRequiredInjectArgumentField(JavaWriter writer, BundleInjectionFieldBinding field) throws IOException {
+    private void writeRequiredInjectArgumentField(JavaWriter writer, BundleFieldBinding field) throws IOException {
         List<String> stmtArgs = new ArrayList<String>();
         writer.beginControlFlow("if (bundle.containsKey(%s))", field.getKey());
         String stmt = "target.".concat(field.getName()).concat(" = ");
@@ -201,7 +204,7 @@ public final class BundleInjectionAdapterGenerator {
 
     }
 
-    private void writeOptionalInjectArgumentField(JavaWriter writer, BundleInjectionFieldBinding field) throws IOException {
+    private void writeOptionalInjectArgumentField(JavaWriter writer, BundleFieldBinding field) throws IOException {
         List<String> stmtArgs = new ArrayList<String>();
         writer.beginControlFlow("if (bundle.containsKey(%s))", field.getKey());
         String stmt = "target.".concat(field.getName()).concat(" = ");

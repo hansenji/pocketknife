@@ -4,7 +4,7 @@ import android.os.Build;
 import pocketknife.InjectExtra;
 import pocketknife.NotRequired;
 import pocketknife.internal.codegen.InvalidTypeException;
-import pocketknife.internal.codegen.builder.IntentFieldBinding;
+import pocketknife.internal.codegen.IntentFieldBinding;
 
 import javax.annotation.processing.Messager;
 import javax.annotation.processing.RoundEnvironment;
@@ -90,7 +90,7 @@ public class IntentInjectionProcessor extends InjectionProcessor {
         boolean hasDefault = hasDefault(elementType);
 
         IntentInjectionAdapterGenerator intentInjectionAdapterGenerator = getOrCreateTargetClass(targetClassMap, enclosingElement);
-        IntentInjectionFieldBinding binding = new IntentInjectionFieldBinding(name, elementType.toString(), intentType, key, needsToBeCast, hasDefault,
+        IntentFieldBinding binding = new IntentFieldBinding(name, elementType.toString(), intentType, key, needsToBeCast, hasDefault,
                 required);
         intentInjectionAdapterGenerator.addField(binding);
 

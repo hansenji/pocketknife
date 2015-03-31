@@ -1,6 +1,7 @@
 package pocketknife.internal.codegen.builder;
 
 import com.google.common.base.Strings;
+import pocketknife.internal.codegen.IntentFieldBinding;
 import pocketknife.internal.codegen.MethodBinding;
 
 import java.util.ArrayList;

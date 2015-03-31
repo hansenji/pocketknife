@@ -16,8 +16,6 @@ public class GeneratedAdapters {
     // Intent methods
     public static final String INJECT_EXTRAS_METHOD = "injectExtras";
 
-    public static final String BUNDLE_KEY_PREFIX = "BUNDLE_";
-
     private GeneratedAdapters() {
     }
 }
