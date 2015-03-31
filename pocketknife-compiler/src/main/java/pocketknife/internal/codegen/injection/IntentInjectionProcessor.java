@@ -1,18 +1,14 @@
 package pocketknife.internal.codegen.injection;
 
-import android.os.Build;
 import pocketknife.InjectExtra;
 import pocketknife.NotRequired;
-import pocketknife.internal.codegen.InvalidTypeException;
 import pocketknife.internal.codegen.IntentFieldBinding;
+import pocketknife.internal.codegen.InvalidTypeException;
 
 import javax.annotation.processing.Messager;
 import javax.annotation.processing.RoundEnvironment;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
-import javax.lang.model.type.ArrayType;
-import javax.lang.model.type.DeclaredType;
-import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
 import javax.lang.model.util.Elements;
@@ -21,7 +17,6 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -59,7 +54,8 @@ public class IntentInjectionProcessor extends InjectionProcessor {
         return targetClassMap;
     }
 
-    private void parseInjectExtra(Element element, Map<TypeElement, IntentInjectionAdapterGenerator> targetClassMap, Set<String> erasedTargetNames) {
+    private void parseInjectExtra(Element element, Map<TypeElement, IntentInjectionAdapterGenerator> targetClassMap, Set<String> erasedTargetNames)
+            throws InvalidTypeException {
         TypeElement enclosingElement = (TypeElement) element.getEnclosingElement();
 
         // Verify that the target has all the appropriate information for type
@@ -69,29 +65,20 @@ public class IntentInjectionProcessor extends InjectionProcessor {
             elementType = typeVariable.getUpperBound();
         }
 
-        String intentType = getIntentType(element, elementType);
-        Boolean needsToBeCast = needsToBeCast(element, elementType);
-
-        boolean hasError = !areInjectExtraArgumentsValid(element);
-        hasError |= intentType == null;
-        hasError |= needsToBeCast == null;
-        hasError |= !isValidForGeneratedCode(InjectExtra.class, "fields", element);
-        hasError |= isBindingInWrongPackage(InjectExtra.class, element);
-
-        if (hasError) {
-            return;
-        }
+        validateNotRequiredArguments(element);
+        validateForCodeGeneration(InjectExtra.class, element);
+        validateBindingPackage(InjectExtra.class, element);
 
         // Assemble information on the injection point
         String name = element.getSimpleName().toString();
+        String intentType = typeUtil.getIntentType(elementType);
         String key = getKey(element);
-        NotRequired notRequired = element.getAnnotation(NotRequired.class);
-        boolean required = notRequired == null;
-        boolean hasDefault = hasDefault(elementType);
+        boolean required = element.getAnnotation(NotRequired.class) == null;
+        boolean hasDefault = typeUtil.isPrimitive(elementType);
+        boolean needsToBeCast = typeUtil.needToCastIntentType(elementType);
 
         IntentInjectionAdapterGenerator intentInjectionAdapterGenerator = getOrCreateTargetClass(targetClassMap, enclosingElement);
-        IntentFieldBinding binding = new IntentFieldBinding(name, elementType.toString(), intentType, key, needsToBeCast, hasDefault,
-                required);
+        IntentFieldBinding binding = new IntentFieldBinding(name, elementType.toString(), intentType, key, needsToBeCast, hasDefault, required);
         intentInjectionAdapterGenerator.addField(binding);
 
         // Add the type-erased version to the valid targets set.
@@ -103,193 +90,6 @@ public class IntentInjectionProcessor extends InjectionProcessor {
             return generateKey(IntentFieldBinding.KEY_PREFIX, element.getSimpleName().toString());
         }
         return element.getAnnotation(InjectExtra.class).value();
-    }
-
-    private String getIntentType(Element element, TypeMirror type) {
-        try {
-            // Primitive
-            if (isPrimitive(type)) {
-                return getPrimitiveIntentType(type);
-            }
-
-            // Array
-            if (TypeKind.ARRAY == type.getKind() && type instanceof ArrayType) {
-                String componentType = getArrayComponentIntentType(((ArrayType) type).getComponentType());
-                if (componentType != null && !componentType.isEmpty()) {
-                    return componentType.concat("Array");
-                }
-            }
-
-            // Check ArrayList
-            if (types.isAssignable(types.erasure(type), typeUtil.arrayListType)) {
-                String arrayListType = getArrayListIntentType(type);
-                if (arrayListType != null && !arrayListType.isEmpty()) {
-                    return arrayListType;
-                }
-            }
-
-            // Other Types
-            if (types.isAssignable(type, typeUtil.bundleType)) {
-                return "Bundle";
-            }
-
-            String aggregateIntentType = getAggregateIntentType(type);
-            if (aggregateIntentType != null && !aggregateIntentType.isEmpty()) {
-                return aggregateIntentType;
-            }
-
-            if (types.isAssignable(type, typeUtil.serializableType)) {
-                return "Serializable";
-            }
-        } catch (InvalidTypeException e) {
-            error(element, "%s", e.getMessage());
-            return null;
-        }
-        error(element, "Invalid bundle type '%s'", type.toString());
-        return null;
-
-    }
-
-    private String getPrimitiveIntentType(TypeMirror type) throws InvalidTypeException {
-        // No unboxing due to the nullable nature of boxed primitives
-        switch (type.getKind()) {
-            case BOOLEAN:
-                return "Boolean";
-            case BYTE:
-                return "Byte";
-            case SHORT:
-                return "Short";
-            case INT:
-                return "Int";
-            case LONG:
-                return "Long";
-            case CHAR:
-                return "Char";
-            case FLOAT:
-                return "Float";
-            case DOUBLE:
-                return "Double";
-            default:
-                throw new InvalidTypeException("Primitive", type);
-        }
-    }
-
-    private String getArrayComponentIntentType(TypeMirror type) throws InvalidTypeException {
-        if (isPrimitive(type)) {
-            try {
-                return getPrimitiveIntentType(type);
-            } catch (InvalidTypeException e) {
-                throw new InvalidTypeException("Array", type);
-            }
-        }
-        return getAggregateIntentType(type);
-    }
-
-    private String getArrayListIntentType(TypeMirror type) {
-        if (type instanceof DeclaredType) {
-            List<? extends TypeMirror> typeArguments = ((DeclaredType) type).getTypeArguments();
-            if (typeArguments.size() == 1) {
-                String componentType = getArrayListComponentIntentType(typeArguments.get(0));
-                if (componentType != null && !componentType.isEmpty()) {
-                    return componentType.concat("ArrayList");
-                }
-            }
-        }
-        return null;
-    }
-
-    private String getAggregateIntentType(TypeMirror type) {
-        if (types.isAssignable(type, typeUtil.stringType)) { // String is subtype of CharSequence should go first
-            return "String";
-        }
-        if (types.isAssignable(type, typeUtil.charSequenceType)) {
-            return "CharSequence";
-        }
-        if (types.isAssignable(type, typeUtil.parcelableType)) {
-            return "Parcelable";
-        }
-        return null;
-    }
-
-    private String getArrayListComponentIntentType(TypeMirror type) {
-        if (types.isAssignable(type, typeUtil.integerType)) {
-            return "Integer";
-        }
-        return getAggregateIntentType(type);
-    }
-
-    private Boolean needsToBeCast(Element element, TypeMirror type) {
-        if (isPrimitive(type)) {
-            return false;
-        }
-
-        // Check Array
-        if (TypeKind.ARRAY == type.getKind() && type instanceof ArrayType) {
-            Boolean result = needToCastArrayComponentType(((ArrayType) type).getComponentType());
-            if (result != null) {
-                return result;
-            }
-        }
-
-        // ArrayList
-        if (types.isAssignable(types.erasure(type), typeUtil.arrayListType)) {
-            return false;
-        }
-
-        // Other
-        if (types.isAssignable(type, typeUtil.bundleType)) {
-            return !types.isSameType(type, typeUtil.bundleType);
-        }
-
-        Boolean result = needToCastAggregateIntentType(type);
-        if (result != null) {
-            return result;
-        }
-
-
-        if (types.isAssignable(type, typeUtil.serializableType)) {
-            return !types.isSameType(type, typeUtil.serializableType);
-        }
-
-        error(element, "Error invalid intent type '%s'", type);
-        return null;
-    }
-
-    private Boolean needToCastArrayComponentType(TypeMirror type) {
-        if (isPrimitive(type)) {
-            return false;
-        }
-        return needToCastAggregateIntentType(type);
-    }
-
-    private Boolean needToCastAggregateIntentType(TypeMirror type) {
-        if (types.isAssignable(type, typeUtil.charSequenceType)) {
-            return !types.isSameType(type, typeUtil.charSequenceType);
-        }
-        if (types.isAssignable(type, typeUtil.stringType)) {
-            return !types.isSameType(type, typeUtil.stringType);
-        }
-        if (types.isAssignable(type, typeUtil.parcelableType)) {
-            return !types.isSameType(type, typeUtil.parcelableType);
-        }
-        return null;
-    }
-
-    private boolean areInjectExtraArgumentsValid(Element element) {
-        NotRequired notRequired = element.getAnnotation(NotRequired.class);
-        if (notRequired != null && notRequired.value() < Build.VERSION_CODES.FROYO) {
-            error(element, "NotRequired value must be FROYO(8)+");
-            return false;
-        }
-        return true;
-    }
-
-    private boolean hasDefault(TypeMirror type) {
-        return isPrimitive(type);
-    }
-
-    private boolean isPrimitive(TypeMirror type) {
-        return type.getKind().isPrimitive();
     }
 
     private IntentInjectionAdapterGenerator getOrCreateTargetClass(Map<TypeElement, IntentInjectionAdapterGenerator> targetClassMap,

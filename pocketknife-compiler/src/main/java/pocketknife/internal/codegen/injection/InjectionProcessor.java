@@ -1,5 +1,7 @@
 package pocketknife.internal.codegen.injection;
 
+import android.os.Build;
+import pocketknife.NotRequired;
 import pocketknife.internal.codegen.BaseProcessor;
 import pocketknife.internal.codegen.TypeUtil;
 
@@ -53,6 +55,39 @@ public abstract class InjectionProcessor extends BaseProcessor {
         messager.printMessage(ERROR, message, element);
     }
 
+    protected void validateNotRequiredArguments(Element element) {
+        NotRequired notRequired = element.getAnnotation(NotRequired.class);
+        if (notRequired != null && notRequired.value() < Build.VERSION_CODES.FROYO) {
+            throw new IllegalStateException("NotRequired value must be FROYO(8)+");
+        }
+    }
+
+    protected void validateForCodeGeneration(Class<? extends Annotation> annotationClass, Element element) {
+        TypeElement enclosingElement = (TypeElement) element.getEnclosingElement();
+
+        // Verify method modifiers
+        Set<Modifier> modifiers = element.getModifiers();
+        if (modifiers.contains(PRIVATE) || modifiers.contains(STATIC)) {
+            throw new IllegalStateException(String.format("@%s fields must not be private, protected, or static. (%s.%s)",
+                    annotationClass.getSimpleName(), enclosingElement.getQualifiedName(),
+                    element.getSimpleName()));
+        }
+
+        // Verify Containing type.
+        if (enclosingElement.getKind() != CLASS) {
+            throw new IllegalStateException(String.format("@%s fields may only be contained in classes. (%s.%s)",
+                    annotationClass.getSimpleName(), enclosingElement.getQualifiedName(),
+                    element.getSimpleName()));
+        }
+
+        // Verify containing class visibility is not private
+        if (enclosingElement.getModifiers().contains(PRIVATE)) {
+            throw new IllegalStateException(String.format("@%s fields may not be contained in private classes (%s.%s)", annotationClass.getSimpleName(),
+                    enclosingElement.getQualifiedName(), element.getSimpleName()));
+        }
+
+    }
+
     protected boolean isValidForGeneratedCode(Class<? extends Annotation> annotationClass, String targetThing, Element element) {
         boolean isValid = true;
         TypeElement enclosingElement = (TypeElement) element.getEnclosingElement();
@@ -82,6 +117,20 @@ public abstract class InjectionProcessor extends BaseProcessor {
         }
 
         return isValid;
+    }
+
+    protected void validateBindingPackage(Class<? extends Annotation> annotationClass, Element element) {
+        TypeElement enclosingElement = (TypeElement) element.getEnclosingElement();
+        String qualifiedName = enclosingElement.getQualifiedName().toString();
+
+        if (qualifiedName.startsWith(ANDROID_PREFIX)) {
+            throw new IllegalStateException(String.format("@%s-annotated class incorrectly in Android framework package. (%s)",
+                    annotationClass.getSimpleName(), qualifiedName));
+        }
+        if (qualifiedName.startsWith(JAVA_PREFIX)) {
+            throw new IllegalStateException(String.format("@%s-annotated class incorrectly in Java framework package. (%s",
+                    annotationClass.getSimpleName(), qualifiedName));
+        }
     }
 
     protected boolean isBindingInWrongPackage(Class<? extends Annotation> annotationClass, Element element) {

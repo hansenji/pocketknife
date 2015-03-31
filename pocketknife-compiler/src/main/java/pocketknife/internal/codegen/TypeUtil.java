@@ -168,7 +168,7 @@ public class TypeUtil {
         throw new InvalidTypeException(InvalidTypeException.Container.INTENT, type);
     }
 
-    private boolean isPrimitive(TypeMirror type) {
+    public boolean isPrimitive(TypeMirror type) {
         return type.getKind().isPrimitive();
     }
 
@@ -230,7 +230,7 @@ public class TypeUtil {
             case DOUBLE:
                 return "Double";
             default:
-                throw new InvalidTypeException("Primitive", type);
+                throw new InvalidTypeException(type);
         }
     }
 
@@ -240,13 +240,13 @@ public class TypeUtil {
             try {
                 return getPrimitiveType(componentType).concat("Array");
             } catch (InvalidTypeException e) {
-                throw new InvalidTypeException("Array", type);
+                throw new InvalidTypeException(type);
             }
         }
         try {
             return getAggregateType(componentType).concat("Array");
         } catch (InvalidTypeException e) {
-            throw new InvalidTypeException("Array", type);
+            throw new InvalidTypeException(type);
         }
     }
 
@@ -258,7 +258,7 @@ public class TypeUtil {
         try {
             return getAggregateType(arg).concat("ArrayList");
         } catch (InvalidTypeException e) {
-            throw new InvalidTypeException("ArrayList", type);
+            throw new InvalidTypeException(type);
         }
     }
 
@@ -272,6 +272,96 @@ public class TypeUtil {
         if (types.isAssignable(type, parcelableType)) {
             return "Parcelable";
         }
+        throw new InvalidTypeException(type);
+    }
+
+    public boolean needToCastBundleType(TypeMirror type) throws InvalidTypeException {
+        if (isPrimitive(type)) {
+            return false;
+        }
+
+        if (isArrayType(type)) {
+            return needToCastArrayType((ArrayType) type);
+        }
+
+        if (isArrayListType(type)) {
+            return false;
+        }
+
+        if (isSparseParcelableArray(type)) {
+            return needToCastSparseParcelableArray((DeclaredType) type);
+        }
+
+        if (types.isAssignable(type, bundleType)) {
+            return !types.isSameType(type, bundleType);
+        }
+
+        if (isAggregateType(type)) {
+            return needToCastAggregateType(type);
+        }
+
+        if (types.isAssignable(type, serializableType)) {
+            return !types.isSameType(type, serializableType);
+        }
+
+        throw new InvalidTypeException(InvalidTypeException.Container.BUNDLE, type);
+    }
+
+    public boolean needToCastIntentType(TypeMirror type) throws InvalidTypeException {
+        if (isPrimitive(type)) {
+            return false;
+        }
+
+        if (isArrayType(type)) {
+            return needToCastArrayType((ArrayType) type);
+        }
+
+        if (isArrayListType(type)) {
+            return false;
+        }
+
+        if (types.isAssignable(type, bundleType)) {
+            return !types.isSameType(type, bundleType);
+        }
+
+        if (isAggregateType(type)) {
+            return needToCastAggregateType(type);
+        }
+
+        if (types.isAssignable(type, serializableType)) {
+            return !types.isSameType(type, serializableType);
+        }
+
         throw new InvalidTypeException(InvalidTypeException.Container.INTENT, type);
+    }
+
+    private boolean needToCastArrayType(ArrayType type) throws InvalidTypeException {
+        TypeMirror componentType = type.getComponentType();
+        if (isPrimitive(componentType)) {
+            return false;
+        }
+        try {
+            return needToCastAggregateType(componentType);
+        } catch (InvalidTypeException e) {
+            throw new InvalidTypeException(type);
+        }
+    }
+
+    private boolean needToCastAggregateType(TypeMirror type) throws InvalidTypeException {
+        if (types.isAssignable(type, charSequenceType)) {
+            return !types.isSameType(type, charSequenceType);
+        }
+        if (types.isAssignable(type, stringType)) {
+            return !types.isSameType(type, stringType);
+        }
+        if (types.isAssignable(type, parcelableType)) {
+            return !types.isSameType(type, parcelableType);
+        }
+        throw new InvalidTypeException(type);
+    }
+
+    private boolean needToCastSparseParcelableArray(DeclaredType type) {
+        List<? extends TypeMirror> typeArguments = type.getTypeArguments();
+        return !types.isAssignable(typeArguments.get(0), parcelableType);
     }
 }
