@@ -3,8 +3,6 @@ package pocketknife.internal.codegen;
 public class IntentFieldBinding extends FieldBinding {
     public static final String KEY_PREFIX = "EXTRA_";
 
-    public enum AnnotationType {BUILDER, EXTRA}
-
     private final String name;
     private final String type;
     private final String intentType;

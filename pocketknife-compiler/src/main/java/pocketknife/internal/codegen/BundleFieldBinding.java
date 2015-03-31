@@ -24,8 +24,8 @@ public class BundleFieldBinding extends FieldBinding {
         this(AnnotationType.BUILDER, name, type, bundleType, key, false, false, false);
     }
 
-    public BundleFieldBinding(AnnotationType annotationType, String name, String type, String bundleType, String key, boolean needsToBeCast, boolean canHaveDefault,
-                                       boolean required) {
+    public BundleFieldBinding(AnnotationType annotationType, String name, String type, String bundleType, String key, boolean needsToBeCast,
+                              boolean canHaveDefault, boolean required) {
         this.annotationType = annotationType;
         this.name = name;
         this.type = type;
