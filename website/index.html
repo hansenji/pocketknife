@@ -132,11 +132,11 @@
 <h2 id="intent_injection" class="nav_anchor">Intent Injection </h2>
 
 <div class="highlight highlight-java">
-<p>To inject extras into a field for an activity first annotate the field with <span class="nd">@InjectExtra</span> and an extra key. Pocket Knife will
+<p>To inject extras into a field for an activity first annotate the field with <span class="nd">@InjectExtra</span>. Pocket Knife will
    find and automatically cast the corresponding value.</p>
     <pre>
 <span class="o">...</span>
-<span class="nd">@InjectExtra</span><span class="o">(</span><span class="s">"EXTRA_INT"</span><span class="o">)</span>
+<span class="nd">@InjectExtra</span>
 <span class="kt">int</span> <span class="n">anInt</span><span class="o">;</span>
 <span class="o">...</span></pre>
 <p>Then in <span class="nf">onCreate</span> or another appropriate method call in an activity <span class="n">PocketKnife</span><span class="o">.</span><span
@@ -150,6 +150,40 @@
   <span class="o">...</span>
 <span class="o">}</span>
 </pre>
+</div>
+
+<h2 id="bundle_generation">Generating Bundles</h2>
+
+<div class="highlight highlight-java">
+<p>To create a bundle, create an interface and annotate the methods with <span class="nd">@BundleBuilder</span>.</p>
+<pre>
+<span class="kd">public</span> <span class="kt">interface</span> <span class="nf">Bundles</span> <span class="o">{</span>
+  <span class="o">...</span>
+  <span class="nd">@BundleBuilder</span>
+  <span class="kt">Bundle</span> <span class="na">getBundle</span><span class="o">(</span><span class="n">long</span> <span class="n">individualId</span><span
+        class="o">);</span>
+  <span class="o">...</span>
+<span class="o">}</span>
+</pre>
+<p>Pocket Knife will generate the class PocketKnife_&lt;interface name&gt; (<span class="nf">PocketKnife_Bundles</span> for the example above).</p>
+</div>
+
+
+<h2 id="intent_generation">Generating Intents</h2>
+
+<div class="highlight highlight-java">
+<p>To create an intent create an interface and annotate the methods with <span class="nd">@IntentBuilder</span> and at least an action or a class.</p>
+<pre>
+<span class="kd">public</span> <span class="kt">interface</span> <span class="nf">Intents</span> <span class="o">{</span>
+  <span class="o">...</span>
+  <span class="nd">@IntentBuilder</span><span class="o">(</span><span class="n">cls</span><span class="o">=</span><span class="n">SimpleActivity</span><span
+        class="o">.</span><span class="k">class</span><span class="o">)</span>
+  <span class="kt">Intent</span> <span class="na">getIntent</span><span class="o">(</span><span class="n">long</span> <span class="n">individualId</span><span
+        class="o">);</span>
+  <span class="o">...</span>
+<span class="o">}</span>
+</pre>
+<p>Pocket Knife will generate the class PocketKnife_&lt;interface name&gt; (<span class="nf">PocketKnife_Intents</span> for the example above).</p>
 </div>
 
 <h2 id="download" class="nav_anchor">Download</h2>
@@ -198,7 +232,7 @@
 
 <h2 id="license" class="nav_anchor">License</h2>
 
-<pre>Copyright 2014 Jordan Hansen
+<pre>Copyright 2014-2015 Jordan Hansen
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
