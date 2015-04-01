@@ -110,7 +110,9 @@ public class IntentBuilderGenerator extends BaseGenerator {
         if (method.getClassName() != null) {
             writer.emitStatement("%s.setClass(context, %s.class)", returnVarName, method.getClassName());
         }
-        writer.emitStatement("%s.setFlags(%s)", returnVarName, method.getFlags());
+        if (method.getFlags() != null) {
+            writer.emitStatement("%s.setFlags(%s)", returnVarName, method.getFlags());
+        }
         for (String category : method.getCategories()) {
             writer.emitStatement("%s.addCategory(%s)", returnVarName, StringLiteral.forValue(category));
         }

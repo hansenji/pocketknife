@@ -27,7 +27,6 @@ public class IntentBuilderProcessor extends BuilderProcessor {
 
 
     private static final String EXTRA_KEY_PREFIX = "EXTRA_";
-    private static final String INTENT_BUILDER = IntentBuilder.class.getName();
 
     public IntentBuilderProcessor(Messager messager, Elements elements, Types types) {
         super(messager, elements, types);
@@ -73,21 +72,23 @@ public class IntentBuilderProcessor extends BuilderProcessor {
 
     private void validateIntentBuilderArguments(Element element) {
         IntentBuilder intentBuilder = element.getAnnotation(IntentBuilder.class);
-        if (intentBuilder != null && intentBuilder.action().trim().isEmpty() && void.class.getName().equals(getIntentBuilderClsValue(element))) {
+
+        if (intentBuilder != null && isDefaultAnnotationElement(element, IntentBuilder.class.getName(), "action")
+                && getIntentBuilderClsValue(element) == null) {
             throw new IllegalStateException(String.format("@%s must have cls or action specified", IntentBuilder.class.getSimpleName()));
         }
     }
 
     private String getIntentBuilderClsValue(Element element) {
         for (AnnotationMirror annotationMirror : element.getAnnotationMirrors()) {
-            if (INTENT_BUILDER.equals(annotationMirror.getAnnotationType().toString())) {
+            if (IntentBuilder.class.getName().equals(annotationMirror.getAnnotationType().toString())) {
                 for (Map.Entry<? extends ExecutableElement, ? extends AnnotationValue> entry : annotationMirror.getElementValues().entrySet()) {
                     if ("cls".equals(entry.getKey().getSimpleName().toString())) {
                         return entry.getValue().getValue().toString();
                     }
                 }
                 // If no cls is found return default
-                return void.class.getName();
+                return null;
             }
         }
         throw new IllegalStateException(String.format("Unable to find @IntentBuilder for %s", element.getSimpleName()));
@@ -95,8 +96,26 @@ public class IntentBuilderProcessor extends BuilderProcessor {
 
     private IntentBuilderMethodBinding getMethodBinding(ExecutableElement element) throws InvalidTypeException {
         IntentBuilder intentBuilder = element.getAnnotation(IntentBuilder.class);
+        String intentBuilderName = IntentBuilder.class.getName();
+        String action = null;
+        if (!isDefaultAnnotationElement(element, intentBuilderName, "action")) {
+            action = intentBuilder.action();
+        }
+        String data = null;
+        if (!isDefaultAnnotationElement(element, intentBuilderName, "data")) {
+            data = intentBuilder.data();
+        }
+        Integer flags = null;
+        if (!isDefaultAnnotationElement(element, intentBuilderName, "flags")) {
+            flags = intentBuilder.flags();
+        }
+        String type = null;
+        if (!isDefaultAnnotationElement(element, intentBuilderName, "type")) {
+            type = intentBuilder.type();
+        }
+
         IntentBuilderMethodBinding binding = new IntentBuilderMethodBinding(element.getSimpleName().toString(), getIntentBuilderClsValue(element),
-                intentBuilder.action(), intentBuilder.data(), intentBuilder.flags(), intentBuilder.categories(), intentBuilder.type());
+                action, data, flags, intentBuilder.categories(), type);
         List<? extends Element> parameters = element.getParameters();
         for (Element parameter : parameters) {
             binding.addField(getFieldBinding(parameter));

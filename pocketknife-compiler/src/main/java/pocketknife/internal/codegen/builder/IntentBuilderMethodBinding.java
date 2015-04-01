@@ -1,6 +1,5 @@
 package pocketknife.internal.codegen.builder;
 
-import com.google.common.base.Strings;
 import pocketknife.internal.codegen.IntentFieldBinding;
 import pocketknife.internal.codegen.MethodBinding;
 
@@ -14,24 +13,20 @@ public class IntentBuilderMethodBinding extends MethodBinding {
     private final String className;
     private final String action;
     private final String data;
-    private final int flags;
+    private final Integer flags;
     private final String[] categories;
     private final String type;
 
     private final List<IntentFieldBinding> fields = new ArrayList<IntentFieldBinding>();
 
-    public IntentBuilderMethodBinding(String name, String className, String action, String data, int flags, String[] categories, String type) {
+    public IntentBuilderMethodBinding(String name, String className, String action, String data, Integer flags, String[] categories, String type) {
         this.name = name;
-        if (void.class.getName().equals(className)) {
-            this.className = null;
-        } else {
-            this.className = className;
-        }
-        this.action = Strings.emptyToNull(action);
-        this.data = Strings.emptyToNull(data);
+        this.className = className;
+        this.action = action;
+        this.data = data;
         this.flags = flags;
         this.categories = categories;
-        this.type = Strings.emptyToNull(type);
+        this.type = type;
     }
 
     public String getName() {
@@ -50,7 +45,7 @@ public class IntentBuilderMethodBinding extends MethodBinding {
         return data;
     }
 
-    public int getFlags() {
+    public Integer getFlags() {
         return flags;
     }
 
