@@ -109,11 +109,11 @@
 <h3>Injecting Arguments</h3>
 
 <div class="highlight highlight-java">
-<p>To inject arguments into a field for a Fragment first annotate the field with <span class="nd">@InjectArgument</span> and a bundle key. Pocket Knife will
+<p>To inject arguments into a field for a Fragment first annotate the field with <span class="nd">@InjectArgument</span>. Pocket Knife will
    find and automatically cast the corresponding value.</p>
     <pre>
 <span class="o">...</span>
-<span class="nd">@InjectArgument</span><span class="o">(</span><span class="s">"ARG_KEY"</span><span class="o">)</span>
+<span class="nd">@InjectArgument</span>
 <span class="kt">int</span> <span class="n">anInt</span><span class="o">;</span>
 <span class="o">...</span></pre>
 <p>Then in <span class="nf">onActivityCreated</span> or another appropriate method call in a fragment <span class="n">PocketKnife</span><span class="o">.</span><span
