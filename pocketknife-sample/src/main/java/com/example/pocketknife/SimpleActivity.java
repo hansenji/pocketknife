@@ -1,5 +1,6 @@
 package com.example.pocketknife;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
 import pocketknife.InjectExtra;
@@ -143,6 +144,8 @@ public class SimpleActivity extends FragmentActivity {
     @NotRequired
     @InjectExtra(NOT_REQUIRED_INT_EXTRA)
     int notRequired = NRI_DEFAULT;
+    @InjectExtra(Intent.EXTRA_TEXT)
+    String text;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

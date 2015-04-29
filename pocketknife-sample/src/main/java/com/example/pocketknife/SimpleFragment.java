@@ -1,5 +1,6 @@
 package com.example.pocketknife;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
@@ -146,6 +147,8 @@ public class SimpleFragment extends Fragment {
     @NotRequired
     @InjectArgument(NOT_REQUIRED_INT)
     int notRequired = NRI_DEFAULT;
+    @InjectArgument(Intent.EXTRA_TEXT)
+    String text;
 
 
     public static SimpleFragment newInstance() {

@@ -12,10 +12,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
-import static javax.lang.model.element.Modifier.FINAL;
-import static javax.lang.model.element.Modifier.PRIVATE;
 import static javax.lang.model.element.Modifier.PUBLIC;
-import static javax.lang.model.element.Modifier.STATIC;
 import static pocketknife.internal.GeneratedAdapters.INJECT_ARGUMENTS_METHOD;
 import static pocketknife.internal.GeneratedAdapters.RESTORE_METHOD;
 import static pocketknife.internal.GeneratedAdapters.SAVE_METHOD;
@@ -56,7 +53,6 @@ public final class BundleInjectionAdapterGenerator {
             writer.beginType(className + "<T extends " + targetType + ">", "class", EnumSet.of(PUBLIC), null, JavaWriter.type(BundleBinding.class, "T"));
         }
         writer.emitEmptyLine();
-        writeBundleKeys(writer);
         // write Save State
         writeSaveState(writer);
         writer.emitEmptyLine();
@@ -66,14 +62,6 @@ public final class BundleInjectionAdapterGenerator {
         // write injectArguments
         writeInjectArguments(writer);
         writer.endType();
-    }
-
-    private void writeBundleKeys(JavaWriter writer) throws IOException {
-        writer.emitSingleLineComment(InjectionAdapterJavadoc.BUNDLE_KEYS);
-        for (BundleFieldBinding field : fields) {
-            writer.emitField(String.class.getCanonicalName(), field.getKey(), EnumSet.of(PRIVATE, STATIC, FINAL),
-                    StringLiteral.forValue(field.getKey()).toString());
-        }
     }
 
     private void writeSaveState(JavaWriter writer) throws IOException {
@@ -92,7 +80,7 @@ public final class BundleInjectionAdapterGenerator {
 
     private void writeSaveFieldState(JavaWriter writer, BundleFieldBinding field) throws IOException {
         writer.emitSingleLineComment(field.getDescription());
-        writer.emitStatement("bundle.put%s(%s, target.%s)", field.getBundleType(), field.getKey(), field.getName());
+        writer.emitStatement("bundle.put%s(%s, target.%s)", field.getBundleType(), StringLiteral.forValue(field.getKey()).toString(), field.getName());
     }
 
     private void writeRestoreState(JavaWriter writer) throws IOException {
@@ -122,7 +110,7 @@ public final class BundleInjectionAdapterGenerator {
 
     private void writeRequiredRestoreFieldState(JavaWriter writer, BundleFieldBinding field) throws IOException {
         List<String> stmtArgs = new ArrayList<String>();
-        writer.beginControlFlow("if (bundle.containsKey(%s))", field.getKey());
+        writer.beginControlFlow("if (bundle.containsKey(%s))", StringLiteral.forValue(field.getKey()).toString());
         String stmt = "target.".concat(field.getName()).concat(" = ");
         if (field.needsToBeCast()) {
             stmt = stmt.concat(("(%s) "));
@@ -130,7 +118,7 @@ public final class BundleInjectionAdapterGenerator {
         }
         stmt = stmt.concat("bundle.get%s(%s)");
         stmtArgs.add(field.getBundleType());
-        stmtArgs.add(field.getKey());
+        stmtArgs.add(StringLiteral.forValue(field.getKey()).toString());
         writer.emitStatement(stmt, stmtArgs.toArray(new Object[stmtArgs.size()]));
         writer.nextControlFlow("else");
         writer.emitStatement("throw new IllegalStateException(\"Required Bundle value with key '%s' was not found for '%s'. "
@@ -147,7 +135,7 @@ public final class BundleInjectionAdapterGenerator {
         }
         stmt = stmt.concat("bundle.get%s(%s");
         stmtArgs.add(field.getBundleType());
-        stmtArgs.add(field.getKey());
+        stmtArgs.add(StringLiteral.forValue(field.getKey()).toString());
         if (field.canHaveDefault()) {
             stmt = stmt.concat(", target.").concat(field.getName());
         }
@@ -187,7 +175,7 @@ public final class BundleInjectionAdapterGenerator {
 
     private void writeRequiredInjectArgumentField(JavaWriter writer, BundleFieldBinding field) throws IOException {
         List<String> stmtArgs = new ArrayList<String>();
-        writer.beginControlFlow("if (bundle.containsKey(%s))", field.getKey());
+        writer.beginControlFlow("if (bundle.containsKey(%s))", StringLiteral.forValue(field.getKey()).toString());
         String stmt = "target.".concat(field.getName()).concat(" = ");
         if (field.needsToBeCast()) {
             stmt = stmt.concat("(%s) ");
@@ -195,7 +183,7 @@ public final class BundleInjectionAdapterGenerator {
         }
         stmt = stmt.concat("bundle.get%s(%s)");
         stmtArgs.add(field.getBundleType());
-        stmtArgs.add(field.getKey());
+        stmtArgs.add(StringLiteral.forValue(field.getKey()).toString());
         writer.emitStatement(stmt, stmtArgs.toArray(new Object[stmtArgs.size()]));
         writer.nextControlFlow("else");
         writer.emitStatement("throw new IllegalStateException(\"Required Argument with key '%s' was not found for '%s'. "
@@ -206,7 +194,7 @@ public final class BundleInjectionAdapterGenerator {
 
     private void writeOptionalInjectArgumentField(JavaWriter writer, BundleFieldBinding field) throws IOException {
         List<String> stmtArgs = new ArrayList<String>();
-        writer.beginControlFlow("if (bundle.containsKey(%s))", field.getKey());
+        writer.beginControlFlow("if (bundle.containsKey(%s))", StringLiteral.forValue(field.getKey()).toString());
         String stmt = "target.".concat(field.getName()).concat(" = ");
         if (field.needsToBeCast()) {
             stmt = stmt.concat("(%s) ");
@@ -214,7 +202,7 @@ public final class BundleInjectionAdapterGenerator {
         }
         stmt = stmt.concat("bundle.get%s(%s");
         stmtArgs.add(field.getBundleType());
-        stmtArgs.add(field.getKey());
+        stmtArgs.add(StringLiteral.forValue(field.getKey()).toString());
         if (field.canHaveDefault()) {
             stmt = stmt.concat(", target.").concat(field.getName());
         }

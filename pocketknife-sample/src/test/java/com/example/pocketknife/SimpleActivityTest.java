@@ -102,6 +102,8 @@ public class SimpleActivityTest extends BaseTest {
         stringArrayList.add(UUID.randomUUID().toString());
         intent.putExtra(SimpleActivity.STRING_ARRAY_LIST_EXTRA, stringArrayList);
 
+        intent.putExtra(Intent.EXTRA_TEXT, string);
+
         SimpleActivity simpleActivity = Robolectric.buildActivity(SimpleActivity.class).withIntent(intent).create().get();
 
         // Boolean
@@ -178,6 +180,8 @@ public class SimpleActivityTest extends BaseTest {
         // Not Required
         assertNull(simpleActivity.s);
         assertEquals(SimpleActivity.NRI_DEFAULT, simpleActivity.notRequired);
+
+        assertEquals(string, simpleActivity.text);
 
     }
 

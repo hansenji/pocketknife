@@ -1,6 +1,7 @@
 package pocketknife.internal.codegen.injection;
 
 import com.squareup.javawriter.JavaWriter;
+import com.squareup.javawriter.StringLiteral;
 import pocketknife.internal.IntentBinding;
 import pocketknife.internal.codegen.IntentFieldBinding;
 
@@ -11,10 +12,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
-import static javax.lang.model.element.Modifier.FINAL;
-import static javax.lang.model.element.Modifier.PRIVATE;
 import static javax.lang.model.element.Modifier.PUBLIC;
-import static javax.lang.model.element.Modifier.STATIC;
 import static pocketknife.internal.GeneratedAdapters.INJECT_EXTRAS_METHOD;
 
 public class IntentInjectionAdapterGenerator {
@@ -48,19 +46,10 @@ public class IntentInjectionAdapterGenerator {
         }
         writer.emitEmptyLine();
 
-        writeIntentKeys(writer);
-
         // write injectExtras
         writeInjectExtras(writer);
 
         writer.endType();
-    }
-
-    private void writeIntentKeys(JavaWriter writer) throws IOException {
-        writer.emitSingleLineComment(InjectionAdapterJavadoc.INTENT_KEYS);
-        for (IntentFieldBinding field : fields) {
-            writer.emitField(String.class.getCanonicalName(), field.getKey(), EnumSet.of(PRIVATE, STATIC, FINAL), JavaWriter.stringLiteral(field.getKey()));
-        }
     }
 
     private void writeInjectExtras(JavaWriter writer) throws IOException {
@@ -89,7 +78,7 @@ public class IntentInjectionAdapterGenerator {
 
     private void writeRequiredInjectExtraField(JavaWriter writer, IntentFieldBinding field) throws IOException {
         List<String> stmtArgs = new ArrayList<String>();
-        writer.beginControlFlow("if (intent.hasExtra(%s))", field.getKey());
+        writer.beginControlFlow("if (intent.hasExtra(%s))", StringLiteral.forValue(field.getKey()).toString());
         String stmt = "target.".concat(field.getName()).concat(" = ");
         if (field.needsToBeCast()) {
             stmt = stmt.concat("(%s) ");
@@ -97,7 +86,7 @@ public class IntentInjectionAdapterGenerator {
         }
         stmt = stmt.concat("intent.get%sExtra(%s");
         stmtArgs.add(field.getIntentType());
-        stmtArgs.add(field.getKey());
+        stmtArgs.add(StringLiteral.forValue(field.getKey()).toString());
         if (field.hasDefault()) {
             stmt = stmt.concat(", target.").concat(field.getName());
         }
@@ -111,7 +100,7 @@ public class IntentInjectionAdapterGenerator {
 
     private void writeOptionalInjectExtraField(JavaWriter writer, IntentFieldBinding field) throws IOException {
         List<String> stmtArgs = new ArrayList<String>();
-        writer.beginControlFlow("if (intent.hasExtra(%s))", field.getKey());
+        writer.beginControlFlow("if (intent.hasExtra(%s))", StringLiteral.forValue(field.getKey()).toString());
         String stmt = "target.".concat(field.getName()).concat(" = ");
         if (field.needsToBeCast()) {
             stmt = stmt.concat("(%s) ");
@@ -119,7 +108,7 @@ public class IntentInjectionAdapterGenerator {
         }
         stmt = stmt.concat("intent.get%sExtra(%s");
         stmtArgs.add(field.getIntentType());
-        stmtArgs.add(field.getKey());
+        stmtArgs.add(StringLiteral.forValue(field.getKey()).toString());
         if (field.hasDefault()) {
             stmt = stmt.concat(", target.").concat(field.getName());
         }

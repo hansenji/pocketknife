@@ -1,5 +1,6 @@
 package com.example.pocketknife;
 
+import android.content.Intent;
 import android.os.Bundle;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -103,6 +104,8 @@ public class SimpleFragmentActivityTest extends BaseTest {
         stringArrayList.add(UUID.randomUUID().toString());
         bundle.putStringArrayList(SimpleFragment.STRING_ARRAY_LIST, stringArrayList);
 
+        bundle.putString(Intent.EXTRA_TEXT, string);
+
         ActivityController<SimpleFragmentActivity> initialController = Robolectric.buildActivity(SimpleFragmentActivity.class).create();
         SimpleFragmentActivity simpleActivity = initialController.start().restart().visible().get();
         SimpleFragment simpleFragment = SimpleFragment.newInstance();
@@ -183,6 +186,8 @@ public class SimpleFragmentActivityTest extends BaseTest {
         // Not Required
         assertNull(simpleFragment.s);
         assertEquals(SimpleActivity.NRI_DEFAULT, simpleFragment.notRequired);
+
+        assertEquals(string, simpleFragment.text);
 
     }
 
