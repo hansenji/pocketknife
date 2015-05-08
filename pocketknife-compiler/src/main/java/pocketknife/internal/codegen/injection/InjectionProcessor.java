@@ -151,7 +151,7 @@ public abstract class InjectionProcessor extends BaseProcessor {
         return false;
     }
 
-    protected String findParentFqcn(TypeElement typeElement, Set<String> parents) {
+    protected TypeElement findParent(TypeElement typeElement, Set<String> parents) {
         TypeMirror type;
         while (true) {
             type = typeElement.getSuperclass();
@@ -160,8 +160,7 @@ public abstract class InjectionProcessor extends BaseProcessor {
             }
             typeElement = (TypeElement) ((DeclaredType) type).asElement();
             if (parents.contains(typeElement.toString())) {
-                String packageName = getPackageName(typeElement);
-                return packageName + "." + getClassName(typeElement, packageName);
+                return typeElement;
             }
         }
     }

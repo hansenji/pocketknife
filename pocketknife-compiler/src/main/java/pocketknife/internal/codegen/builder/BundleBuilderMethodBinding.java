@@ -37,15 +37,6 @@ public class BundleBuilderMethodBinding extends MethodBinding {
         return keys;
     }
 
-    public List<String> getWriterParameters() {
-        List<String> params = new ArrayList<String>();
-        for (BundleFieldBinding field : fields) {
-            params.add(field.getType());
-            params.add(field.getName());
-        }
-        return params;
-    }
-
     public List<BundleFieldBinding> getFields() {
         return fields;
     }

@@ -60,9 +60,9 @@ public class BundleInjectionProcessor extends InjectionProcessor {
 
         // Try to find a parent adapter for each adapter
         for (Map.Entry<TypeElement, BundleInjectionAdapterGenerator> entry : targetClassMap.entrySet()) {
-            String parentClassFqcn = findParentFqcn(entry.getKey(), erasedTargetNames);
-            if (parentClassFqcn != null) {
-                entry.getValue().setParentAdapter(parentClassFqcn + BUNDLE_ADAPTER_SUFFIX);
+            TypeElement parentElement = findParent(entry.getKey(), erasedTargetNames);
+            if (parentElement != null) {
+                entry.getValue().setParentAdapter(getPackageName(parentElement), parentElement.getSimpleName() + BUNDLE_ADAPTER_SUFFIX);
             }
         }
 
@@ -74,10 +74,10 @@ public class BundleInjectionProcessor extends InjectionProcessor {
         TypeElement enclosingElement = (TypeElement) element.getEnclosingElement();
 
         // Verify that the target has all the appropriate information for type
-        TypeMirror elementType = element.asType();
-        if (elementType instanceof TypeVariable) {
-            TypeVariable typeVariable = (TypeVariable) elementType;
-            elementType = typeVariable.getUpperBound();
+        TypeMirror type = element.asType();
+        if (type instanceof TypeVariable) {
+            TypeVariable typeVariable = (TypeVariable) type;
+            type = typeVariable.getUpperBound();
         }
 
         validateNotRequiredArguments(element);
@@ -86,18 +86,18 @@ public class BundleInjectionProcessor extends InjectionProcessor {
 
         // Assemble information on the injection point.
         String name = element.getSimpleName().toString();
-        String bundleType = typeUtil.getBundleType(elementType);
+        String bundleType = typeUtil.getBundleType(type);
         NotRequired notRequired = element.getAnnotation(NotRequired.class);
         boolean required = notRequired == null;
         int minSdk = Build.VERSION_CODES.FROYO;
         if (!required) {
             minSdk = notRequired.value();
         }
-        boolean canHaveDefault = !required && canHaveDefault(elementType, minSdk);
-        boolean needsToBeCast = typeUtil.needToCastBundleType(elementType);
+        boolean canHaveDefault = !required && canHaveDefault(type, minSdk);
+        boolean needsToBeCast = typeUtil.needToCastBundleType(type);
 
         BundleInjectionAdapterGenerator bundleInjectionAdapterGenerator = getOrCreateTargetClass(targetClassMap, enclosingElement);
-        BundleFieldBinding binding = new BundleFieldBinding(SAVE_STATE, name, elementType.toString(), bundleType, generateKey(SAVE_STATE_KEY_PREFIX, name),
+        BundleFieldBinding binding = new BundleFieldBinding(SAVE_STATE, name, type, bundleType, generateKey(SAVE_STATE_KEY_PREFIX, name),
                 needsToBeCast, canHaveDefault, required);
         bundleInjectionAdapterGenerator.addField(binding);
 
@@ -110,10 +110,10 @@ public class BundleInjectionProcessor extends InjectionProcessor {
         TypeElement enclosingElement = (TypeElement) element.getEnclosingElement();
 
         // Verify that the target has all the appropriate information for type
-        TypeMirror elementType = element.asType();
+        TypeMirror type = element.asType();
         if (element instanceof TypeVariable) {
-            TypeVariable typeVariable = (TypeVariable) elementType;
-            elementType = typeVariable.getUpperBound();
+            TypeVariable typeVariable = (TypeVariable) type;
+            type = typeVariable.getUpperBound();
         }
 
         validateNotRequiredArguments(element);
@@ -122,7 +122,7 @@ public class BundleInjectionProcessor extends InjectionProcessor {
 
         // Assemble information on the injection point
         String name = element.getSimpleName().toString();
-        String bundleType = typeUtil.getBundleType(elementType);
+        String bundleType = typeUtil.getBundleType(type);
         String key = getKey(element);
         NotRequired notRequired = element.getAnnotation(NotRequired.class);
         boolean required = notRequired == null;
@@ -130,11 +130,11 @@ public class BundleInjectionProcessor extends InjectionProcessor {
         if (!required) {
             minSdk = notRequired.value();
         }
-        boolean canHaveDefault = !required && canHaveDefault(elementType, minSdk);
-        boolean needsToBeCast = typeUtil.needToCastBundleType(elementType);
+        boolean canHaveDefault = !required && canHaveDefault(type, minSdk);
+        boolean needsToBeCast = typeUtil.needToCastBundleType(type);
 
         BundleInjectionAdapterGenerator bundleInjectionAdapterGenerator = getOrCreateTargetClass(targetClassMap, enclosingElement);
-        BundleFieldBinding binding = new BundleFieldBinding(BundleFieldBinding.AnnotationType.ARGUMENT, name, elementType.toString(), bundleType, key,
+        BundleFieldBinding binding = new BundleFieldBinding(BundleFieldBinding.AnnotationType.ARGUMENT, name, type, bundleType, key,
                 needsToBeCast, canHaveDefault, required);
         bundleInjectionAdapterGenerator.orRequired(required);
         bundleInjectionAdapterGenerator.addField(binding);
@@ -158,7 +158,7 @@ public class BundleInjectionProcessor extends InjectionProcessor {
                                                                    TypeElement enclosingElement) {
         BundleInjectionAdapterGenerator bundleInjectionAdapterGenerator = targetClassMap.get(enclosingElement);
         if (bundleInjectionAdapterGenerator == null) {
-            String targetType = enclosingElement.getQualifiedName().toString();
+            TypeMirror targetType = enclosingElement.asType();
             String classPackage = getPackageName(enclosingElement);
             String className = getClassName(enclosingElement, classPackage) + BUNDLE_ADAPTER_SUFFIX;
 

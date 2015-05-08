@@ -18,7 +18,7 @@ import static pocketknife.internal.GeneratedAdapters.JAVA_PREFIX;
 
 public abstract class BuilderProcessor extends BaseProcessor {
 
-    protected static final String GENERATOR_PREFIX = "PocketKnife_";
+    protected static final String GENERATOR_PREFIX = "PocketKnife";
 
     protected final Messager messager;
     protected final Elements elements;

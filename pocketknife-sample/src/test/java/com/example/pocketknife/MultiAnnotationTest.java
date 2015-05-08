@@ -6,6 +6,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.RobolectricTestRunner;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 import org.robolectric.util.ActivityController;
 
@@ -22,7 +23,7 @@ public class MultiAnnotationTest {
     public void testMultiAnnotationActivity() throws Exception {
         Random random = new Random();
 
-        Intent intent = new Intent(Robolectric.application, MultiAnnotationActivity.class);
+        Intent intent = new Intent(RuntimeEnvironment.application, MultiAnnotationActivity.class);
         int extraInt = random.nextInt();
         intent.putExtra(MultiAnnotationActivity.EXTRA_INT, extraInt);
 

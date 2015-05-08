@@ -45,9 +45,9 @@ public class IntentInjectionProcessor extends InjectionProcessor {
 
         // Try to find a parent adapter for each adapter
         for (Map.Entry<TypeElement, IntentInjectionAdapterGenerator> entry : targetClassMap.entrySet()) {
-            String parentClassFqcn = findParentFqcn(entry.getKey(), erasedTargetNames);
-            if (parentClassFqcn != null) {
-                entry.getValue().setParentAdapter(parentClassFqcn + INTENT_ADAPTER_SUFFIX);
+            TypeElement parent = findParent(entry.getKey(), erasedTargetNames);
+            if (parent != null) {
+                entry.getValue().setParentAdapter(getPackageName(parent), parent.getSimpleName() + INTENT_ADAPTER_SUFFIX);
             }
         }
 
@@ -59,10 +59,10 @@ public class IntentInjectionProcessor extends InjectionProcessor {
         TypeElement enclosingElement = (TypeElement) element.getEnclosingElement();
 
         // Verify that the target has all the appropriate information for type
-        TypeMirror elementType = element.asType();
-        if (elementType instanceof TypeVariable) {
-            TypeVariable typeVariable = (TypeVariable) elementType;
-            elementType = typeVariable.getUpperBound();
+        TypeMirror type = element.asType();
+        if (type instanceof TypeVariable) {
+            TypeVariable typeVariable = (TypeVariable) type;
+            type = typeVariable.getUpperBound();
         }
 
         validateNotRequiredArguments(element);
@@ -71,14 +71,14 @@ public class IntentInjectionProcessor extends InjectionProcessor {
 
         // Assemble information on the injection point
         String name = element.getSimpleName().toString();
-        String intentType = typeUtil.getIntentType(elementType);
+        String intentType = typeUtil.getIntentType(type);
         String key = getKey(element);
         boolean required = element.getAnnotation(NotRequired.class) == null;
-        boolean hasDefault = typeUtil.isPrimitive(elementType);
-        boolean needsToBeCast = typeUtil.needToCastIntentType(elementType);
+        boolean hasDefault = typeUtil.isPrimitive(type);
+        boolean needsToBeCast = typeUtil.needToCastIntentType(type);
 
         IntentInjectionAdapterGenerator intentInjectionAdapterGenerator = getOrCreateTargetClass(targetClassMap, enclosingElement);
-        IntentFieldBinding binding = new IntentFieldBinding(name, elementType.toString(), intentType, key, needsToBeCast, hasDefault, required);
+        IntentFieldBinding binding = new IntentFieldBinding(name, type, intentType, key, needsToBeCast, hasDefault, required);
         intentInjectionAdapterGenerator.addField(binding);
 
         // Add the type-erased version to the valid targets set.
@@ -96,7 +96,7 @@ public class IntentInjectionProcessor extends InjectionProcessor {
                                                                    TypeElement enclosingElement) {
         IntentInjectionAdapterGenerator intentInjectionAdapterGenerator = targetClassMap.get(enclosingElement);
         if (intentInjectionAdapterGenerator == null) {
-            String targetType = enclosingElement.getQualifiedName().toString();
+            TypeMirror targetType = enclosingElement.asType();
             String classPackage = getPackageName(enclosingElement);
             String className = getClassName(enclosingElement, classPackage) + INTENT_ADAPTER_SUFFIX;
 

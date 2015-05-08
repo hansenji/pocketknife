@@ -6,6 +6,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.RobolectricTestRunner;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 import org.robolectric.util.ActivityController;
 
@@ -22,7 +23,7 @@ public class KeyGenTest extends BaseTest {
     public void testExtraKeyGeneration() {
         String s = UUID.randomUUID().toString();
         int i = new Random(42).nextInt();
-        Intent intent = new Intent(Robolectric.application, KeyGenActivity.class);
+        Intent intent = new Intent(RuntimeEnvironment.application, KeyGenActivity.class);
         intent.putExtra("EXTRA_STRING", s);
         intent.putExtra("EXTRA_BLAH", i);
 

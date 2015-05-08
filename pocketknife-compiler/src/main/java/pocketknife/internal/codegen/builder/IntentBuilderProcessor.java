@@ -79,12 +79,12 @@ public class IntentBuilderProcessor extends BuilderProcessor {
         }
     }
 
-    private String getIntentBuilderClsValue(Element element) {
+    private TypeMirror getIntentBuilderClsValue(Element element) {
         for (AnnotationMirror annotationMirror : element.getAnnotationMirrors()) {
             if (IntentBuilder.class.getName().equals(annotationMirror.getAnnotationType().toString())) {
                 for (Map.Entry<? extends ExecutableElement, ? extends AnnotationValue> entry : annotationMirror.getElementValues().entrySet()) {
                     if ("cls".equals(entry.getKey().getSimpleName().toString())) {
-                        return entry.getValue().getValue().toString();
+                        return (TypeMirror) entry.getValue().getValue();
                     }
                 }
                 // If no cls is found return default
@@ -124,14 +124,13 @@ public class IntentBuilderProcessor extends BuilderProcessor {
     }
 
     private IntentFieldBinding getFieldBinding(Element parameter) throws InvalidTypeException {
-        TypeMirror parameterType = parameter.asType();
-        if (parameterType instanceof TypeVariable) {
-            parameterType = ((TypeVariable) parameterType).getUpperBound();
+        TypeMirror type = parameter.asType();
+        if (type instanceof TypeVariable) {
+            type = ((TypeVariable) type).getUpperBound();
         }
 
         String name = parameter.getSimpleName().toString();
-        String type = parameterType.toString();
-        String intentType = typeUtil.getIntentType(parameterType);
+        String intentType = typeUtil.getIntentType(type);
         String key = generateKey(EXTRA_KEY_PREFIX, name);
         boolean arrayList = isIntentArrayList(intentType);
         return new IntentFieldBinding(name, type, intentType, key, arrayList);

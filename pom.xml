@@ -32,12 +32,12 @@
         <android.version>4.1.1.4</android.version>
         <android.platform>16</android.platform>
         <support-v4.version>r7</support-v4.version>
-        <javawriter.version>2.5.1</javawriter.version>
+        <javapoet.version>1.0.0</javapoet.version>
         <guava.version>18.0</guava.version>
         <fest.version>2.0M10</fest.version>
         <junit.version>4.12</junit.version>
-        <robolectric.version>2.4</robolectric.version>
-        <compile-test.version>0.6</compile-test.version>
+        <robolectric.version>3.0-rc2</robolectric.version>
+        <compile-test.version>0.7</compile-test.version>
         <surefireArgLine />
     </properties>
 
@@ -74,8 +74,8 @@
             </dependency>
             <dependency>
                 <groupId>com.squareup</groupId>
-                <artifactId>javawriter</artifactId>
-                <version>${javawriter.version}</version>
+                <artifactId>javapoet</artifactId>
+                <version>${javapoet.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.google.guava</groupId>

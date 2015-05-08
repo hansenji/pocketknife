@@ -1,5 +1,7 @@
 package pocketknife.internal.codegen;
 
+import javax.lang.model.type.TypeMirror;
+
 public class BundleFieldBinding extends FieldBinding {
     public static final String ARGUMENT_KEY_PREFIX = "ARG_";
     public static final String SAVE_STATE_KEY_PREFIX = "BUNDLE_";
@@ -11,7 +13,7 @@ public class BundleFieldBinding extends FieldBinding {
 
     private final AnnotationType annotationType;
     private final String name;
-    private final String type;
+    private final TypeMirror type;
     private final String bundleType;
     private final String key;
 
@@ -20,11 +22,11 @@ public class BundleFieldBinding extends FieldBinding {
     private final boolean canHaveDefault;
     private final boolean required;
 
-    public BundleFieldBinding(String name, String type, String bundleType, String key) {
+    public BundleFieldBinding(String name, TypeMirror type, String bundleType, String key) {
         this(AnnotationType.BUILDER, name, type, bundleType, key, false, false, false);
     }
 
-    public BundleFieldBinding(AnnotationType annotationType, String name, String type, String bundleType, String key, boolean needsToBeCast,
+    public BundleFieldBinding(AnnotationType annotationType, String name, TypeMirror type, String bundleType, String key, boolean needsToBeCast,
                               boolean canHaveDefault, boolean required) {
         this.annotationType = annotationType;
         this.name = name;
@@ -45,7 +47,7 @@ public class BundleFieldBinding extends FieldBinding {
         return name;
     }
 
-    public String getType() {
+    public TypeMirror getType() {
         return type;
     }
 

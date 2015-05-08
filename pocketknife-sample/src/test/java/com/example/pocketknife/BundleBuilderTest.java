@@ -24,7 +24,7 @@ public class BundleBuilderTest extends BaseTest {
 
     @Before
     public void setup() {
-        bundles = new PocketKnife_Bundles();
+        bundles = new PocketKnifeBundles();
     }
 
     @After
@@ -38,18 +38,18 @@ public class BundleBuilderTest extends BaseTest {
         int i = random.nextInt();
         int j = random.nextInt();
         Bundle bundle = bundles.getSingleArgBundle(i);
-        assertEquals("EXTRA", i, bundle.getInt(PocketKnife_Bundles.ARG_I, 0));
+        assertEquals("EXTRA", i, bundle.getInt(PocketKnifeBundles.ARG_I, 0));
         bundle = bundles.getEmptyBundle();
         assertEquals(0, bundle.size());
 
         bundle = bundles.getTwinArgsBundle(i, j);
-        assertEquals("SAME TYPE I", i, bundle.getInt(PocketKnife_Bundles.ARG_I, 0));
-        assertEquals("SAME TYPE J", j, bundle.getInt(PocketKnife_Bundles.ARG_J, 0));
+        assertEquals("SAME TYPE I", i, bundle.getInt(PocketKnifeBundles.ARG_I, 0));
+        assertEquals("SAME TYPE J", j, bundle.getInt(PocketKnifeBundles.ARG_J, 0));
 
         bundle = bundles.getNameCollisionBundle(0, 1, 2);
-        assertEquals("NAME COLLISION", 0, bundle.getInt(PocketKnife_Bundles.ARG_BUNDLE, 0));
-        assertEquals("NAME COLLISION", 1, bundle.getInt(PocketKnife_Bundles.ARG_BUNDLE1, 0));
-        assertEquals("NAME COLLISION", 2, bundle.getInt(PocketKnife_Bundles.ARG_BUNDLE2, 0));
+        assertEquals("NAME COLLISION", 0, bundle.getInt(PocketKnifeBundles.ARG_BUNDLE, 0));
+        assertEquals("NAME COLLISION", 1, bundle.getInt(PocketKnifeBundles.ARG_BUNDLE1, 0));
+        assertEquals("NAME COLLISION", 2, bundle.getInt(PocketKnifeBundles.ARG_BUNDLE2, 0));
 
         boolean aBoolean = random.nextBoolean();
         boolean[] booleans = {random.nextBoolean(), random.nextBoolean(), random.nextBoolean(), random.nextBoolean(), random.nextBoolean()};
@@ -90,33 +90,33 @@ public class BundleBuilderTest extends BaseTest {
                 aFloat, floats, anInt, ints, integerArrayList, aLong, longs, parcelable, parcelables, parcelableArrayList, serializable, aShort,
                 shorts, string, strings, stringArrayList);
 
-        assertEquals(aBoolean, bundle.getBoolean(PocketKnife_Bundles.ARG_A_BOOLEAN, false));
-        assertArrayEquals(booleans, bundle.getBooleanArray(PocketKnife_Bundles.ARG_BOOLEANS));
-        assertBundleEquals(bundle1, bundle.getBundle(PocketKnife_Bundles.ARG_BUNDLE));
-        assertEquals(aByte, bundle.getByte(PocketKnife_Bundles.ARG_A_BYTE));
-        assertArrayEquals(bytes, bundle.getByteArray(PocketKnife_Bundles.ARG_BYTES));
-        assertEquals(aChar, bundle.getChar(PocketKnife_Bundles.ARG_A_CHAR, '0'));
-        assertArrayEquals(chars, bundle.getCharArray(PocketKnife_Bundles.ARG_CHARS));
-        assertEquals(charSequence, bundle.getCharSequence(PocketKnife_Bundles.ARG_CHAR_SEQUENCE));
-        assertArrayEquals(charSequences, bundle.getCharSequenceArray(PocketKnife_Bundles.ARG_CHAR_SEQUENCES));
-        assertArrayListEquals(charSequenceArrayList, bundle.getCharSequenceArrayList(PocketKnife_Bundles.ARG_CHAR_SEQUENCE_ARRAY_LIST));
-        assertEquals(aDouble, bundle.getDouble(PocketKnife_Bundles.ARG_A_DOUBLE, 0.0), 0);
-        assertArrayEquals(doubles, bundle.getDoubleArray(PocketKnife_Bundles.ARG_DOUBLES), 0);
-        assertEquals(aFloat, bundle.getFloat(PocketKnife_Bundles.ARG_A_FLOAT, 0.0f), 0);
-        assertArrayEquals(floats, bundle.getFloatArray(PocketKnife_Bundles.ARG_FLOATS), 0);
-        assertEquals(anInt, bundle.getInt(PocketKnife_Bundles.ARG_AN_INT, 0));
-        assertArrayEquals(ints, bundle.getIntArray(PocketKnife_Bundles.ARG_INTS));
-        assertArrayListEquals(integerArrayList, bundle.getIntegerArrayList(PocketKnife_Bundles.ARG_INTEGER_ARRAY_LIST));
-        assertEquals(aLong, bundle.getLong(PocketKnife_Bundles.ARG_A_LONG, 0));
-        assertArrayEquals(longs, bundle.getLongArray(PocketKnife_Bundles.ARG_LONGS));
-        assertEquals(parcelable, bundle.getParcelable(PocketKnife_Bundles.ARG_PARCELABLE));
-        assertArrayEquals(parcelables, bundle.getParcelableArray(PocketKnife_Bundles.ARG_PARCELABLES));
-        assertArrayListEquals(parcelableArrayList, bundle.getParcelableArrayList(PocketKnife_Bundles.ARG_PARCELABLE_ARRAY_LIST));
-        assertEquals(serializable, bundle.getSerializable(PocketKnife_Bundles.ARG_SERIALIZABLE));
-        assertEquals(aShort, bundle.getShort(PocketKnife_Bundles.ARG_A_SHORT, (short) 0));
-        assertArrayEquals(shorts, bundle.getShortArray(PocketKnife_Bundles.ARG_SHORTS));
-        assertEquals(string, bundle.getString(PocketKnife_Bundles.ARG_STRING));
-        assertArrayEquals(strings, bundle.getStringArray(PocketKnife_Bundles.ARG_STRINGS));
-        assertArrayListEquals(stringArrayList, bundle.getStringArrayList(PocketKnife_Bundles.ARG_STRING_ARRAY_LIST));
+        assertEquals(aBoolean, bundle.getBoolean(PocketKnifeBundles.ARG_A_BOOLEAN, false));
+        assertArrayEquals(booleans, bundle.getBooleanArray(PocketKnifeBundles.ARG_BOOLEANS));
+        assertBundleEquals(bundle1, bundle.getBundle(PocketKnifeBundles.ARG_BUNDLE));
+        assertEquals(aByte, bundle.getByte(PocketKnifeBundles.ARG_A_BYTE));
+        assertArrayEquals(bytes, bundle.getByteArray(PocketKnifeBundles.ARG_BYTES));
+        assertEquals(aChar, bundle.getChar(PocketKnifeBundles.ARG_A_CHAR, '0'));
+        assertArrayEquals(chars, bundle.getCharArray(PocketKnifeBundles.ARG_CHARS));
+        assertEquals(charSequence, bundle.getCharSequence(PocketKnifeBundles.ARG_CHAR_SEQUENCE));
+        assertArrayEquals(charSequences, bundle.getCharSequenceArray(PocketKnifeBundles.ARG_CHAR_SEQUENCES));
+        assertArrayListEquals(charSequenceArrayList, bundle.getCharSequenceArrayList(PocketKnifeBundles.ARG_CHAR_SEQUENCE_ARRAY_LIST));
+        assertEquals(aDouble, bundle.getDouble(PocketKnifeBundles.ARG_A_DOUBLE, 0.0), 0);
+        assertArrayEquals(doubles, bundle.getDoubleArray(PocketKnifeBundles.ARG_DOUBLES), 0);
+        assertEquals(aFloat, bundle.getFloat(PocketKnifeBundles.ARG_A_FLOAT, 0.0f), 0);
+        assertArrayEquals(floats, bundle.getFloatArray(PocketKnifeBundles.ARG_FLOATS), 0);
+        assertEquals(anInt, bundle.getInt(PocketKnifeBundles.ARG_AN_INT, 0));
+        assertArrayEquals(ints, bundle.getIntArray(PocketKnifeBundles.ARG_INTS));
+        assertArrayListEquals(integerArrayList, bundle.getIntegerArrayList(PocketKnifeBundles.ARG_INTEGER_ARRAY_LIST));
+        assertEquals(aLong, bundle.getLong(PocketKnifeBundles.ARG_A_LONG, 0));
+        assertArrayEquals(longs, bundle.getLongArray(PocketKnifeBundles.ARG_LONGS));
+        assertEquals(parcelable, bundle.getParcelable(PocketKnifeBundles.ARG_PARCELABLE));
+        assertArrayEquals(parcelables, bundle.getParcelableArray(PocketKnifeBundles.ARG_PARCELABLES));
+        assertArrayListEquals(parcelableArrayList, bundle.getParcelableArrayList(PocketKnifeBundles.ARG_PARCELABLE_ARRAY_LIST));
+        assertEquals(serializable, bundle.getSerializable(PocketKnifeBundles.ARG_SERIALIZABLE));
+        assertEquals(aShort, bundle.getShort(PocketKnifeBundles.ARG_A_SHORT, (short) 0));
+        assertArrayEquals(shorts, bundle.getShortArray(PocketKnifeBundles.ARG_SHORTS));
+        assertEquals(string, bundle.getString(PocketKnifeBundles.ARG_STRING));
+        assertArrayEquals(strings, bundle.getStringArray(PocketKnifeBundles.ARG_STRINGS));
+        assertArrayListEquals(stringArrayList, bundle.getStringArrayList(PocketKnifeBundles.ARG_STRING_ARRAY_LIST));
     }
 }

@@ -24,6 +24,8 @@ public class TypeUtil {
     public static final String CONTEXT = "android.content.Context";
     public static final String BUILD = "android.os.Build";
     public static final String URI = "android.net.Uri";
+    public static final String FRAGMENT = "android.app.Fragment";
+    public static final String SUPPORT_FRAGMENT = "android.support.v4.app.Fragment";
 
 
     public final TypeMirror serializableType;
@@ -36,9 +38,10 @@ public class TypeUtil {
     public final TypeMirror arrayListType;
     public final TypeMirror sparseArrayType;
     public final TypeMirror intentType;
+    public final TypeMirror fragmentType;
+    public final TypeMirror supportFragmentType;
 
     private static TypeUtil instance;
-
     private final Types types;
 
     public static synchronized TypeUtil getInstance(Elements elements, Types types) {
@@ -100,6 +103,16 @@ public class TypeUtil {
             throw new IllegalStateException("Unable to find Intent type");
         }
         intentType = element.asType();
+        element = elements.getTypeElement(FRAGMENT);
+        if (element == null) {
+            throw new IllegalStateException("Unable to find Fragment type");
+        }
+        fragmentType = element.asType();
+        element = elements.getTypeElement(SUPPORT_FRAGMENT);
+        if (element == null) {
+            throw new IllegalStateException("Unable to find support Fragment type");
+        }
+        supportFragmentType = element.asType();
     }
 
     public String getBundleType(TypeMirror type) throws InvalidTypeException {

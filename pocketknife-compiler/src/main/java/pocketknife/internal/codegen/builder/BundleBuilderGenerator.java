@@ -1,16 +1,17 @@
 package pocketknife.internal.codegen.builder;
 
-import com.squareup.javawriter.JavaWriter;
-import com.squareup.javawriter.StringLiteral;
+import android.os.Bundle;
+import com.squareup.javapoet.ClassName;
+import com.squareup.javapoet.FieldSpec;
+import com.squareup.javapoet.JavaFile;
+import com.squareup.javapoet.MethodSpec;
+import com.squareup.javapoet.TypeSpec;
 import pocketknife.internal.codegen.BaseGenerator;
 import pocketknife.internal.codegen.BundleFieldBinding;
-import pocketknife.internal.codegen.TypeUtil;
 
-import javax.annotation.Generated;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.EnumSet;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -38,56 +39,55 @@ public class BundleBuilderGenerator extends BaseGenerator {
         return classPackage + "." + className;
     }
 
-    public void generate(JavaWriter writer) throws IOException {
-        writer.emitPackage(classPackage);
-        writer.emitImports(TypeUtil.BUNDLE);
-        writer.emitEmptyLine();
-        writer.emitAnnotation(Generated.class, getGeneratedMap(BundleBuilderGenerator.class));
-        writer.beginType(className, "class", EnumSet.of(PUBLIC), null, interfaceName);
+    public JavaFile generate() throws IOException {
+        TypeSpec.Builder classBuilder = TypeSpec.classBuilder(className)
+                .addSuperinterface(ClassName.get(classPackage, interfaceName))
+                .addModifiers(PUBLIC)
+                .addAnnotation(getGeneratedAnnotationSpec(BundleBuilderGenerator.class));
 
-        writer.emitEmptyLine();
-        writeKeys(writer);
+        addKeys(classBuilder);
 
-        writeMethods(writer);
+        addMethods(classBuilder);
 
-        writer.endType();
+        return JavaFile.builder(classPackage, classBuilder.build()).build();
     }
 
-    private void writeKeys(JavaWriter writer) throws IOException {
-        Set<String> keys = new HashSet<String>();
+    private void addKeys(TypeSpec.Builder classBuilder) {
+        Set<String> keys = new LinkedHashSet<String>();
         for (BundleBuilderMethodBinding method : methods) {
             keys.addAll(method.getKeys());
         }
 
         for (String key : keys) {
-            writer.emitField("String", key, EnumSet.of(PUBLIC, STATIC, FINAL), StringLiteral.forValue(key).toString());
+            classBuilder.addField(FieldSpec.builder(String.class, key, PUBLIC, STATIC, FINAL)
+                    .initializer("$S", key)
+                    .build());
         }
-        writer.emitEmptyLine();
     }
 
-    private void writeMethods(JavaWriter writer) throws IOException {
+    private void addMethods(TypeSpec.Builder classBuilder) {
         for (BundleBuilderMethodBinding method : methods) {
-            writeMethod(method, writer);
-            writer.emitEmptyLine();
+            addMethod(method, classBuilder);
         }
     }
 
-    private void writeMethod(BundleBuilderMethodBinding method, JavaWriter writer) throws IOException {
-        writer.emitAnnotation(Override.class);
-
+    private void addMethod(BundleBuilderMethodBinding method, TypeSpec.Builder classBuilder) {
         String returnVarName = getReturnVarName(RETURN_VAR_NAME_ROOT, method);
 
-        writer.beginMethod("Bundle", method.getName(), EnumSet.of(PUBLIC), method.getWriterParameters(), null);
+        MethodSpec.Builder methodBuilder = MethodSpec.methodBuilder(method.getName())
+                .addAnnotation(Override.class)
+                .addModifiers(PUBLIC)
+                .returns(Bundle.class)
+                .addStatement("$T $N = new $T()", Bundle.class, returnVarName, Bundle.class);
 
-        writer.emitStatement("Bundle %s = new Bundle()", returnVarName);
-
-        for (BundleFieldBinding field : method.getFields()) {
-            writer.emitStatement("%s.put%s(%s, %s)", returnVarName, field.getBundleType(), field.getKey(), field.getName());
+        for (BundleFieldBinding fieldBinding : method.getFields()) {
+            methodBuilder.addParameter(ClassName.get(fieldBinding.getType()), fieldBinding.getName());
+            methodBuilder.addStatement("$N.put$L($N, $N)", returnVarName, fieldBinding.getBundleType(), fieldBinding.getKey(), fieldBinding.getName());
         }
 
-        writer.emitStatement("return %s", returnVarName);
+        methodBuilder.addStatement("return $N", returnVarName);
 
-        writer.endMethod();
+        classBuilder.addMethod(methodBuilder.build());
     }
 
     public void addMethod(BundleBuilderMethodBinding methodBinding) {

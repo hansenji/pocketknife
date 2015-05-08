@@ -76,14 +76,13 @@ public class BundleBuilderProcessor extends BuilderProcessor {
     }
 
     private BundleFieldBinding getFieldBinding(Element parameter) throws InvalidTypeException {
-        TypeMirror parameterType = parameter.asType();
-        if (parameterType instanceof TypeVariable) {
-            parameterType = ((TypeVariable) parameterType).getUpperBound();
+        TypeMirror type = parameter.asType();
+        if (type instanceof TypeVariable) {
+            type = ((TypeVariable) type).getUpperBound();
         }
 
         String name = parameter.getSimpleName().toString();
-        String type = parameterType.toString();
-        String bundleType = typeUtil.getBundleType(parameterType);
+        String bundleType = typeUtil.getBundleType(type);
         String key = generateKey(ARG_KEY_PREFIX, name);
         return new BundleFieldBinding(name, type, bundleType, key);
     }

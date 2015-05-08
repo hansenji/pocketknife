@@ -1,10 +1,12 @@
 package pocketknife.internal.codegen;
 
+import javax.lang.model.type.TypeMirror;
+
 public class IntentFieldBinding extends FieldBinding {
     public static final String KEY_PREFIX = "EXTRA_";
 
     private final String name;
-    private final String type;
+    private final TypeMirror type;
     private final String intentType;
     private final String key;
     // Builder Only
@@ -15,7 +17,7 @@ public class IntentFieldBinding extends FieldBinding {
     private final boolean needsToBeCast;
     private final boolean hasDefault;
 
-    public IntentFieldBinding(String name, String type, String intentType, String key, boolean arrayList) {
+    public IntentFieldBinding(String name, TypeMirror type, String intentType, String key, boolean arrayList) {
         this.name = name;
         this.type = type;
         this.intentType = intentType;
@@ -27,7 +29,7 @@ public class IntentFieldBinding extends FieldBinding {
         this.hasDefault = false;
     }
 
-    public IntentFieldBinding(String name, String type, String intentType, String key, Boolean needsToBeCast, boolean hasDefault, boolean required) {
+    public IntentFieldBinding(String name, TypeMirror type, String intentType, String key, Boolean needsToBeCast, boolean hasDefault, boolean required) {
         this.name = name;
         this.type = type;
         this.intentType = intentType;
@@ -48,7 +50,7 @@ public class IntentFieldBinding extends FieldBinding {
         return name;
     }
 
-    public String getType() {
+    public TypeMirror getType() {
         return type;
     }
 

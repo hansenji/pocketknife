@@ -6,6 +6,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.RobolectricTestRunner;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 import org.robolectric.util.ActivityController;
 
@@ -27,7 +28,7 @@ public class InheritanceTest {
         args.putInt(ChildFragment.CHILD_ARG, childArg);
         args.putInt(ParentFragment.PARENT_ARG, parentArg);
 
-        Intent intent = new Intent(Robolectric.application, GrandchildActivity.class);
+        Intent intent = new Intent(RuntimeEnvironment.application, GrandchildActivity.class);
         int parentExtra = random.nextInt();
         int childExtra = random.nextInt();
         intent.putExtra(ParentActivity.PARENT_EXTRA, parentExtra);
@@ -57,7 +58,7 @@ public class InheritanceTest {
         copyArgs.putInt(ChildFragment.CHILD_ARG, random.nextInt() - childArg);
         copyArgs.putInt(ParentFragment.PARENT_ARG, random.nextInt() - parentArg);
 
-        Intent copyIntent = new Intent(Robolectric.application, GrandchildActivity.class);
+        Intent copyIntent = new Intent(RuntimeEnvironment.application, GrandchildActivity.class);
         copyIntent.putExtra(ParentActivity.PARENT_EXTRA, random.nextInt() - parentExtra);
         copyIntent.putExtra(ChildActivity.CHILD_EXTRA, random.nextInt() - childExtra);
         copyIntent.putExtra(ChildActivity.FRAGMENT_ARGS, copyArgs);

@@ -1,13 +1,20 @@
 package pocketknife.internal.codegen.injection;
 
-import com.squareup.javawriter.JavaWriter;
-import com.squareup.javawriter.StringLiteral;
+import android.content.Intent;
+import com.squareup.javapoet.ClassName;
+import com.squareup.javapoet.JavaFile;
+import com.squareup.javapoet.MethodSpec;
+import com.squareup.javapoet.ParameterSpec;
+import com.squareup.javapoet.ParameterizedTypeName;
+import com.squareup.javapoet.TypeSpec;
+import com.squareup.javapoet.TypeVariableName;
 import pocketknife.internal.IntentBinding;
+import pocketknife.internal.codegen.BaseGenerator;
 import pocketknife.internal.codegen.IntentFieldBinding;
 
+import javax.lang.model.type.TypeMirror;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.EnumSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -15,16 +22,19 @@ import java.util.Set;
 import static javax.lang.model.element.Modifier.PUBLIC;
 import static pocketknife.internal.GeneratedAdapters.INJECT_EXTRAS_METHOD;
 
-public class IntentInjectionAdapterGenerator {
+public class IntentInjectionAdapterGenerator extends BaseGenerator {
+
+    private static final String TARGET = "target";
+    private static final String INTENT = "intent";
 
     private final Set<IntentFieldBinding> fields = new LinkedHashSet<IntentFieldBinding>();
     private final String classPackage;
     private final String className;
-    private final String targetType;
-    private String parentAdapter;
+    private final TypeMirror targetType;
+    private ClassName parentAdapter;
 
 
-    public IntentInjectionAdapterGenerator(String classPackage, String className, String targetType) {
+    public IntentInjectionAdapterGenerator(String classPackage, String className, TypeMirror targetType) {
         this.classPackage = classPackage;
         this.className = className;
         this.targetType = targetType;
@@ -34,94 +44,73 @@ public class IntentInjectionAdapterGenerator {
         fields.add(binding);
     }
 
-    public void generate(JavaWriter writer) throws IOException {
-        writer.emitSingleLineComment(InjectionAdapterJavadoc.GENERATED_BY_POCKETKNIFE);
-        writer.emitPackage(classPackage);
-        writer.emitImports("android.content.Intent");
-        writer.emitEmptyLine();
+    public JavaFile generate() throws IOException {
+        TypeVariableName t = TypeVariableName.get("T");
+        TypeSpec.Builder classBuilder = TypeSpec.classBuilder(className)
+                .addTypeVariable(TypeVariableName.get(t.name, ClassName.get(targetType)))
+                .addModifiers(PUBLIC)
+                .addAnnotation(getGeneratedAnnotationSpec(IntentInjectionAdapterGenerator.class));
+
+        // Add Interface or Parent Class
         if (parentAdapter != null) {
-            writer.beginType(className + "<T extends " + targetType + ">", "class", EnumSet.of(PUBLIC), parentAdapter + "<T>");
+            classBuilder.superclass(ParameterizedTypeName.get(parentAdapter, t));
         } else {
-            writer.beginType(className + "<T extends " + targetType + ">", "class", EnumSet.of(PUBLIC), null, JavaWriter.type(IntentBinding.class, "T"));
+            classBuilder.addSuperinterface(ParameterizedTypeName.get(ClassName.get(IntentBinding.class), t));
         }
-        writer.emitEmptyLine();
 
-        // write injectExtras
-        writeInjectExtras(writer);
-
-        writer.endType();
-    }
-
-    private void writeInjectExtras(JavaWriter writer) throws IOException {
-        writer.emitJavadoc(InjectionAdapterJavadoc.INJECT_EXTRAS_METHOD, targetType);
-        writer.beginMethod("void", INJECT_EXTRAS_METHOD, EnumSet.of(PUBLIC), "T", "target", "Intent", "intent");
+        MethodSpec.Builder methodBuilder = MethodSpec.methodBuilder(INJECT_EXTRAS_METHOD)
+                .addModifiers(PUBLIC)
+                .addParameter(ParameterSpec.builder(t, TARGET).build())
+                .addParameter(ParameterSpec.builder(ClassName.get(Intent.class), INTENT).build());
         if (parentAdapter != null) {
-            writer.emitStatement("super.%s(%s, %s)", INJECT_EXTRAS_METHOD, "target", "intent");
+            methodBuilder.addStatement("super.$L($N, $N)", INJECT_EXTRAS_METHOD, TARGET, INTENT);
         }
-        writer.beginControlFlow("if (intent == null)");
-        writer.emitStatement("throw new IllegalStateException(\"Intent is null\")");
-        writer.endControlFlow();
+        methodBuilder.beginControlFlow("if ($N == null)", INTENT);
+        methodBuilder.addStatement("throw new $T($S)", IllegalStateException.class, "intent is null");
+        methodBuilder.endControlFlow();
+
         for (IntentFieldBinding field : fields) {
-            writeInjectExtraField(writer, field);
+            addInjectExtraField(methodBuilder, field);
         }
-        writer.endMethod();
+
+        classBuilder.addMethod(methodBuilder.build());
+
+        return JavaFile.builder(classPackage, classBuilder.build()).build();
     }
 
-    private void writeInjectExtraField(JavaWriter writer, IntentFieldBinding field) throws IOException {
-        writer.emitSingleLineComment(field.getDescription());
+    private void addInjectExtraField(MethodSpec.Builder methodBuilder, IntentFieldBinding field) {
+        methodBuilder.beginControlFlow("if ($N.hasExtra($S))", INTENT, field.getKey());
+
+        List<Object> stmtArgs = new ArrayList<Object>();
+        String stmt = "$N.$N = ";
+        stmtArgs.add(TARGET);
+        stmtArgs.add(field.getName());
+
+        if (field.needsToBeCast()) {
+            stmt = stmt.concat("($T)");
+            stmtArgs.add(field.getType());
+        }
+        stmt = stmt.concat("$N.get$LExtra($S");
+        stmtArgs.add(INTENT);
+        stmtArgs.add(field.getIntentType());
+        stmtArgs.add(field.getKey());
+
+        if (field.hasDefault()) {
+            stmt = stmt.concat(", $N.$N");
+            stmtArgs.add(TARGET);
+            stmtArgs.add(field.getName());
+        }
+        stmt = stmt.concat(")");
+        methodBuilder.addStatement(stmt, stmtArgs.toArray(new Object[stmtArgs.size()]));
         if (field.isRequired()) {
-            writeRequiredInjectExtraField(writer, field);
-        } else {
-            writeOptionalInjectExtraField(writer, field);
+            methodBuilder.nextControlFlow("else")
+            .addStatement("throw new $T($S)", IllegalStateException.class, String.format("Required Extra with key '%s' was not found for '%s'."
+                    + "If this is not required add '@NotRequired' annotation.", field.getKey(), field.getName()));
         }
+        methodBuilder.endControlFlow();
     }
 
-    private void writeRequiredInjectExtraField(JavaWriter writer, IntentFieldBinding field) throws IOException {
-        List<String> stmtArgs = new ArrayList<String>();
-        writer.beginControlFlow("if (intent.hasExtra(%s))", StringLiteral.forValue(field.getKey()).toString());
-        String stmt = "target.".concat(field.getName()).concat(" = ");
-        if (field.needsToBeCast()) {
-            stmt = stmt.concat("(%s) ");
-            stmtArgs.add(field.getType());
-        }
-        stmt = stmt.concat("intent.get%sExtra(%s");
-        stmtArgs.add(field.getIntentType());
-        stmtArgs.add(StringLiteral.forValue(field.getKey()).toString());
-        if (field.hasDefault()) {
-            stmt = stmt.concat(", target.").concat(field.getName());
-        }
-        stmt = stmt.concat(")");
-        writer.emitStatement(stmt, stmtArgs.toArray(new Object[stmtArgs.size()]));
-        writer.nextControlFlow("else");
-        writer.emitStatement("throw new IllegalStateException(\"Required Extra with key '%s' was not found for '%s'. "
-                + "If this field is not required add '@NotRequired' annotation\")", field.getKey(), field.getName());
-        writer.endControlFlow();
-    }
-
-    private void writeOptionalInjectExtraField(JavaWriter writer, IntentFieldBinding field) throws IOException {
-        List<String> stmtArgs = new ArrayList<String>();
-        writer.beginControlFlow("if (intent.hasExtra(%s))", StringLiteral.forValue(field.getKey()).toString());
-        String stmt = "target.".concat(field.getName()).concat(" = ");
-        if (field.needsToBeCast()) {
-            stmt = stmt.concat("(%s) ");
-            stmtArgs.add(field.getType());
-        }
-        stmt = stmt.concat("intent.get%sExtra(%s");
-        stmtArgs.add(field.getIntentType());
-        stmtArgs.add(StringLiteral.forValue(field.getKey()).toString());
-        if (field.hasDefault()) {
-            stmt = stmt.concat(", target.").concat(field.getName());
-        }
-        stmt = stmt.concat(")");
-        writer.emitStatement(stmt, stmtArgs.toArray(new Object[stmtArgs.size()]));
-        writer.endControlFlow();
-    }
-
-    public CharSequence getFqcn() {
-        return classPackage + "." + className;
-    }
-
-    public void setParentAdapter(String parentAdapter) {
-        this.parentAdapter = parentAdapter;
+    public void setParentAdapter(String packageName, String className) {
+        this.parentAdapter = ClassName.get(packageName, className);
     }
 }

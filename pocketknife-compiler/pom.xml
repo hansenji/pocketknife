@@ -20,7 +20,7 @@
 
         <dependency>
             <groupId>com.squareup</groupId>
-            <artifactId>javawriter</artifactId>
+            <artifactId>javapoet</artifactId>
         </dependency>
         <dependency>
             <groupId>com.google.guava</groupId>

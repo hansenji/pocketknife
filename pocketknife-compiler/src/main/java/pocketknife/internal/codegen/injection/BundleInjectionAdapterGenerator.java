@@ -1,13 +1,20 @@
 package pocketknife.internal.codegen.injection;
 
-import com.squareup.javawriter.JavaWriter;
-import com.squareup.javawriter.StringLiteral;
+import android.os.Bundle;
+import com.squareup.javapoet.ClassName;
+import com.squareup.javapoet.JavaFile;
+import com.squareup.javapoet.MethodSpec;
+import com.squareup.javapoet.ParameterSpec;
+import com.squareup.javapoet.ParameterizedTypeName;
+import com.squareup.javapoet.TypeSpec;
+import com.squareup.javapoet.TypeVariableName;
 import pocketknife.internal.BundleBinding;
+import pocketknife.internal.codegen.BaseGenerator;
 import pocketknife.internal.codegen.BundleFieldBinding;
 
+import javax.lang.model.type.TypeMirror;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.EnumSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -19,16 +26,19 @@ import static pocketknife.internal.GeneratedAdapters.SAVE_METHOD;
 import static pocketknife.internal.codegen.BundleFieldBinding.AnnotationType.ARGUMENT;
 import static pocketknife.internal.codegen.BundleFieldBinding.AnnotationType.SAVE_STATE;
 
-public final class BundleInjectionAdapterGenerator {
+public final class BundleInjectionAdapterGenerator extends BaseGenerator {
+
+    private static final String BUNDLE = "bundle";
+    private static final String TARGET = "target";
 
     private final Set<BundleFieldBinding> fields = new LinkedHashSet<BundleFieldBinding>();
     private final String classPackage;
     private final String className;
-    private final String targetType;
+    private final TypeMirror targetType;
     private boolean required = false;
-    private String parentAdapter;
+    private ClassName parentAdapter;
 
-    public BundleInjectionAdapterGenerator(String classPackage, String className, String targetType) {
+    public BundleInjectionAdapterGenerator(String classPackage, String className, TypeMirror targetType) {
         this.classPackage = classPackage;
         this.className = className;
         this.targetType = targetType;
@@ -42,180 +52,139 @@ public final class BundleInjectionAdapterGenerator {
         this.required |= required;
     }
 
-    public void generate(JavaWriter writer) throws IOException {
-        writer.emitSingleLineComment(InjectionAdapterJavadoc.GENERATED_BY_POCKETKNIFE);
-        writer.emitPackage(classPackage);
-        writer.emitImports("android.os.Bundle");
-        writer.emitEmptyLine();
+    public JavaFile generate() throws IOException {
+        TypeVariableName t = TypeVariableName.get("T");
+        TypeSpec.Builder classBuilder = TypeSpec.classBuilder(className)
+                .addTypeVariable(TypeVariableName.get(t.name, ClassName.get(targetType)))
+                .addModifiers(PUBLIC)
+                .addAnnotation(getGeneratedAnnotationSpec(BundleInjectionAdapterGenerator.class));
+
         if (parentAdapter != null) {
-            writer.beginType(className + "<T extends " + targetType + ">", "class", EnumSet.of(PUBLIC), parentAdapter + "<T>");
+            classBuilder.superclass(ParameterizedTypeName.get(parentAdapter, t));
         } else {
-            writer.beginType(className + "<T extends " + targetType + ">", "class", EnumSet.of(PUBLIC), null, JavaWriter.type(BundleBinding.class, "T"));
+            classBuilder.addSuperinterface(ParameterizedTypeName.get(ClassName.get(BundleBinding.class), t));
         }
-        writer.emitEmptyLine();
-        // write Save State
-        writeSaveState(writer);
-        writer.emitEmptyLine();
-        // Write restoreState
-        writeRestoreState(writer);
-        writer.emitEmptyLine();
-        // write injectArguments
-        writeInjectArguments(writer);
-        writer.endType();
+
+        addSaveStateMethod(classBuilder, t);
+        addRestoreStateMethod(classBuilder, t);
+        addInjectArugmentsMethod(classBuilder, t);
+
+        return JavaFile.builder(classPackage, classBuilder.build()).build();
     }
 
-    private void writeSaveState(JavaWriter writer) throws IOException {
-        writer.emitJavadoc(InjectionAdapterJavadoc.SAVE_INSTANCE_STATE_METHOD, targetType);
-        writer.beginMethod("void", SAVE_METHOD, EnumSet.of(PUBLIC), "T", "target", "Bundle", "bundle");
+    private void addSaveStateMethod(TypeSpec.Builder classBuilder, TypeVariableName t) {
+        MethodSpec.Builder methodBuilder = MethodSpec.methodBuilder(SAVE_METHOD)
+                .addModifiers(PUBLIC)
+                .addParameter(ParameterSpec.builder(t, TARGET).build())
+                .addParameter(ParameterSpec.builder(Bundle.class, BUNDLE).build());
         if (parentAdapter != null) {
-            writer.emitStatement("super.%s(%s, %s)", SAVE_METHOD, "target", "bundle");
+            methodBuilder.addStatement("super.$L($N, $N)", SAVE_METHOD, TARGET, BUNDLE);
         }
         for (BundleFieldBinding field : fields) {
             if (SAVE_STATE == field.getAnnotationType()) {
-                writeSaveFieldState(writer, field);
+                methodBuilder.addStatement("$N.put$L($S, $N.$N)", BUNDLE, field.getBundleType(), field.getKey(), TARGET, field.getName());
             }
         }
-        writer.endMethod();
+        classBuilder.addMethod(methodBuilder.build());
     }
 
-    private void writeSaveFieldState(JavaWriter writer, BundleFieldBinding field) throws IOException {
-        writer.emitSingleLineComment(field.getDescription());
-        writer.emitStatement("bundle.put%s(%s, target.%s)", field.getBundleType(), StringLiteral.forValue(field.getKey()).toString(), field.getName());
-    }
-
-    private void writeRestoreState(JavaWriter writer) throws IOException {
-        writer.emitJavadoc(InjectionAdapterJavadoc.RESTORE_INSTANCE_STATE_METHOD, targetType);
-        writer.beginMethod("void", RESTORE_METHOD, EnumSet.of(PUBLIC), "T", "target", "Bundle", "bundle");
+    private void addRestoreStateMethod(TypeSpec.Builder classBuilder, TypeVariableName t) {
+        MethodSpec.Builder methodBuilder = MethodSpec.methodBuilder(RESTORE_METHOD)
+                .addModifiers(PUBLIC)
+                .addParameter(ParameterSpec.builder(t, TARGET).build())
+                .addParameter(ParameterSpec.builder(Bundle.class, BUNDLE).build());
         if (parentAdapter != null) {
-            writer.emitStatement("super.%s(%s, %s)", RESTORE_METHOD, "target", "bundle");
+            methodBuilder.addStatement("super.$L($N, $N)", RESTORE_METHOD, TARGET, BUNDLE);
         }
-        writer.beginControlFlow("if (bundle != null)");
+        methodBuilder.beginControlFlow("if ($N != null)", BUNDLE);
         for (BundleFieldBinding field : fields) {
             if (SAVE_STATE == field.getAnnotationType()) {
-                writeRestoreFieldState(writer, field);
+                methodBuilder.beginControlFlow("if ($N.containsKey($S))", BUNDLE, field.getKey());
+                List<Object> stmtArgs = new ArrayList<Object>();
+                String stmt = "$N.$N = ";
+                stmtArgs.add(TARGET);
+                stmtArgs.add(field.getName());
+                if (field.needsToBeCast()) {
+                    stmt = stmt.concat("($T)");
+                    stmtArgs.add(field.getType());
+                }
+                stmt = stmt.concat("$N.get$L($S");
+                stmtArgs.add(BUNDLE);
+                stmtArgs.add(field.getBundleType());
+                stmtArgs.add(field.getKey());
+                if (field.canHaveDefault()) {
+                    stmt = stmt.concat(", $N.$N");
+                    stmtArgs.add(TARGET);
+                    stmtArgs.add(field.getName());
+                }
+                stmt = stmt.concat(")");
+                methodBuilder.addStatement(stmt, stmtArgs.toArray(new Object[stmtArgs.size()]));
+                if (field.isRequired()) {
+                    methodBuilder.nextControlFlow("else");
+                    methodBuilder.addStatement("throw new $T($S)", IllegalStateException.class,
+                            String.format("Required Bundle value with key '%s' was not found for '%s'. "
+                                            + "If this field is not required add '@NotRequired' annotation",
+                                    field.getKey(), field.getName()));
+                }
+                methodBuilder.endControlFlow();
             }
         }
-        writer.endControlFlow();
-        writer.endMethod();
+
+        methodBuilder.endControlFlow();
+        classBuilder.addMethod(methodBuilder.build());
     }
 
-    private void writeRestoreFieldState(JavaWriter writer, BundleFieldBinding field) throws IOException {
-        writer.emitSingleLineComment(field.getDescription());
-        if (field.isRequired()) {
-            writeRequiredRestoreFieldState(writer, field);
-        } else {
-            writeOptionalRestoreFieldState(writer, field);
-        }
-    }
-
-    private void writeRequiredRestoreFieldState(JavaWriter writer, BundleFieldBinding field) throws IOException {
-        List<String> stmtArgs = new ArrayList<String>();
-        writer.beginControlFlow("if (bundle.containsKey(%s))", StringLiteral.forValue(field.getKey()).toString());
-        String stmt = "target.".concat(field.getName()).concat(" = ");
-        if (field.needsToBeCast()) {
-            stmt = stmt.concat(("(%s) "));
-            stmtArgs.add(field.getType());
-        }
-        stmt = stmt.concat("bundle.get%s(%s)");
-        stmtArgs.add(field.getBundleType());
-        stmtArgs.add(StringLiteral.forValue(field.getKey()).toString());
-        writer.emitStatement(stmt, stmtArgs.toArray(new Object[stmtArgs.size()]));
-        writer.nextControlFlow("else");
-        writer.emitStatement("throw new IllegalStateException(\"Required Bundle value with key '%s' was not found for '%s'. "
-                + "If this field is not required add '@NotRequired' annotation\")", field.getKey(), field.getName());
-        writer.endControlFlow();
-    }
-
-    private void writeOptionalRestoreFieldState(JavaWriter writer, BundleFieldBinding field) throws IOException {
-        List<String> stmtArgs = new ArrayList<String>();
-        String stmt = "target.".concat(field.getName()).concat(" = ");
-        if (field.needsToBeCast()) {
-            stmt = stmt.concat("(%s) ");
-            stmtArgs.add(field.getType());
-        }
-        stmt = stmt.concat("bundle.get%s(%s");
-        stmtArgs.add(field.getBundleType());
-        stmtArgs.add(StringLiteral.forValue(field.getKey()).toString());
-        if (field.canHaveDefault()) {
-            stmt = stmt.concat(", target.").concat(field.getName());
-        }
-        stmt = stmt.concat(")");
-        writer.emitStatement(stmt, stmtArgs.toArray(new Object[stmtArgs.size()]));
-    }
-
-    private void writeInjectArguments(JavaWriter writer) throws IOException {
-        writer.emitJavadoc(InjectionAdapterJavadoc.INJECT_ARGUMENTS_METHOD, targetType);
-        writer.beginMethod("void", INJECT_ARGUMENTS_METHOD, EnumSet.of(PUBLIC), "T", "target", "Bundle", "bundle");
+    private void addInjectArugmentsMethod(TypeSpec.Builder classBuilder, TypeVariableName t) {
+        MethodSpec.Builder methodBuilder = MethodSpec.methodBuilder(INJECT_ARGUMENTS_METHOD)
+                .addModifiers(PUBLIC)
+                .addParameter(ParameterSpec.builder(t, TARGET).build())
+                .addParameter(ParameterSpec.builder(Bundle.class, BUNDLE).build());
         if (parentAdapter != null) {
-            writer.emitStatement("super.%s(%s, %s)", INJECT_ARGUMENTS_METHOD, "target", "bundle");
+            methodBuilder.addStatement("super.$L($N, $N)", INJECT_ARGUMENTS_METHOD, TARGET, BUNDLE);
         }
-        writer.beginControlFlow("if (bundle == null)");
+        methodBuilder.beginControlFlow("if ($N == null)", BUNDLE);
         if (required) {
-            writer.emitStatement("throw new IllegalStateException(\"Argument bundle is null\")");
+            methodBuilder.addStatement("throw new $T($S)", IllegalStateException.class, "Argument bundle is null");
         } else {
-            writer.emitStatement("bundle = new Bundle()");
+            methodBuilder.addStatement("$N = new $T()", BUNDLE, Bundle.class);
         }
-        writer.endControlFlow();
+        methodBuilder.endControlFlow();
         for (BundleFieldBinding field : fields) {
             if (ARGUMENT == field.getAnnotationType()) {
-                writeInjectArgumentField(writer, field);
+                methodBuilder.beginControlFlow("if ($N.containsKey($S))", BUNDLE, field.getKey());
+                List<Object> stmtArgs = new ArrayList<Object>();
+                String stmt = "$N.$N = ";
+                stmtArgs.add(TARGET);
+                stmtArgs.add(field.getName());
+                if (field.needsToBeCast()) {
+                    stmt = stmt.concat("($T)");
+                    stmtArgs.add(field.getType());
+                }
+                stmt = stmt.concat("$N.get$L($S");
+                stmtArgs.add(BUNDLE);
+                stmtArgs.add(field.getBundleType());
+                stmtArgs.add(field.getKey());
+                if (field.canHaveDefault()) {
+                    stmt = stmt.concat(", $N.$N");
+                    stmtArgs.add(TARGET);
+                    stmtArgs.add(field.getName());
+                }
+                stmt = stmt.concat(")");
+                methodBuilder.addStatement(stmt, stmtArgs.toArray(new Object[stmtArgs.size()]));
+                if (field.isRequired()) {
+                    methodBuilder.nextControlFlow("else");
+                    methodBuilder.addStatement("throw new $T($S)", IllegalStateException.class,
+                            String.format("Required Bundle value with key '%s' was not found for '%s'. "
+                                            + "If this field is not required add '@NotRequired' annotation",
+                                    field.getKey(), field.getName()));
+                }
+                methodBuilder.endControlFlow();
             }
         }
-        writer.endMethod();
+        classBuilder.addMethod(methodBuilder.build());
     }
 
-    private void writeInjectArgumentField(JavaWriter writer, BundleFieldBinding field) throws IOException {
-        writer.emitSingleLineComment(field.getDescription());
-        if (field.isRequired()) {
-            writeRequiredInjectArgumentField(writer, field);
-        } else {
-            writeOptionalInjectArgumentField(writer, field);
-        }
-    }
-
-    private void writeRequiredInjectArgumentField(JavaWriter writer, BundleFieldBinding field) throws IOException {
-        List<String> stmtArgs = new ArrayList<String>();
-        writer.beginControlFlow("if (bundle.containsKey(%s))", StringLiteral.forValue(field.getKey()).toString());
-        String stmt = "target.".concat(field.getName()).concat(" = ");
-        if (field.needsToBeCast()) {
-            stmt = stmt.concat("(%s) ");
-            stmtArgs.add(field.getType());
-        }
-        stmt = stmt.concat("bundle.get%s(%s)");
-        stmtArgs.add(field.getBundleType());
-        stmtArgs.add(StringLiteral.forValue(field.getKey()).toString());
-        writer.emitStatement(stmt, stmtArgs.toArray(new Object[stmtArgs.size()]));
-        writer.nextControlFlow("else");
-        writer.emitStatement("throw new IllegalStateException(\"Required Argument with key '%s' was not found for '%s'. "
-                + "If this field is not required add '@NotRequired' annotation\")", field.getKey(), field.getName());
-        writer.endControlFlow();
-
-    }
-
-    private void writeOptionalInjectArgumentField(JavaWriter writer, BundleFieldBinding field) throws IOException {
-        List<String> stmtArgs = new ArrayList<String>();
-        writer.beginControlFlow("if (bundle.containsKey(%s))", StringLiteral.forValue(field.getKey()).toString());
-        String stmt = "target.".concat(field.getName()).concat(" = ");
-        if (field.needsToBeCast()) {
-            stmt = stmt.concat("(%s) ");
-            stmtArgs.add(field.getType());
-        }
-        stmt = stmt.concat("bundle.get%s(%s");
-        stmtArgs.add(field.getBundleType());
-        stmtArgs.add(StringLiteral.forValue(field.getKey()).toString());
-        if (field.canHaveDefault()) {
-            stmt = stmt.concat(", target.").concat(field.getName());
-        }
-        stmt = stmt.concat(")");
-        writer.emitStatement(stmt, stmtArgs.toArray(new Object[stmtArgs.size()]));
-        writer.endControlFlow();
-    }
-
-    public CharSequence getFqcn() {
-        return classPackage + "." + className;
-    }
-
-    public void setParentAdapter(String parentAdapter) {
-        this.parentAdapter = parentAdapter;
+    public void setParentAdapter(String packageName, String className) {
+        this.parentAdapter = ClassName.get(packageName, className);
     }
 }

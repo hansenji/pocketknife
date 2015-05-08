@@ -6,6 +6,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.RobolectricTestRunner;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 
 import java.io.Serializable;
@@ -23,7 +24,7 @@ public class SimpleActivityTest extends BaseTest {
 
     @Test
     public void verifyExtraInjection() {
-        Intent intent = new Intent(Robolectric.application, SimpleActivity.class);
+        Intent intent = new Intent(RuntimeEnvironment.application, SimpleActivity.class);
         Random random = new Random(42);
 
         boolean aBoolean = random.nextBoolean();
@@ -187,7 +188,7 @@ public class SimpleActivityTest extends BaseTest {
 
     @Test(expected = IllegalStateException.class)
     public void verifyExceptionThrown() {
-        Intent intent = new Intent(Robolectric.application, SimpleActivity.class);
+        Intent intent = new Intent(RuntimeEnvironment.application, SimpleActivity.class);
         Robolectric.buildActivity(SimpleActivity.class).withIntent(intent).create().get();
     }
 

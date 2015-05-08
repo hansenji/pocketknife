@@ -3,6 +3,7 @@ package pocketknife.internal.codegen.builder;
 import pocketknife.internal.codegen.IntentFieldBinding;
 import pocketknife.internal.codegen.MethodBinding;
 
+import javax.lang.model.type.TypeMirror;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -10,7 +11,7 @@ import java.util.Set;
 
 public class IntentBuilderMethodBinding extends MethodBinding {
     private final String name;
-    private final String className;
+    private final TypeMirror className;
     private final String action;
     private final String data;
     private final Integer flags;
@@ -19,7 +20,7 @@ public class IntentBuilderMethodBinding extends MethodBinding {
 
     private final List<IntentFieldBinding> fields = new ArrayList<IntentFieldBinding>();
 
-    public IntentBuilderMethodBinding(String name, String className, String action, String data, Integer flags, String[] categories, String type) {
+    public IntentBuilderMethodBinding(String name, TypeMirror className, String action, String data, Integer flags, String[] categories, String type) {
         this.name = name;
         this.className = className;
         this.action = action;
@@ -33,7 +34,7 @@ public class IntentBuilderMethodBinding extends MethodBinding {
         return name;
     }
 
-    public String getClassName() {
+    public TypeMirror getClassName() {
         return className;
     }
 
@@ -70,15 +71,6 @@ public class IntentBuilderMethodBinding extends MethodBinding {
             keys.add(field.getKey());
         }
         return keys;
-    }
-
-    public List<String> getWriterParameters() {
-        List<String> params = new ArrayList<String>();
-        for (IntentFieldBinding field : fields) {
-            params.add(field.getType());
-            params.add(field.getName());
-        }
-        return params;
     }
 
     public List<IntentFieldBinding> getFields() {
