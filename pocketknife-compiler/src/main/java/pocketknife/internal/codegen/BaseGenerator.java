@@ -5,9 +5,7 @@ import com.squareup.javapoet.AnnotationSpec;
 import javax.annotation.Generated;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.LinkedHashSet;
 import java.util.Locale;
-import java.util.Set;
 
 public class BaseGenerator {
 
@@ -18,17 +16,4 @@ public class BaseGenerator {
                 .build();
     }
 
-    protected String getReturnVarName(String returnVarNameRoot, MethodBinding method) {
-        Set<String> fieldNames = new LinkedHashSet<String>();
-        for (FieldBinding fieldBinding : method.getFields()) {
-            fieldNames.add(fieldBinding.getName());
-        }
-
-        String returnVarName = returnVarNameRoot;
-        int count = 0;
-        while (fieldNames.contains(returnVarName)) {
-            returnVarName = returnVarNameRoot + ++count;
-        }
-        return returnVarName;
-    }
 }

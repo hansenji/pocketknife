@@ -20,13 +20,14 @@ import java.util.List;
 import java.util.Set;
 
 import static javax.lang.model.element.Modifier.PUBLIC;
-import static pocketknife.internal.GeneratedAdapters.INJECT_ARGUMENTS_METHOD;
-import static pocketknife.internal.GeneratedAdapters.RESTORE_METHOD;
-import static pocketknife.internal.GeneratedAdapters.SAVE_METHOD;
 import static pocketknife.internal.codegen.BundleFieldBinding.AnnotationType.ARGUMENT;
 import static pocketknife.internal.codegen.BundleFieldBinding.AnnotationType.SAVE_STATE;
 
 public final class BundleInjectionAdapterGenerator extends BaseGenerator {
+
+    public static final String SAVE_METHOD = "saveInstanceState";
+    public static final String RESTORE_METHOD = "restoreInstanceState";
+    public static final String INJECT_ARGUMENTS_METHOD = "injectArguments";
 
     private static final String BUNDLE = "bundle";
     private static final String TARGET = "target";

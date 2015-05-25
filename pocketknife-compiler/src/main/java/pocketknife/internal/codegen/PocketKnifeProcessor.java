@@ -3,14 +3,13 @@ package pocketknife.internal.codegen;
 import com.google.common.collect.ImmutableSet;
 import com.squareup.javapoet.JavaFile;
 import pocketknife.BundleBuilder;
+import pocketknife.FragmentBuilder;
 import pocketknife.InjectArgument;
 import pocketknife.InjectExtra;
 import pocketknife.IntentBuilder;
 import pocketknife.SaveState;
-import pocketknife.internal.codegen.builder.BundleBuilderGenerator;
-import pocketknife.internal.codegen.builder.BundleBuilderProcessor;
-import pocketknife.internal.codegen.builder.IntentBuilderGenerator;
-import pocketknife.internal.codegen.builder.IntentBuilderProcessor;
+import pocketknife.internal.codegen.builder.BuilderGenerator;
+import pocketknife.internal.codegen.builder.BuilderProcessor;
 import pocketknife.internal.codegen.injection.BundleInjectionAdapterGenerator;
 import pocketknife.internal.codegen.injection.BundleInjectionProcessor;
 import pocketknife.internal.codegen.injection.IntentInjectionAdapterGenerator;
@@ -41,8 +40,7 @@ public class PocketKnifeProcessor extends AbstractProcessor {
 
     private BundleInjectionProcessor bundleInjectionProcessor;
     private IntentInjectionProcessor intentInjectionProcessor;
-    private IntentBuilderProcessor intentBuilderProcessor;
-    private BundleBuilderProcessor bundleBuilderProcessor;
+    private BuilderProcessor builderProcessor;
 
     @Override
     public SourceVersion getSupportedSourceVersion() {
@@ -57,9 +55,8 @@ public class PocketKnifeProcessor extends AbstractProcessor {
         Elements elements = processingEnv.getElementUtils();
         Types types = processingEnv.getTypeUtils();
         bundleInjectionProcessor = new BundleInjectionProcessor(messager, elements, types);
-        bundleBuilderProcessor = new BundleBuilderProcessor(messager, elements, types);
         intentInjectionProcessor = new IntentInjectionProcessor(messager, elements, types);
-        intentBuilderProcessor = new IntentBuilderProcessor(messager, elements, types);
+        builderProcessor = new BuilderProcessor(messager, elements, types);
     }
 
     @Override
@@ -69,7 +66,8 @@ public class PocketKnifeProcessor extends AbstractProcessor {
                 InjectArgument.class.getCanonicalName(),
                 InjectExtra.class.getCanonicalName(),
                 IntentBuilder.class.getCanonicalName(),
-                BundleBuilder.class.getCanonicalName()
+                BundleBuilder.class.getCanonicalName(),
+                FragmentBuilder.class.getCanonicalName()
         );
     }
 
@@ -103,37 +101,52 @@ public class PocketKnifeProcessor extends AbstractProcessor {
             }
         }
 
-        // Bundle Builder
-        Map<TypeElement, BundleBuilderGenerator> bundleBuilderMap = bundleBuilderProcessor.findAndParseTargets(roundEnv);
+        // Builders
+        Map<TypeElement, BuilderGenerator> builderMap = builderProcessor.findAndParseTargets(roundEnv);
 
-        for (Map.Entry<TypeElement, BundleBuilderGenerator> entry : bundleBuilderMap.entrySet()) {
+        for (Map.Entry<TypeElement, BuilderGenerator> entry : builderMap.entrySet()) {
             TypeElement typeElement = entry.getKey();
-            BundleBuilderGenerator generator = entry.getValue();
+            BuilderGenerator generator = entry.getValue();
             try {
                 JavaFile javaFile = generator.generate();
                 javaFile.writeTo(filer);
             } catch (Exception e) {
                 StringWriter stackTrace = new StringWriter();
                 e.printStackTrace(new PrintWriter(stackTrace));
-                error(typeElement, "Unable to write bundle builder for type %s: %s", typeElement, stackTrace.toString());
+                error(typeElement, "Unable to write builder for type %s: %s", typeElement, stackTrace.toString());
             }
         }
 
-        // Intent Builder
-        Map<TypeElement, IntentBuilderGenerator> intentBuilderMap = intentBuilderProcessor.findAndParseTargets(roundEnv);
-
-        for (Map.Entry<TypeElement, IntentBuilderGenerator> entry : intentBuilderMap.entrySet()) {
-            TypeElement typeElement = entry.getKey();
-            IntentBuilderGenerator generator = entry.getValue();
-            try {
-                JavaFile javaFile = generator.generate();
-                javaFile.writeTo(filer);
-            } catch (Exception e) {
-                StringWriter stackTrace = new StringWriter();
-                e.printStackTrace(new PrintWriter(stackTrace));
-                error(typeElement, "Unable to write intent builder for type %s: %s", typeElement, stackTrace.toString());
-            }
-        }
+//        Map<TypeElement, BundleBuilderGenerator> bundleBuilderMap = bundleBuilderProcessor.findAndParseTargets(roundEnv);
+//
+//        for (Map.Entry<TypeElement, BundleBuilderGenerator> entry : bundleBuilderMap.entrySet()) {
+//            TypeElement typeElement = entry.getKey();
+//            BundleBuilderGenerator generator = entry.getValue();
+//            try {
+//                JavaFile javaFile = generator.generate();
+//                javaFile.writeTo(filer);
+//            } catch (Exception e) {
+//                StringWriter stackTrace = new StringWriter();
+//                e.printStackTrace(new PrintWriter(stackTrace));
+//                error(typeElement, "Unable to write bundle builder for type %s: %s", typeElement, stackTrace.toString());
+//            }
+//        }
+//
+//        // Intent Builder
+//        Map<TypeElement, IntentBuilderGenerator> intentBuilderMap = intentBuilderProcessor.findAndParseTargets(roundEnv);
+//
+//        for (Map.Entry<TypeElement, IntentBuilderGenerator> entry : intentBuilderMap.entrySet()) {
+//            TypeElement typeElement = entry.getKey();
+//            IntentBuilderGenerator generator = entry.getValue();
+//            try {
+//                JavaFile javaFile = generator.generate();
+//                javaFile.writeTo(filer);
+//            } catch (Exception e) {
+//                StringWriter stackTrace = new StringWriter();
+//                e.printStackTrace(new PrintWriter(stackTrace));
+//                error(typeElement, "Unable to write intent builder for type %s: %s", typeElement, stackTrace.toString());
+//            }
+//        }
 
         return false;
     }

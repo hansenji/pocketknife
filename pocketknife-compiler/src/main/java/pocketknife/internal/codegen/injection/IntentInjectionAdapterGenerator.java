@@ -20,9 +20,10 @@ import java.util.List;
 import java.util.Set;
 
 import static javax.lang.model.element.Modifier.PUBLIC;
-import static pocketknife.internal.GeneratedAdapters.INJECT_EXTRAS_METHOD;
 
 public class IntentInjectionAdapterGenerator extends BaseGenerator {
+
+    public static final String INJECT_EXTRAS_METHOD = "injectExtras";
 
     private static final String TARGET = "target";
     private static final String INTENT = "intent";
