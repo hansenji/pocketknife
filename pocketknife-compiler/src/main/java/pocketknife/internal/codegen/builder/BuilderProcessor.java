@@ -1,6 +1,7 @@
 package pocketknife.internal.codegen.builder;
 
 import pocketknife.BundleBuilder;
+import pocketknife.Data;
 import pocketknife.FragmentBuilder;
 import pocketknife.IntentBuilder;
 import pocketknife.internal.codegen.BaseProcessor;
@@ -212,10 +213,12 @@ public class BuilderProcessor extends BaseProcessor {
         if (!isDefaultAnnotationElement(element, intentBuilderName, "action")) {
             action = intentBuilder.action();
         }
-        String data = null; // TODO move to its own annotation
-        if (!isDefaultAnnotationElement(element, intentBuilderName, "data")) {
-            data = intentBuilder.data();
+        Element dataParam = getIntentData(element);
+        String dataParamName = null;
+        if (dataParam != null) {
+            dataParamName = dataParam.getSimpleName().toString();
         }
+        boolean dataParamIsString = dataParam != null && types.isAssignable(dataParam.asType(), typeUtil.stringType);
         Integer flags = null;
         if (!isDefaultAnnotationElement(element, intentBuilderName, "flags")) {
             flags = intentBuilder.flags();
@@ -226,11 +229,32 @@ public class BuilderProcessor extends BaseProcessor {
         }
 
         IntentMethodBinding binding = new IntentMethodBinding(element.getSimpleName().toString(), getIntentBuilderClsValue(element), action,
-                data, flags, intentBuilder.categories(), type);
+                dataParamName, flags, intentBuilder.categories(), type, dataParamIsString);
         for (Element parameter : element.getParameters()) {
             binding.addField(getIntentFieldBinding(parameter));
         }
         return binding;
+    }
+
+    private Element getIntentData(ExecutableElement element) {
+        Element dataParam = null;
+        for (Element parameter : element.getParameters()) {
+            if (parameter.getAnnotation(Data.class) != null) {
+                validateIntentData(parameter);
+                if (dataParam == null) {
+                    dataParam = parameter;
+                } else {
+                    throw new IllegalStateException("Only one @Data annotation is allowed per method.");
+                }
+            }
+        }
+        return dataParam;
+    }
+
+    private void validateIntentData(Element parameter) {
+        if (!types.isAssignable(parameter.asType(), typeUtil.stringType) && !types.isAssignable(parameter.asType(), typeUtil.uriType)) {
+            throw new IllegalStateException("@Data annotation can only be assigned to parameters with type of String or android.net.Uri");
+        }
     }
 
     private IntentFieldBinding getIntentFieldBinding(Element element) throws InvalidTypeException {
@@ -262,8 +286,8 @@ public class BuilderProcessor extends BaseProcessor {
                 }
                 ExecutableElement executableElement = (ExecutableElement) element;
                 // Validate
-                if (!types.isAssignable(executableElement.getReturnType(), typeUtil.fragmentType) &&
-                        !types.isAssignable(executableElement.getReturnType(), typeUtil.supportFragmentType)) {
+                if (!types.isAssignable(executableElement.getReturnType(), typeUtil.fragmentType)
+                        && !types.isAssignable(executableElement.getReturnType(), typeUtil.supportFragmentType)) {
                     throw new IllegalStateException("Method must return a Fragment or Support Fragment");
                 }
 

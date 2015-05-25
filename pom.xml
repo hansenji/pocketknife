@@ -38,6 +38,7 @@
         <junit.version>4.12</junit.version>
         <robolectric.version>3.0-rc2</robolectric.version>
         <compile-test.version>0.7</compile-test.version>
+        <commons-lang3.version>3.4</commons-lang3.version>
         <surefireArgLine />
     </properties>
 
@@ -101,6 +102,11 @@
                 <groupId>com.google.testing.compile</groupId>
                 <artifactId>compile-testing</artifactId>
                 <version>${compile-test.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.commons</groupId>
+                <artifactId>commons-lang3</artifactId>
+                <version>${commons-lang3.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

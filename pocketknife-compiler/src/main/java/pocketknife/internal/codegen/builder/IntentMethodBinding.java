@@ -5,6 +5,7 @@ import android.net.Uri;
 import android.os.Build;
 import com.squareup.javapoet.ClassName;
 import com.squareup.javapoet.MethodSpec;
+import org.apache.commons.lang3.StringUtils;
 import pocketknife.internal.codegen.IntentFieldBinding;
 import pocketknife.internal.codegen.MethodBinding;
 
@@ -23,21 +24,24 @@ public class IntentMethodBinding extends MethodBinding {
     private final String name;
     private final TypeMirror className;
     private final String action;
-    private final String data;
+    private final String dataParam;
     private final Integer flags;
     private final String[] categories;
     private final String type;
+    private final boolean dataParamIsString;
 
     private final List<IntentFieldBinding> fields = new ArrayList<IntentFieldBinding>();
 
-    public IntentMethodBinding(String name, TypeMirror className, String action, String data, Integer flags, String[] categories, String type) {
+    public IntentMethodBinding(String name, TypeMirror className, String action, String dataParam, Integer flags, String[] categories, String type,
+                               boolean dataParamIsString) {
         this.name = name;
         this.className = className;
         this.action = action;
-        this.data = data;
+        this.dataParam = dataParam;
         this.flags = flags;
         this.categories = categories;
         this.type = type;
+        this.dataParamIsString = dataParamIsString;
     }
 
     public void addField(IntentFieldBinding fieldBinding) {
@@ -68,25 +72,7 @@ public class IntentMethodBinding extends MethodBinding {
         if (action != null) {
             methodBuilder.addStatement("$N.setAction($S)", returnVarName, action);
         }
-        if (data != null && type != null) {
-            methodBuilder.beginControlFlow("if ($T.VERSION.SDK_INT >= $T.VERSION_CODES.JELLY_BEAN)", Build.class, Build.class);
-            methodBuilder.addStatement("$N.setDataAndTypeAndNormalize($T.parse($S), $S)", returnVarName, Uri.class, data, type);
-            methodBuilder.nextControlFlow("else");
-            methodBuilder.addStatement("$N.setDataAndType($T.parse($S), $S)", returnVarName, Uri.class, data, type);
-            methodBuilder.endControlFlow();
-        } else if (data != null) {
-            methodBuilder.beginControlFlow("if ($T.VERSION.SDK_INT >= $T.VERSION_CODES.JELLY_BEAN)", Build.class, Build.class);
-            methodBuilder.addStatement("$N.setDataAndNormalize($T.parse($S))", returnVarName, Uri.class, data);
-            methodBuilder.nextControlFlow("else");
-            methodBuilder.addStatement("$N.setData($T.parse($S))", returnVarName, Uri.class, data);
-            methodBuilder.endControlFlow();
-        } else if (type != null) {
-            methodBuilder.beginControlFlow("if ($T.VERSION.SDK_INT >= $T.VERSION_CODES.JELLY_BEAN)", Build.class, Build.class);
-            methodBuilder.addStatement("$N.setTypeAndNormalize($S)", returnVarName, type);
-            methodBuilder.nextControlFlow("else");
-            methodBuilder.addStatement("$N.setType($S)", returnVarName, type);
-            methodBuilder.endControlFlow();
-        }
+        addDataAndOrType(methodBuilder, returnVarName);
         if (className != null) {
             methodBuilder.addStatement("$N.setClass(this.context, $T.class)", returnVarName, ClassName.get(className));
         }
@@ -99,6 +85,9 @@ public class IntentMethodBinding extends MethodBinding {
 
         for (IntentFieldBinding fieldBinding : fields) {
             methodBuilder.addParameter(ClassName.get(fieldBinding.getType()), fieldBinding.getName());
+            if (StringUtils.equals(fieldBinding.getName(), dataParam)) {
+                continue;  // Data is handled previously
+            }
             if (fieldBinding.isArrayList()) {
                 methodBuilder.addStatement("$N.put$LExtra($N, $N)", returnVarName, fieldBinding.getIntentType(), fieldBinding.getKey(), fieldBinding.getName());
             } else {
@@ -109,6 +98,44 @@ public class IntentMethodBinding extends MethodBinding {
         methodBuilder.addStatement("return $N", returnVarName);
 
         return methodBuilder.build();
+    }
+
+    private void addDataAndOrType(MethodSpec.Builder methodBuilder, String returnVarName) {
+        if (dataParam != null && type != null) {
+            methodBuilder.beginControlFlow("if ($T.VERSION.SDK_INT >= $T.VERSION_CODES.JELLY_BEAN)", Build.class, Build.class);
+            if (dataParamIsString) {
+                methodBuilder.addStatement("$N.setDataAndTypeAndNormalize($T.parse($N), $S)", returnVarName, Uri.class, dataParam, type);
+            } else {
+                methodBuilder.addStatement("$N.setDataAndTypeAndNormalize($N, $S)", returnVarName, dataParam, type);
+            }
+            methodBuilder.nextControlFlow("else");
+            if (dataParamIsString) {
+                methodBuilder.addStatement("$N.setDataAndType($T.parse($N), $S)", returnVarName, Uri.class, dataParam, type);
+            } else {
+                methodBuilder.addStatement("$N.setDataAndType($N, $S)", returnVarName, dataParam, type);
+            }
+            methodBuilder.endControlFlow();
+        } else if (dataParam != null) {
+            methodBuilder.beginControlFlow("if ($T.VERSION.SDK_INT >= $T.VERSION_CODES.JELLY_BEAN)", Build.class, Build.class);
+            if (dataParamIsString) {
+                methodBuilder.addStatement("$N.setDataAndNormalize($T.parse($N))", returnVarName, Uri.class, dataParam);
+            } else {
+                methodBuilder.addStatement("$N.setDataAndNormalize($N)", returnVarName, dataParam);
+            }
+            methodBuilder.nextControlFlow("else");
+            if (dataParamIsString) {
+                methodBuilder.addStatement("$N.setData($T.parse($N))", returnVarName, Uri.class, dataParam);
+            } else {
+                methodBuilder.addStatement("$N.setData($N)", returnVarName, dataParam);
+            }
+            methodBuilder.endControlFlow();
+        } else if (type != null) {
+            methodBuilder.beginControlFlow("if ($T.VERSION.SDK_INT >= $T.VERSION_CODES.JELLY_BEAN)", Build.class, Build.class);
+            methodBuilder.addStatement("$N.setTypeAndNormalize($S)", returnVarName, type);
+            methodBuilder.nextControlFlow("else");
+            methodBuilder.addStatement("$N.setType($S)", returnVarName, type);
+            methodBuilder.endControlFlow();
+        }
     }
 
     @Override

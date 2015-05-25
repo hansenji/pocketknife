@@ -13,19 +13,19 @@ public class TypeUtil {
     private static final String SERIALIZABLE = "java.io.Serializable";
     private static final String PARCELABLE = "android.os.Parcelable";
     //    private static final CharSequence BINDER = "android.os.IBinder"; // Api 18+
-    public static final String BUNDLE = "android.os.Bundle";
+    private static final String BUNDLE = "android.os.Bundle";
     private static final String STRING = "java.lang.String";
     private static final String CHAR_SEQUENCE = "java.lang.CharSequence";
     private static final String INTEGER = "java.lang.Integer";
     private static final String ARRAY_LIST = "java.util.ArrayList";
     private static final String SPARSE_ARRAY = "android.util.SparseArray";
 
-    public static final String INTENT = "android.content.Intent";
-    public static final String CONTEXT = "android.content.Context";
-    public static final String BUILD = "android.os.Build";
-    public static final String URI = "android.net.Uri";
-    public static final String FRAGMENT = "android.app.Fragment";
-    public static final String SUPPORT_FRAGMENT = "android.support.v4.app.Fragment";
+    private static final String INTENT = "android.content.Intent";
+    private static final String CONTEXT = "android.content.Context";
+    private static final String BUILD = "android.os.Build";
+    private static final String URI = "android.net.Uri";
+    private static final String FRAGMENT = "android.app.Fragment";
+    private static final String SUPPORT_FRAGMENT = "android.support.v4.app.Fragment";
 
 
     public final TypeMirror serializableType;
@@ -40,6 +40,7 @@ public class TypeUtil {
     public final TypeMirror intentType;
     public final TypeMirror fragmentType;
     public final TypeMirror supportFragmentType;
+    public final TypeMirror uriType;
 
     private static TypeUtil instance;
     private final Types types;
@@ -113,6 +114,11 @@ public class TypeUtil {
             throw new IllegalStateException("Unable to find support Fragment type");
         }
         supportFragmentType = element.asType();
+        element = elements.getTypeElement(URI);
+        if (element == null) {
+            throw new IllegalStateException("Unable to fin uri type");
+        }
+        uriType = element.asType();
     }
 
     public String getBundleType(TypeMirror type) throws InvalidTypeException {

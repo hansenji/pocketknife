@@ -12,7 +12,6 @@ public @interface IntentBuilder {
     int flags() default 0;
     Class cls() default Void.class;
     String action() default "";
-    String data() default "";
     String[] categories() default { };
     String type() default "";
 }

@@ -1,6 +1,7 @@
 package com.example.pocketknife;
 
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import org.junit.After;
 import org.junit.Before;
@@ -28,15 +29,18 @@ import static org.junit.Assert.assertTrue;
 public class IntentBuilderTest extends BaseTest{
 
     private Intents intents;
+    private Uri uri;
 
     @Before
     public void setup() {
         intents = new PocketKnifeIntents(RuntimeEnvironment.application);
+        uri = Uri.fromParts("test", "test", "test");
     }
 
     @After
     public void tearDown() {
         intents = null;
+        uri = null;
     }
 
     @Test
@@ -45,7 +49,7 @@ public class IntentBuilderTest extends BaseTest{
         assertEquals("Action", "TEST", intent.getAction());
         intent = intents.getClassIntent();
         assertNull("No Action", intent.getAction());
-        intent = intents.getAllPlusExtra(0);
+        intent = intents.getAllPlusExtra("data", 0);
         assertEquals("All", "TEST", intent.getAction());
     }
 
@@ -55,7 +59,7 @@ public class IntentBuilderTest extends BaseTest{
         assertEquals("Class", SimpleActivity.class.getName(), intent.getComponent().getClassName());
         intent = intents.getActionIntent();
         assertNull("No Class", intent.getComponent());
-        intent = intents.getAllPlusExtra(0);
+        intent = intents.getAllPlusExtra("data", 0);
         assertEquals("All", SimpleActivity.class.getName(), intent.getComponent().getClassName());
     }
 
@@ -65,18 +69,22 @@ public class IntentBuilderTest extends BaseTest{
         assertEquals("Flags", Intent.FLAG_ACTIVITY_CLEAR_WHEN_TASK_RESET | Intent.FLAG_ACTIVITY_NEW_TASK, intent.getFlags());
         intent = intents.getActionIntent();
         assertEquals("No Flags", 0, intent.getFlags());
-        intent = intents.getAllPlusExtra(0);
+        intent = intents.getAllPlusExtra("data", 0);
         assertEquals("All", Intent.FLAG_ACTIVITY_CLEAR_WHEN_TASK_RESET | Intent.FLAG_ACTIVITY_NEW_TASK, intent.getFlags());
     }
 
     @Test
     public void testData() throws Exception {
-        Intent intent = intents.getDataIntent();
+        Intent intent = intents.getDataIntent("data");
         assertEquals("Data", "data", intent.getDataString());
         intent = intents.getActionIntent();
         assertNull("No Data", intent.getData());
-        intent = intents.getAllPlusExtra(0);
+        intent = intents.getAllPlusExtra("data", 0);
         assertEquals("All", "data", intent.getDataString());
+        intent = intents.getDataUriIntent(uri);
+        assertEquals("Uri", uri, intent.getData());
+        intent = intents.getAllDataUriPlusExtra(uri, 0);
+        assertEquals("All Uri", uri, intent.getData());
     }
 
     @Test
@@ -92,7 +100,7 @@ public class IntentBuilderTest extends BaseTest{
         categories = intent.getCategories();
         assertEquals(4, categories.size());
         assertTrue(categories.containsAll(Arrays.asList("ONE", "TWO", "THREE", "FOUR")));
-        intent = intents.getAllPlusExtra(0);
+        intent = intents.getAllPlusExtra("data", 0);
         categories = intent.getCategories();
         assertEquals(4, categories.size());
         assertTrue(categories.containsAll(Arrays.asList("ONE", "TWO", "THREE", "FOUR")));
@@ -104,7 +112,7 @@ public class IntentBuilderTest extends BaseTest{
         assertEquals("Type", "application/html", intent.getType());
         intent = intents.getActionIntent();
         assertNull("No Type", intent.getType());
-        intent = intents.getAllPlusExtra(0);
+        intent = intents.getAllPlusExtra("data", 0);
         assertEquals("All", "application/html", intent.getType());
     }
 
