@@ -1,6 +1,7 @@
 package pocketknife.internal.codegen.builder;
 
 import pocketknife.BundleBuilder;
+import pocketknife.FragmentBuilder;
 import pocketknife.IntentBuilder;
 import pocketknife.internal.codegen.BaseProcessor;
 import pocketknife.internal.codegen.BundleFieldBinding;
@@ -253,7 +254,39 @@ public class BuilderProcessor extends BaseProcessor {
     }
 
     private void processFragmentBuilder(Map<TypeElement, BuilderGenerator> targetMap, RoundEnvironment roundEnv) {
+        for (Element element : roundEnv.getElementsAnnotatedWith(FragmentBuilder.class)) {
+            try {
+                TypeElement enclosingElement = (TypeElement) element.getEnclosingElement();
+                if (!(element instanceof ExecutableElement) || element.getKind() != METHOD) {
+                    throw new IllegalStateException(String.format("@%s annotation must be on a method.", FragmentBuilder.class));
+                }
+                ExecutableElement executableElement = (ExecutableElement) element;
+                // Validate
+                if (!types.isAssignable(executableElement.getReturnType(), typeUtil.fragmentType) &&
+                        !types.isAssignable(executableElement.getReturnType(), typeUtil.supportFragmentType)) {
+                    throw new IllegalStateException("Method must return a Fragment or Support Fragment");
+                }
 
+                validateEnclosingClass(FragmentBuilder.class, enclosingElement);
+                validateBindingPackage(FragmentBuilder.class, element);
+
+                FragmentMethodBinding methodBinding = getFragmentMethodBinding(executableElement);
+                BuilderGenerator generator = getOrCreateTargetClass(targetMap, enclosingElement);
+                generator.addMethod(methodBinding);
+            } catch (Exception e) {
+                StringWriter stackTrace = new StringWriter();
+                e.printStackTrace(new PrintWriter(stackTrace));
+                error(element, "Unable to generate @%s.\n\n%s", FragmentBuilder.class.getSimpleName(), stackTrace.toString());
+            }
+        }
+    }
+
+    private FragmentMethodBinding getFragmentMethodBinding(ExecutableElement element) throws InvalidTypeException {
+        FragmentMethodBinding binding = new FragmentMethodBinding(element.getSimpleName().toString(), element.getReturnType());
+        for (Element parameter : element.getParameters()) {
+            binding.addField(getBundleFieldBinding(parameter));
+        }
+        return binding;
     }
 
     private BuilderGenerator getOrCreateTargetClass(Map<TypeElement, BuilderGenerator> targetMap, TypeElement element) {

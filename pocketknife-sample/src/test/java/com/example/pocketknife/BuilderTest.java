@@ -13,6 +13,7 @@ import org.robolectric.annotation.Config;
 import java.util.Random;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 @RunWith(RobolectricTestRunner.class)
 @Config(manifest = "src/main/AndroidManifest.xml")
@@ -40,6 +41,17 @@ public class BuilderTest {
         Intent intent = builder.getIntent(i);
         assertEquals(Intent.ACTION_DEFAULT, intent.getAction());
         assertEquals(i, intent.getIntExtra(PocketKnifeBuilder.EXTRA_EXTRA, i << 1));
+    }
+
+    @Test
+    public void testGetFragment() throws Exception {
+        int i = random.nextInt();
+        ParentFragment fragment = builder.getFragment(i);
+        assertNotNull("Fragment", fragment);
+        Bundle args = fragment.getArguments();
+        assertNotNull("Args", args);
+        assertEquals(i, args.getInt(PocketKnifeBuilder.ARG_PARENT_ARG, i << 1));
+
     }
 
     @After
