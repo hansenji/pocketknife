@@ -10,8 +10,6 @@ import static java.lang.annotation.RetentionPolicy.CLASS;
 
 /**
  * Denote that the variable specified by the injection is not required to be present.
- * Value is the Minimum Sdk for generate code.
- * Build.VERSION_CODES.HONEYCOMB_MR1 or greater will result in a default value being generated for Strings and CharSequences.
  *
  * <pre><code>
  * {@literal @}NotRequired @SaveState int i;
