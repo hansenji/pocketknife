@@ -1,11 +1,11 @@
 package pocketknife.internal.codegen.builder;
 
-import android.os.Bundle;
 import com.squareup.javapoet.ClassName;
 import com.squareup.javapoet.MethodSpec;
 import pocketknife.internal.codegen.BundleFieldBinding;
 import pocketknife.internal.codegen.FieldBinding;
 import pocketknife.internal.codegen.MethodBinding;
+import pocketknife.internal.codegen.TypeUtil;
 
 import javax.lang.model.type.TypeMirror;
 import java.util.ArrayList;
@@ -52,7 +52,7 @@ public class FragmentMethodBinding extends MethodBinding {
     }
 
     @Override
-    public MethodSpec generateMethodSpec() {
+    public MethodSpec generateMethodSpec(TypeUtil typeUtil) {
         String returnVarName = getReturnVarName(RETURN_VAR_NAME_ROOT);
         String argsVarName = getReturnVarName(ARGS_VAR_NAME_ROOT);
 
@@ -62,7 +62,7 @@ public class FragmentMethodBinding extends MethodBinding {
                 .returns(ClassName.get(returnType))
                 .addStatement("$T $N = new $T()", ClassName.get(returnType), returnVarName, ClassName.get(returnType));
         if (!fields.isEmpty()) {
-            methodBuilder.addStatement("$T $N = new $T()", Bundle.class, argsVarName, Bundle.class);
+            methodBuilder.addStatement("$T $N = new $T()", ClassName.get(typeUtil.bundleType), argsVarName, ClassName.get(typeUtil.bundleType));
         }
 
         for (BundleFieldBinding fieldBinding : fields) {

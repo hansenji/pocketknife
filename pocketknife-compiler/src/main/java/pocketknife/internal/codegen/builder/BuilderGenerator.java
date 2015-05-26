@@ -1,6 +1,5 @@
 package pocketknife.internal.codegen.builder;
 
-import android.content.Context;
 import com.squareup.javapoet.ClassName;
 import com.squareup.javapoet.FieldSpec;
 import com.squareup.javapoet.JavaFile;
@@ -8,6 +7,7 @@ import com.squareup.javapoet.MethodSpec;
 import com.squareup.javapoet.TypeSpec;
 import pocketknife.internal.codegen.BaseGenerator;
 import pocketknife.internal.codegen.MethodBinding;
+import pocketknife.internal.codegen.TypeUtil;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,7 +27,8 @@ public class BuilderGenerator extends BaseGenerator {
     private List<MethodBinding> methods = new ArrayList<MethodBinding>();
     private boolean contextRequired = false;
 
-    public BuilderGenerator(String classPackage, String className, String interfaceName) {
+    public BuilderGenerator(String classPackage, String className, String interfaceName, TypeUtil typeUtil) {
+        super(typeUtil);
         this.classPackage = classPackage;
         this.className = className;
         this.interfaceName = interfaceName;
@@ -42,10 +43,10 @@ public class BuilderGenerator extends BaseGenerator {
         generateKeys(classBuilder);
 
         if (contextRequired) {
-            classBuilder.addField(Context.class, "context", PRIVATE, FINAL);
+            classBuilder.addField(ClassName.get(typeUtil.contextType), "context", PRIVATE, FINAL);
             classBuilder.addMethod(MethodSpec.constructorBuilder()
                     .addModifiers(PUBLIC)
-                    .addParameter(Context.class, "context")
+                    .addParameter(ClassName.get(typeUtil.contextType), "context")
                     .addStatement("this.$N = $N", "context", "context")
                     .build());
         }
@@ -70,7 +71,7 @@ public class BuilderGenerator extends BaseGenerator {
 
     private void generateMethods(TypeSpec.Builder classBuilder) {
         for (MethodBinding method : methods) {
-            classBuilder.addMethod(method.generateMethodSpec());
+            classBuilder.addMethod(method.generateMethodSpec(typeUtil));
         }
     }
 

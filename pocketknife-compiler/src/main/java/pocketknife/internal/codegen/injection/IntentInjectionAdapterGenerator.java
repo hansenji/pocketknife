@@ -1,6 +1,5 @@
 package pocketknife.internal.codegen.injection;
 
-import android.content.Intent;
 import com.squareup.javapoet.ClassName;
 import com.squareup.javapoet.JavaFile;
 import com.squareup.javapoet.MethodSpec;
@@ -11,6 +10,7 @@ import com.squareup.javapoet.TypeVariableName;
 import pocketknife.internal.IntentBinding;
 import pocketknife.internal.codegen.BaseGenerator;
 import pocketknife.internal.codegen.IntentFieldBinding;
+import pocketknife.internal.codegen.TypeUtil;
 
 import javax.lang.model.type.TypeMirror;
 import java.io.IOException;
@@ -35,7 +35,8 @@ public class IntentInjectionAdapterGenerator extends BaseGenerator {
     private ClassName parentAdapter;
 
 
-    public IntentInjectionAdapterGenerator(String classPackage, String className, TypeMirror targetType) {
+    public IntentInjectionAdapterGenerator(String classPackage, String className, TypeMirror targetType, TypeUtil typeUtil) {
+        super(typeUtil);
         this.classPackage = classPackage;
         this.className = className;
         this.targetType = targetType;
@@ -62,7 +63,7 @@ public class IntentInjectionAdapterGenerator extends BaseGenerator {
         MethodSpec.Builder methodBuilder = MethodSpec.methodBuilder(INJECT_EXTRAS_METHOD)
                 .addModifiers(PUBLIC)
                 .addParameter(ParameterSpec.builder(t, TARGET).build())
-                .addParameter(ParameterSpec.builder(ClassName.get(Intent.class), INTENT).build());
+                .addParameter(ParameterSpec.builder(ClassName.get(typeUtil.intentType), INTENT).build());
         if (parentAdapter != null) {
             methodBuilder.addStatement("super.$L($N, $N)", INJECT_EXTRAS_METHOD, TARGET, INTENT);
         }

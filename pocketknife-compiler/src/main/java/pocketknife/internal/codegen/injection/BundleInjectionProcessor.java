@@ -162,7 +162,7 @@ public class BundleInjectionProcessor extends InjectionProcessor {
             String classPackage = getPackageName(enclosingElement);
             String className = getClassName(enclosingElement, classPackage) + BUNDLE_ADAPTER_SUFFIX;
 
-            bundleInjectionAdapterGenerator = new BundleInjectionAdapterGenerator(classPackage, className, targetType);
+            bundleInjectionAdapterGenerator = new BundleInjectionAdapterGenerator(classPackage, className, targetType, typeUtil);
             targetClassMap.put(enclosingElement, bundleInjectionAdapterGenerator);
         }
         return bundleInjectionAdapterGenerator;

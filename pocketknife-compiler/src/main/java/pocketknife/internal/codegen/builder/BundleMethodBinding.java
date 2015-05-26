@@ -1,10 +1,10 @@
 package pocketknife.internal.codegen.builder;
 
-import android.os.Bundle;
 import com.squareup.javapoet.ClassName;
 import com.squareup.javapoet.MethodSpec;
 import pocketknife.internal.codegen.BundleFieldBinding;
 import pocketknife.internal.codegen.MethodBinding;
+import pocketknife.internal.codegen.TypeUtil;
 
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
@@ -42,14 +42,14 @@ public class BundleMethodBinding extends MethodBinding {
     }
 
     @Override
-    public MethodSpec generateMethodSpec() {
+    public MethodSpec generateMethodSpec(TypeUtil typeUtil) {
         String returnVarName = getReturnVarName(RETURN_VAR_NAME_ROOT);
 
         MethodSpec.Builder methodBuilder = MethodSpec.methodBuilder(name)
                 .addAnnotation(Override.class)
                 .addModifiers(PUBLIC)
-                .returns(Bundle.class)
-                .addStatement("$T $N = new $T()", Bundle.class, returnVarName, Bundle.class);
+                .returns(ClassName.get(typeUtil.bundleType))
+                .addStatement("$T $N = new $T()", ClassName.get(typeUtil.bundleType), returnVarName, ClassName.get(typeUtil.bundleType));
 
         for (BundleFieldBinding fieldBinding : fields) {
             methodBuilder.addParameter(ClassName.get(fieldBinding.getType()), fieldBinding.getName());

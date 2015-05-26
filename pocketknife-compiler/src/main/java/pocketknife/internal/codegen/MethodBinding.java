@@ -12,7 +12,7 @@ public abstract class MethodBinding {
 
     public abstract Set<String> getKeys();
 
-    public abstract MethodSpec generateMethodSpec();
+    public abstract MethodSpec generateMethodSpec(TypeUtil typeUtil);
 
     protected String getReturnVarName(String returnVarNameRoot) {
         Set<String> fieldNames = new LinkedHashSet<String>();

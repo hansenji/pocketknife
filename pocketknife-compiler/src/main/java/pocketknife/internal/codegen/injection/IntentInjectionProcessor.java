@@ -100,7 +100,7 @@ public class IntentInjectionProcessor extends InjectionProcessor {
             String classPackage = getPackageName(enclosingElement);
             String className = getClassName(enclosingElement, classPackage) + INTENT_ADAPTER_SUFFIX;
 
-            intentInjectionAdapterGenerator = new IntentInjectionAdapterGenerator(classPackage, className, targetType);
+            intentInjectionAdapterGenerator = new IntentInjectionAdapterGenerator(classPackage, className, targetType, typeUtil);
             targetClassMap.put(enclosingElement, intentInjectionAdapterGenerator);
         }
         return intentInjectionAdapterGenerator;

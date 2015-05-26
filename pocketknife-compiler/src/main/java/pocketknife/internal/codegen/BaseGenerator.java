@@ -9,6 +9,12 @@ import java.util.Locale;
 
 public class BaseGenerator {
 
+    protected final TypeUtil typeUtil;
+
+    public BaseGenerator(TypeUtil typeUtil) {
+        this.typeUtil = typeUtil;
+    }
+
     protected AnnotationSpec getGeneratedAnnotationSpec(Class<? extends BaseGenerator> generator) {
         return AnnotationSpec.builder(Generated.class)
                 .addMember("value", "$S", generator.getName())

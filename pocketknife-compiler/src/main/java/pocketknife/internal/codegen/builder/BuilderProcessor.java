@@ -320,7 +320,7 @@ public class BuilderProcessor extends BaseProcessor {
             String classPackage = getPackageName(element);
             String className = GENERATOR_PREFIX + getClassName(element, classPackage);
 
-            generator = new BuilderGenerator(classPackage, className, interfaceName);
+            generator = new BuilderGenerator(classPackage, className, interfaceName, typeUtil);
             targetMap.put(element, generator);
         }
         return generator;

@@ -41,6 +41,8 @@ public class TypeUtil {
     public final TypeMirror fragmentType;
     public final TypeMirror supportFragmentType;
     public final TypeMirror uriType;
+    public final TypeMirror contextType;
+    public final TypeMirror buildType;
 
     private static TypeUtil instance;
     private final Types types;
@@ -116,9 +118,19 @@ public class TypeUtil {
         supportFragmentType = element.asType();
         element = elements.getTypeElement(URI);
         if (element == null) {
-            throw new IllegalStateException("Unable to fin uri type");
+            throw new IllegalStateException("Unable to find uri type");
         }
         uriType = element.asType();
+        element = elements.getTypeElement(CONTEXT);
+        if (element == null) {
+            throw new IllegalStateException("Unable to find Context type");
+        }
+        contextType = element.asType();
+        element = elements.getTypeElement(BUILD);
+        if (element == null) {
+            throw new IllegalStateException("Unable to find Build type");
+        }
+        buildType = element.asType();
     }
 
     public String getBundleType(TypeMirror type) throws InvalidTypeException {

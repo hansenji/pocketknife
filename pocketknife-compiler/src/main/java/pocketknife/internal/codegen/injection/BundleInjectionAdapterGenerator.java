@@ -1,6 +1,5 @@
 package pocketknife.internal.codegen.injection;
 
-import android.os.Bundle;
 import com.squareup.javapoet.ClassName;
 import com.squareup.javapoet.JavaFile;
 import com.squareup.javapoet.MethodSpec;
@@ -11,6 +10,7 @@ import com.squareup.javapoet.TypeVariableName;
 import pocketknife.internal.BundleBinding;
 import pocketknife.internal.codegen.BaseGenerator;
 import pocketknife.internal.codegen.BundleFieldBinding;
+import pocketknife.internal.codegen.TypeUtil;
 
 import javax.lang.model.type.TypeMirror;
 import java.io.IOException;
@@ -39,7 +39,8 @@ public final class BundleInjectionAdapterGenerator extends BaseGenerator {
     private boolean required = false;
     private ClassName parentAdapter;
 
-    public BundleInjectionAdapterGenerator(String classPackage, String className, TypeMirror targetType) {
+    public BundleInjectionAdapterGenerator(String classPackage, String className, TypeMirror targetType, TypeUtil typeUtil) {
+        super(typeUtil);
         this.classPackage = classPackage;
         this.className = className;
         this.targetType = targetType;
@@ -77,7 +78,7 @@ public final class BundleInjectionAdapterGenerator extends BaseGenerator {
         MethodSpec.Builder methodBuilder = MethodSpec.methodBuilder(SAVE_METHOD)
                 .addModifiers(PUBLIC)
                 .addParameter(ParameterSpec.builder(t, TARGET).build())
-                .addParameter(ParameterSpec.builder(Bundle.class, BUNDLE).build());
+                .addParameter(ParameterSpec.builder(ClassName.get(typeUtil.bundleType), BUNDLE).build());
         if (parentAdapter != null) {
             methodBuilder.addStatement("super.$L($N, $N)", SAVE_METHOD, TARGET, BUNDLE);
         }
@@ -93,7 +94,7 @@ public final class BundleInjectionAdapterGenerator extends BaseGenerator {
         MethodSpec.Builder methodBuilder = MethodSpec.methodBuilder(RESTORE_METHOD)
                 .addModifiers(PUBLIC)
                 .addParameter(ParameterSpec.builder(t, TARGET).build())
-                .addParameter(ParameterSpec.builder(Bundle.class, BUNDLE).build());
+                .addParameter(ParameterSpec.builder(ClassName.get(typeUtil.bundleType), BUNDLE).build());
         if (parentAdapter != null) {
             methodBuilder.addStatement("super.$L($N, $N)", RESTORE_METHOD, TARGET, BUNDLE);
         }
@@ -139,7 +140,7 @@ public final class BundleInjectionAdapterGenerator extends BaseGenerator {
         MethodSpec.Builder methodBuilder = MethodSpec.methodBuilder(INJECT_ARGUMENTS_METHOD)
                 .addModifiers(PUBLIC)
                 .addParameter(ParameterSpec.builder(t, TARGET).build())
-                .addParameter(ParameterSpec.builder(Bundle.class, BUNDLE).build());
+                .addParameter(ParameterSpec.builder(ClassName.get(typeUtil.bundleType), BUNDLE).build());
         if (parentAdapter != null) {
             methodBuilder.addStatement("super.$L($N, $N)", INJECT_ARGUMENTS_METHOD, TARGET, BUNDLE);
         }
@@ -147,7 +148,7 @@ public final class BundleInjectionAdapterGenerator extends BaseGenerator {
         if (required) {
             methodBuilder.addStatement("throw new $T($S)", IllegalStateException.class, "Argument bundle is null");
         } else {
-            methodBuilder.addStatement("$N = new $T()", BUNDLE, Bundle.class);
+            methodBuilder.addStatement("$N = new $T()", BUNDLE, ClassName.get(typeUtil.bundleType));
         }
         methodBuilder.endControlFlow();
         for (BundleFieldBinding field : fields) {
