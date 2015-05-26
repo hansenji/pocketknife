@@ -1,6 +1,11 @@
 Change Log
 ==========
 
+Version 2.5.1 *(2015-05-26)*
+----------------------------
+
+  * Fixed ClassDefNotFound build exception of android classes
+
 Version 2.5.0 *(2015-05-25)*
 ----------------------------
 
