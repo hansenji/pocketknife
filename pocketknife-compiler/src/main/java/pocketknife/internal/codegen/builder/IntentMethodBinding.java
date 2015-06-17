@@ -4,6 +4,7 @@ import com.squareup.javapoet.ClassName;
 import com.squareup.javapoet.MethodSpec;
 import org.apache.commons.lang3.StringUtils;
 import pocketknife.internal.codegen.IntentFieldBinding;
+import pocketknife.internal.codegen.KeySpec;
 import pocketknife.internal.codegen.MethodBinding;
 import pocketknife.internal.codegen.TypeUtil;
 
@@ -50,8 +51,8 @@ public class IntentMethodBinding extends MethodBinding {
     }
 
     @Override
-    public Set<String> getKeys() {
-        Set<String> keys = new LinkedHashSet<String>();
+    public Set<KeySpec> getKeys() {
+        Set<KeySpec> keys = new LinkedHashSet<KeySpec>();
         for (IntentFieldBinding field : fields) {
             keys.add(field.getKey());
         }
@@ -87,9 +88,10 @@ public class IntentMethodBinding extends MethodBinding {
                 continue;  // Data is handled previously
             }
             if (fieldBinding.isArrayList()) {
-                methodBuilder.addStatement("$N.put$LExtra($N, $N)", returnVarName, fieldBinding.getIntentType(), fieldBinding.getKey(), fieldBinding.getName());
+                methodBuilder.addStatement("$N.put$LExtra($N, $N)", returnVarName, fieldBinding.getIntentType(), fieldBinding.getKey().getName(),
+                        fieldBinding.getName());
             } else {
-                methodBuilder.addStatement("$N.putExtra($N, $N)", returnVarName, fieldBinding.getKey(), fieldBinding.getName());
+                methodBuilder.addStatement("$N.putExtra($N, $N)", returnVarName, fieldBinding.getKey().getName(), fieldBinding.getName());
             }
         }
 

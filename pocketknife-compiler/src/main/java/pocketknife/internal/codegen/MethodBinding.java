@@ -10,7 +10,7 @@ public abstract class MethodBinding {
 
     public abstract List<? extends FieldBinding> getFields();
 
-    public abstract Set<String> getKeys();
+    public abstract Set<KeySpec> getKeys();
 
     public abstract MethodSpec generateMethodSpec(TypeUtil typeUtil);
 

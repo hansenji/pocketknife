@@ -81,7 +81,7 @@ public class IntentInjectionAdapterGenerator extends BaseGenerator {
     }
 
     private void addInjectExtraField(MethodSpec.Builder methodBuilder, IntentFieldBinding field) {
-        methodBuilder.beginControlFlow("if ($N.hasExtra($S))", INTENT, field.getKey());
+        methodBuilder.beginControlFlow("if ($N.hasExtra($S))", INTENT, field.getKey().getValue());
 
         List<Object> stmtArgs = new ArrayList<Object>();
         String stmt = "$N.$N = ";
@@ -95,7 +95,7 @@ public class IntentInjectionAdapterGenerator extends BaseGenerator {
         stmt = stmt.concat("$N.get$LExtra($S");
         stmtArgs.add(INTENT);
         stmtArgs.add(field.getIntentType());
-        stmtArgs.add(field.getKey());
+        stmtArgs.add(field.getKey().getValue());
 
         if (field.hasDefault()) {
             stmt = stmt.concat(", $N.$N");
@@ -107,7 +107,7 @@ public class IntentInjectionAdapterGenerator extends BaseGenerator {
         if (field.isRequired()) {
             methodBuilder.nextControlFlow("else")
             .addStatement("throw new $T($S)", IllegalStateException.class, String.format("Required Extra with key '%s' was not found for '%s'."
-                    + "If this is not required add '@NotRequired' annotation.", field.getKey(), field.getName()));
+                    + "If this is not required add '@NotRequired' annotation.", field.getKey().getValue(), field.getName()));
         }
         methodBuilder.endControlFlow();
     }

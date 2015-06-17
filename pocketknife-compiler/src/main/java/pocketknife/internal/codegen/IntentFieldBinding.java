@@ -54,8 +54,8 @@ public class IntentFieldBinding extends FieldBinding {
         return type;
     }
 
-    public String getKey() {
-        return key;
+    public KeySpec getKey() {
+        return new KeySpec(generateKey(KEY_PREFIX, name), key);
     }
 
     public boolean isArrayList() {

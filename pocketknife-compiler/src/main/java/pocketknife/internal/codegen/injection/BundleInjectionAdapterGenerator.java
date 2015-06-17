@@ -84,7 +84,7 @@ public final class BundleInjectionAdapterGenerator extends BaseGenerator {
         }
         for (BundleFieldBinding field : fields) {
             if (SAVE_STATE == field.getAnnotationType()) {
-                methodBuilder.addStatement("$N.put$L($S, $N.$N)", BUNDLE, field.getBundleType(), field.getKey(), TARGET, field.getName());
+                methodBuilder.addStatement("$N.put$L($S, $N.$N)", BUNDLE, field.getBundleType(), field.getKey().getValue(), TARGET, field.getName());
             }
         }
         classBuilder.addMethod(methodBuilder.build());
@@ -101,7 +101,7 @@ public final class BundleInjectionAdapterGenerator extends BaseGenerator {
         methodBuilder.beginControlFlow("if ($N != null)", BUNDLE);
         for (BundleFieldBinding field : fields) {
             if (SAVE_STATE == field.getAnnotationType()) {
-                methodBuilder.beginControlFlow("if ($N.containsKey($S))", BUNDLE, field.getKey());
+                methodBuilder.beginControlFlow("if ($N.containsKey($S))", BUNDLE, field.getKey().getValue());
                 List<Object> stmtArgs = new ArrayList<Object>();
                 String stmt = "$N.$N = ";
                 stmtArgs.add(TARGET);
@@ -113,7 +113,7 @@ public final class BundleInjectionAdapterGenerator extends BaseGenerator {
                 stmt = stmt.concat("$N.get$L($S");
                 stmtArgs.add(BUNDLE);
                 stmtArgs.add(field.getBundleType());
-                stmtArgs.add(field.getKey());
+                stmtArgs.add(field.getKey().getValue());
                 if (field.canHaveDefault()) {
                     stmt = stmt.concat(", $N.$N");
                     stmtArgs.add(TARGET);
@@ -126,7 +126,7 @@ public final class BundleInjectionAdapterGenerator extends BaseGenerator {
                     methodBuilder.addStatement("throw new $T($S)", IllegalStateException.class,
                             String.format("Required Bundle value with key '%s' was not found for '%s'. "
                                             + "If this field is not required add '@NotRequired' annotation",
-                                    field.getKey(), field.getName()));
+                                    field.getKey().getValue(), field.getName()));
                 }
                 methodBuilder.endControlFlow();
             }
@@ -153,7 +153,7 @@ public final class BundleInjectionAdapterGenerator extends BaseGenerator {
         methodBuilder.endControlFlow();
         for (BundleFieldBinding field : fields) {
             if (ARGUMENT == field.getAnnotationType()) {
-                methodBuilder.beginControlFlow("if ($N.containsKey($S))", BUNDLE, field.getKey());
+                methodBuilder.beginControlFlow("if ($N.containsKey($S))", BUNDLE, field.getKey().getValue());
                 List<Object> stmtArgs = new ArrayList<Object>();
                 String stmt = "$N.$N = ";
                 stmtArgs.add(TARGET);
@@ -165,7 +165,7 @@ public final class BundleInjectionAdapterGenerator extends BaseGenerator {
                 stmt = stmt.concat("$N.get$L($S");
                 stmtArgs.add(BUNDLE);
                 stmtArgs.add(field.getBundleType());
-                stmtArgs.add(field.getKey());
+                stmtArgs.add(field.getKey().getValue());
                 if (field.canHaveDefault()) {
                     stmt = stmt.concat(", $N.$N");
                     stmtArgs.add(TARGET);
@@ -178,7 +178,7 @@ public final class BundleInjectionAdapterGenerator extends BaseGenerator {
                     methodBuilder.addStatement("throw new $T($S)", IllegalStateException.class,
                             String.format("Required Bundle value with key '%s' was not found for '%s'. "
                                             + "If this field is not required add '@NotRequired' annotation",
-                                    field.getKey(), field.getName()));
+                                    field.getKey().getValue(), field.getName()));
                 }
                 methodBuilder.endControlFlow();
             }

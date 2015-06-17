@@ -31,16 +31,20 @@ public class BuilderTest {
     @Test
     public void testGetBundle() throws Exception {
         int i = random.nextInt();
-        Bundle bundle = builder.getBundle(i);
-        assertEquals(i, bundle.getInt(PocketKnifeBuilder.ARG_ARG, i << 1));
+        int j = random.nextInt();
+        Bundle bundle = builder.getBundle(i, j);
+        assertEquals(i, bundle.getInt(PocketKnifeBuilder.ARG_ARG, (i << 1) | 1));
+        assertEquals(j, bundle.getInt(PocketKnifeBuilder.ARG_TEST, (j << 1) | 1));
     }
 
     @Test
     public void testGetIntent() throws Exception {
         int i = random.nextInt();
-        Intent intent = builder.getIntent(i);
+        String s = "This is a test";
+        Intent intent = builder.getIntent(i, s);
         assertEquals(Intent.ACTION_DEFAULT, intent.getAction());
         assertEquals(i, intent.getIntExtra(PocketKnifeBuilder.EXTRA_EXTRA, i << 1));
+        assertEquals(s, intent.getStringExtra(PocketKnifeBuilder.EXTRA_TEXT));
     }
 
     @Test

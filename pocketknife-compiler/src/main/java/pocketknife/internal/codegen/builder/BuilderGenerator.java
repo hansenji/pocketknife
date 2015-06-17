@@ -6,6 +6,7 @@ import com.squareup.javapoet.JavaFile;
 import com.squareup.javapoet.MethodSpec;
 import com.squareup.javapoet.TypeSpec;
 import pocketknife.internal.codegen.BaseGenerator;
+import pocketknife.internal.codegen.KeySpec;
 import pocketknife.internal.codegen.MethodBinding;
 import pocketknife.internal.codegen.TypeUtil;
 
@@ -57,16 +58,17 @@ public class BuilderGenerator extends BaseGenerator {
     }
 
     private void generateKeys(TypeSpec.Builder classBuilder) {
-        Set<String> keys = new TreeSet<String>();
+        Set<KeySpec> keys = new TreeSet<KeySpec>();
         for (MethodBinding method : methods) {
             keys.addAll(method.getKeys());
         }
 
-        for (String key : keys) {
-            classBuilder.addField(FieldSpec.builder(String.class, key, PUBLIC, STATIC, FINAL)
-                    .initializer("$S", key)
+        for (KeySpec key : keys) {
+            classBuilder.addField(FieldSpec.builder(String.class, key.getName(), PUBLIC, STATIC, FINAL)
+                    .initializer("$S", key.getValue())
                     .build());
         }
+
     }
 
     private void generateMethods(TypeSpec.Builder classBuilder) {

@@ -117,37 +117,6 @@ public class PocketKnifeProcessor extends AbstractProcessor {
             }
         }
 
-//        Map<TypeElement, BundleBuilderGenerator> bundleBuilderMap = bundleBuilderProcessor.findAndParseTargets(roundEnv);
-//
-//        for (Map.Entry<TypeElement, BundleBuilderGenerator> entry : bundleBuilderMap.entrySet()) {
-//            TypeElement typeElement = entry.getKey();
-//            BundleBuilderGenerator generator = entry.getValue();
-//            try {
-//                JavaFile javaFile = generator.generate();
-//                javaFile.writeTo(filer);
-//            } catch (Exception e) {
-//                StringWriter stackTrace = new StringWriter();
-//                e.printStackTrace(new PrintWriter(stackTrace));
-//                error(typeElement, "Unable to write bundle builder for type %s: %s", typeElement, stackTrace.toString());
-//            }
-//        }
-//
-//        // Intent Builder
-//        Map<TypeElement, IntentBuilderGenerator> intentBuilderMap = intentBuilderProcessor.findAndParseTargets(roundEnv);
-//
-//        for (Map.Entry<TypeElement, IntentBuilderGenerator> entry : intentBuilderMap.entrySet()) {
-//            TypeElement typeElement = entry.getKey();
-//            IntentBuilderGenerator generator = entry.getValue();
-//            try {
-//                JavaFile javaFile = generator.generate();
-//                javaFile.writeTo(filer);
-//            } catch (Exception e) {
-//                StringWriter stackTrace = new StringWriter();
-//                e.printStackTrace(new PrintWriter(stackTrace));
-//                error(typeElement, "Unable to write intent builder for type %s: %s", typeElement, stackTrace.toString());
-//            }
-//        }
-
         return false;
     }
 

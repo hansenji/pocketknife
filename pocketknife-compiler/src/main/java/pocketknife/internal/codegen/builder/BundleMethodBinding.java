@@ -3,6 +3,7 @@ package pocketknife.internal.codegen.builder;
 import com.squareup.javapoet.ClassName;
 import com.squareup.javapoet.MethodSpec;
 import pocketknife.internal.codegen.BundleFieldBinding;
+import pocketknife.internal.codegen.KeySpec;
 import pocketknife.internal.codegen.MethodBinding;
 import pocketknife.internal.codegen.TypeUtil;
 
@@ -33,8 +34,8 @@ public class BundleMethodBinding extends MethodBinding {
     }
 
     @Override
-    public Set<String> getKeys() {
-        Set<String> keys = new LinkedHashSet<String>();
+    public Set<KeySpec> getKeys() {
+        Set<KeySpec> keys = new LinkedHashSet<KeySpec>();
         for (BundleFieldBinding field : fields) {
             keys.add(field.getKey());
         }
@@ -53,7 +54,8 @@ public class BundleMethodBinding extends MethodBinding {
 
         for (BundleFieldBinding fieldBinding : fields) {
             methodBuilder.addParameter(ClassName.get(fieldBinding.getType()), fieldBinding.getName());
-            methodBuilder.addStatement("$N.put$L($N, $N)", returnVarName, fieldBinding.getBundleType(), fieldBinding.getKey(), fieldBinding.getName());
+            methodBuilder.addStatement("$N.put$L($N, $N)", returnVarName, fieldBinding.getBundleType(), fieldBinding.getKey().getName(),
+                    fieldBinding.getName());
         }
 
         methodBuilder.addStatement("return $N", returnVarName);

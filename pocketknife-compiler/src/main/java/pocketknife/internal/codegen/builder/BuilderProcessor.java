@@ -4,6 +4,7 @@ import pocketknife.BundleBuilder;
 import pocketknife.Data;
 import pocketknife.FragmentBuilder;
 import pocketknife.IntentBuilder;
+import pocketknife.Key;
 import pocketknife.internal.codegen.BaseProcessor;
 import pocketknife.internal.codegen.BundleFieldBinding;
 import pocketknife.internal.codegen.IntentFieldBinding;
@@ -149,7 +150,7 @@ public class BuilderProcessor extends BaseProcessor {
 
         String name = element.getSimpleName().toString();
         String bundleType = typeUtil.getBundleType(type);
-        String key = generateKey(ARG_KEY_PREFIX, name);
+        String key = getKey(element, ARG_KEY_PREFIX);
         return new BundleFieldBinding(name, type, bundleType, key);
     }
 
@@ -265,8 +266,8 @@ public class BuilderProcessor extends BaseProcessor {
 
         String name = element.getSimpleName().toString();
         String intentType = typeUtil.getIntentType(type);
-        String key = generateKey(EXTRA_KEY_PREFIX, name);
         boolean arrayList = isIntentArrayList(intentType);
+        String key = getKey(element, EXTRA_KEY_PREFIX);
         return new IntentFieldBinding(name, type, intentType, key, arrayList);
     }
 
@@ -324,5 +325,13 @@ public class BuilderProcessor extends BaseProcessor {
             targetMap.put(element, generator);
         }
         return generator;
+    }
+
+    private String getKey(Element element, String keyPrefix) {
+        Key key = element.getAnnotation(Key.class);
+        if (key != null) {
+            return key.value();
+        }
+        return generateKey(keyPrefix, element.getSimpleName().toString());
     }
 }

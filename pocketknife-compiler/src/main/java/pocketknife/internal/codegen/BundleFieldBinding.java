@@ -55,8 +55,8 @@ public class BundleFieldBinding extends FieldBinding {
         return bundleType;
     }
 
-    public String getKey() {
-        return key;
+    public KeySpec getKey() {
+        return new KeySpec(generateKey(ARGUMENT_KEY_PREFIX, name), key);
     }
 
     public AnnotationType getAnnotationType() {
