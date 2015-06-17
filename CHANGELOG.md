@@ -1,6 +1,11 @@
 Change Log
 ==========
 
+Version 2.6.0 *(2015-06-17)*
+----------------------------
+
+  * Fixed Issue #4 added @Key annotation to specify Extra/Argument keys in builders.
+
 Version 2.5.1 *(2015-05-26)*
 ----------------------------
 
