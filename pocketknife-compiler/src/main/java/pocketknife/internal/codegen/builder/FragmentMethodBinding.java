@@ -2,6 +2,7 @@ package pocketknife.internal.codegen.builder;
 
 import com.squareup.javapoet.ClassName;
 import com.squareup.javapoet.MethodSpec;
+import org.apache.commons.lang3.StringUtils;
 import pocketknife.internal.codegen.BundleFieldBinding;
 import pocketknife.internal.codegen.FieldBinding;
 import pocketknife.internal.codegen.KeySpec;
@@ -68,7 +69,18 @@ public class FragmentMethodBinding extends MethodBinding {
 
         for (BundleFieldBinding fieldBinding : fields) {
             methodBuilder.addParameter(ClassName.get(fieldBinding.getType()), fieldBinding.getName());
-            methodBuilder.addStatement("$N.put$L($N, $N)", argsVarName, fieldBinding.getBundleType(), fieldBinding.getKey().getName(), fieldBinding.getName());
+            String keyValue;
+            String stmt = "$N.put$L(";
+            KeySpec key = fieldBinding.getKey();
+            if (StringUtils.isBlank(key.getName())) {
+                keyValue = key.getValue();
+                stmt = stmt.concat("$S");
+            } else {
+                keyValue = key.getName();
+                stmt = stmt.concat("$N");
+            }
+            stmt = stmt.concat(", $N)");
+            methodBuilder.addStatement(stmt, argsVarName, fieldBinding.getBundleType(), keyValue, fieldBinding.getName());
         }
 
         if (!fields.isEmpty()) {

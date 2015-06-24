@@ -15,18 +15,18 @@ public class BundleFieldBinding extends FieldBinding {
     private final String name;
     private final TypeMirror type;
     private final String bundleType;
-    private final String key;
+    private final KeySpec key;
 
     // Injector Only
     private final boolean needsToBeCast;
     private final boolean canHaveDefault;
     private final boolean required;
 
-    public BundleFieldBinding(String name, TypeMirror type, String bundleType, String key) {
+    public BundleFieldBinding(String name, TypeMirror type, String bundleType, KeySpec key) {
         this(AnnotationType.BUILDER, name, type, bundleType, key, false, false, false);
     }
 
-    public BundleFieldBinding(AnnotationType annotationType, String name, TypeMirror type, String bundleType, String key, boolean needsToBeCast,
+    public BundleFieldBinding(AnnotationType annotationType, String name, TypeMirror type, String bundleType, KeySpec key, boolean needsToBeCast,
                               boolean canHaveDefault, boolean required) {
         this.annotationType = annotationType;
         this.name = name;
@@ -56,7 +56,7 @@ public class BundleFieldBinding extends FieldBinding {
     }
 
     public KeySpec getKey() {
-        return new KeySpec(generateKey(ARGUMENT_KEY_PREFIX, name), key);
+        return key;
     }
 
     public AnnotationType getAnnotationType() {

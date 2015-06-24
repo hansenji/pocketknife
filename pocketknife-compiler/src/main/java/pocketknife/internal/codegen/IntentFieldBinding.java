@@ -8,7 +8,7 @@ public class IntentFieldBinding extends FieldBinding {
     private final String name;
     private final TypeMirror type;
     private final String intentType;
-    private final String key;
+    private final KeySpec key;
     // Builder Only
     private final boolean arrayList;
 
@@ -17,7 +17,7 @@ public class IntentFieldBinding extends FieldBinding {
     private final boolean needsToBeCast;
     private final boolean hasDefault;
 
-    public IntentFieldBinding(String name, TypeMirror type, String intentType, String key, boolean arrayList) {
+    public IntentFieldBinding(String name, TypeMirror type, String intentType, KeySpec key, boolean arrayList) {
         this.name = name;
         this.type = type;
         this.intentType = intentType;
@@ -29,7 +29,7 @@ public class IntentFieldBinding extends FieldBinding {
         this.hasDefault = false;
     }
 
-    public IntentFieldBinding(String name, TypeMirror type, String intentType, String key, Boolean needsToBeCast, boolean hasDefault, boolean required) {
+    public IntentFieldBinding(String name, TypeMirror type, String intentType, KeySpec key, Boolean needsToBeCast, boolean hasDefault, boolean required) {
         this.name = name;
         this.type = type;
         this.intentType = intentType;
@@ -55,7 +55,7 @@ public class IntentFieldBinding extends FieldBinding {
     }
 
     public KeySpec getKey() {
-        return new KeySpec(generateKey(KEY_PREFIX, name), key);
+        return key;
     }
 
     public boolean isArrayList() {

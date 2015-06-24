@@ -4,6 +4,7 @@ import pocketknife.InjectExtra;
 import pocketknife.NotRequired;
 import pocketknife.internal.codegen.IntentFieldBinding;
 import pocketknife.internal.codegen.InvalidTypeException;
+import pocketknife.internal.codegen.KeySpec;
 
 import javax.annotation.processing.Messager;
 import javax.annotation.processing.RoundEnvironment;
@@ -72,7 +73,7 @@ public class IntentInjectionProcessor extends InjectionProcessor {
         // Assemble information on the injection point
         String name = element.getSimpleName().toString();
         String intentType = typeUtil.getIntentType(type);
-        String key = getKey(element);
+        KeySpec key = getKey(element);
         boolean required = element.getAnnotation(NotRequired.class) == null;
         boolean hasDefault = typeUtil.isPrimitive(type);
         boolean needsToBeCast = typeUtil.needToCastIntentType(type);
@@ -85,11 +86,11 @@ public class IntentInjectionProcessor extends InjectionProcessor {
         erasedTargetNames.add(enclosingElement.toString());
     }
 
-    private String getKey(Element element) {
+    private KeySpec getKey(Element element) {
         if (isDefaultAnnotationElement(element, InjectExtra.class.getName(), "value")) {
-            return generateKey(IntentFieldBinding.KEY_PREFIX, element.getSimpleName().toString());
+            return new KeySpec(null, generateKey(IntentFieldBinding.KEY_PREFIX, element.getSimpleName().toString()));
         }
-        return element.getAnnotation(InjectExtra.class).value();
+        return new KeySpec(null, element.getAnnotation(InjectExtra.class).value());
     }
 
     private IntentInjectionAdapterGenerator getOrCreateTargetClass(Map<TypeElement, IntentInjectionAdapterGenerator> targetClassMap,

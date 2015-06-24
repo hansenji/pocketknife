@@ -87,11 +87,26 @@ public class IntentMethodBinding extends MethodBinding {
             if (StringUtils.equals(fieldBinding.getName(), dataParam)) {
                 continue;  // Data is handled previously
             }
+            String stmt = "$N.put";
             if (fieldBinding.isArrayList()) {
-                methodBuilder.addStatement("$N.put$LExtra($N, $N)", returnVarName, fieldBinding.getIntentType(), fieldBinding.getKey().getName(),
-                        fieldBinding.getName());
+                stmt = stmt.concat("$LExtra(");
             } else {
-                methodBuilder.addStatement("$N.putExtra($N, $N)", returnVarName, fieldBinding.getKey().getName(), fieldBinding.getName());
+                stmt = stmt.concat("Extra(");
+            }
+            String keyValue;
+            KeySpec key = fieldBinding.getKey();
+            if (StringUtils.isBlank(key.getName())) {
+                keyValue = key.getValue();
+                stmt = stmt.concat("$S");
+            } else {
+                keyValue = key.getName();
+                stmt = stmt.concat("$N");
+            }
+            stmt = stmt.concat(", $N)");
+            if (fieldBinding.isArrayList()) {
+                methodBuilder.addStatement(stmt, returnVarName, fieldBinding.getIntentType(), keyValue, fieldBinding.getName());
+            } else {
+                methodBuilder.addStatement(stmt, returnVarName, keyValue, fieldBinding.getName());
             }
         }
 

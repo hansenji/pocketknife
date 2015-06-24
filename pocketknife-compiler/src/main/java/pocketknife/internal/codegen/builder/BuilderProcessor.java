@@ -9,6 +9,7 @@ import pocketknife.internal.codegen.BaseProcessor;
 import pocketknife.internal.codegen.BundleFieldBinding;
 import pocketknife.internal.codegen.IntentFieldBinding;
 import pocketknife.internal.codegen.InvalidTypeException;
+import pocketknife.internal.codegen.KeySpec;
 import pocketknife.internal.codegen.TypeUtil;
 
 import javax.annotation.processing.Messager;
@@ -150,7 +151,7 @@ public class BuilderProcessor extends BaseProcessor {
 
         String name = element.getSimpleName().toString();
         String bundleType = typeUtil.getBundleType(type);
-        String key = getKey(element, ARG_KEY_PREFIX);
+        KeySpec key = getKey(element, ARG_KEY_PREFIX);
         return new BundleFieldBinding(name, type, bundleType, key);
     }
 
@@ -267,7 +268,7 @@ public class BuilderProcessor extends BaseProcessor {
         String name = element.getSimpleName().toString();
         String intentType = typeUtil.getIntentType(type);
         boolean arrayList = isIntentArrayList(intentType);
-        String key = getKey(element, EXTRA_KEY_PREFIX);
+        KeySpec key = getKey(element, EXTRA_KEY_PREFIX);
         return new IntentFieldBinding(name, type, intentType, key, arrayList);
     }
 
@@ -327,11 +328,12 @@ public class BuilderProcessor extends BaseProcessor {
         return generator;
     }
 
-    private String getKey(Element element, String keyPrefix) {
+    private KeySpec getKey(Element element, String keyPrefix) {
         Key key = element.getAnnotation(Key.class);
         if (key != null) {
-            return key.value();
+            return new KeySpec(null, key.value());
         }
-        return generateKey(keyPrefix, element.getSimpleName().toString());
+        String genKey = generateKey(keyPrefix, element.getSimpleName().toString());
+        return new KeySpec(genKey, genKey);
     }
 }

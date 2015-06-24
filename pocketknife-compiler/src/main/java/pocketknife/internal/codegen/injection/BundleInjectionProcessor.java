@@ -6,6 +6,7 @@ import pocketknife.NotRequired;
 import pocketknife.SaveState;
 import pocketknife.internal.codegen.InvalidTypeException;
 import pocketknife.internal.codegen.BundleFieldBinding;
+import pocketknife.internal.codegen.KeySpec;
 
 import javax.annotation.processing.Messager;
 import javax.annotation.processing.RoundEnvironment;
@@ -97,7 +98,7 @@ public class BundleInjectionProcessor extends InjectionProcessor {
         boolean needsToBeCast = typeUtil.needToCastBundleType(type);
 
         BundleInjectionAdapterGenerator bundleInjectionAdapterGenerator = getOrCreateTargetClass(targetClassMap, enclosingElement);
-        BundleFieldBinding binding = new BundleFieldBinding(SAVE_STATE, name, type, bundleType, generateKey(SAVE_STATE_KEY_PREFIX, name),
+        BundleFieldBinding binding = new BundleFieldBinding(SAVE_STATE, name, type, bundleType, new KeySpec(null, generateKey(SAVE_STATE_KEY_PREFIX, name)),
                 needsToBeCast, canHaveDefault, required);
         bundleInjectionAdapterGenerator.addField(binding);
 
@@ -123,7 +124,7 @@ public class BundleInjectionProcessor extends InjectionProcessor {
         // Assemble information on the injection point
         String name = element.getSimpleName().toString();
         String bundleType = typeUtil.getBundleType(type);
-        String key = getKey(element);
+        KeySpec key = getKey(element);
         NotRequired notRequired = element.getAnnotation(NotRequired.class);
         boolean required = notRequired == null;
         int minSdk = Build.VERSION_CODES.FROYO;
@@ -143,11 +144,11 @@ public class BundleInjectionProcessor extends InjectionProcessor {
         erasedTargetNames.add(enclosingElement.toString());
     }
 
-    private String getKey(Element element) {
+    private KeySpec getKey(Element element) {
         if (isDefaultAnnotationElement(element, InjectArgument.class.getName(), "value")) {
-            return generateKey(BundleFieldBinding.ARGUMENT_KEY_PREFIX, element.getSimpleName().toString());
+            return new KeySpec(null, generateKey(BundleFieldBinding.ARGUMENT_KEY_PREFIX, element.getSimpleName().toString()));
         }
-        return element.getAnnotation(InjectArgument.class).value();
+        return new KeySpec(null, element.getAnnotation(InjectArgument.class).value());
     }
 
     private boolean canHaveDefault(TypeMirror type, int minSdk) {

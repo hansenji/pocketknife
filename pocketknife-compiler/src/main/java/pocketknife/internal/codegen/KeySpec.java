@@ -44,7 +44,18 @@ public class KeySpec implements Comparable<KeySpec> {
 
     @Override
     public int compareTo(KeySpec o) {
-        int i = name.compareTo(o.name);
+        int i;
+        if (name == null) {
+            if (o.name != null) {
+                i = -1;
+            } else {
+                i = 0;
+            }
+        } else if (o.name == null) {
+            i = 1;
+        } else {
+            i = name.compareTo(o.name);
+        }
         if (i == 0) {
             return value.compareTo(o.value);
         }

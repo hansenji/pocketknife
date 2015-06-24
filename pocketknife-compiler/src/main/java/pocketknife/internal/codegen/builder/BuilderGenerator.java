@@ -5,6 +5,7 @@ import com.squareup.javapoet.FieldSpec;
 import com.squareup.javapoet.JavaFile;
 import com.squareup.javapoet.MethodSpec;
 import com.squareup.javapoet.TypeSpec;
+import org.apache.commons.lang3.StringUtils;
 import pocketknife.internal.codegen.BaseGenerator;
 import pocketknife.internal.codegen.KeySpec;
 import pocketknife.internal.codegen.MethodBinding;
@@ -64,9 +65,11 @@ public class BuilderGenerator extends BaseGenerator {
         }
 
         for (KeySpec key : keys) {
-            classBuilder.addField(FieldSpec.builder(String.class, key.getName(), PUBLIC, STATIC, FINAL)
-                    .initializer("$S", key.getValue())
-                    .build());
+            if (StringUtils.isNotBlank(key.getName())) {
+                classBuilder.addField(FieldSpec.builder(String.class, key.getName(), PUBLIC, STATIC, FINAL)
+                        .initializer("$S", key.getValue())
+                        .build());
+            }
         }
 
     }
