@@ -11,7 +11,7 @@
 
     <groupId>com.vikingsen</groupId>
     <artifactId>pocketknife-parent</artifactId>
-    <version>2.6.1</version>
+    <version>2.6.2-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <name>Pocket Knife (Parent)</name>
@@ -46,7 +46,7 @@
         <url>http://github.com/hansenji/pocketknife/</url>
         <connection>scm:git:git://github.com/hansenji/pocketknife.git</connection>
         <developerConnection>scm:git:ssh://git@github.com/hansenji/pocketknife.git</developerConnection>
-        <tag>pocketknife-parent-2.6.1</tag>
+        <tag>HEAD</tag>
     </scm>
 
     <issueManagement>
