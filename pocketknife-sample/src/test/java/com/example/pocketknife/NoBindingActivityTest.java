@@ -8,10 +8,10 @@ import org.robolectric.annotation.Config;
 
 @RunWith(RobolectricTestRunner.class)
 @Config(manifest = "src/main/AndroidManifest.xml")
-public class NoInjectionActivityTest {
+public class NoBindingActivityTest {
 
     @Test
-    public void testNoInjection() {
-        Robolectric.buildActivity(NoInjectionActivity.class).create().get();
+    public void testNoBinding() {
+        Robolectric.buildActivity(NoBindingActivity.class).create().get();
     }
 }

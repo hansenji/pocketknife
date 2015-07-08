@@ -1,7 +1,7 @@
-package pocketknife.internal.codegen.injection;
+package pocketknife.internal.codegen.binding;
 
 import android.os.Build;
-import pocketknife.InjectArgument;
+import pocketknife.BindArgument;
 import pocketknife.NotRequired;
 import pocketknife.SaveState;
 import pocketknife.internal.codegen.InvalidTypeException;
@@ -27,14 +27,14 @@ import static pocketknife.internal.GeneratedAdapters.BUNDLE_ADAPTER_SUFFIX;
 import static pocketknife.internal.codegen.BundleFieldBinding.AnnotationType.SAVE_STATE;
 import static pocketknife.internal.codegen.BundleFieldBinding.SAVE_STATE_KEY_PREFIX;
 
-public class BundleInjectionProcessor extends InjectionProcessor {
+public class BundleBindingProcessor extends BindingProcessor {
 
-    public BundleInjectionProcessor(Messager messager, Elements elements, Types types) {
+    public BundleBindingProcessor(Messager messager, Elements elements, Types types) {
         super(messager, elements, types);
     }
 
-    public Map<TypeElement, BundleInjectionAdapterGenerator> findAndParseTargets(RoundEnvironment env) {
-        Map<TypeElement, BundleInjectionAdapterGenerator> targetClassMap = new LinkedHashMap<TypeElement, BundleInjectionAdapterGenerator>();
+    public Map<TypeElement, BundleBindingAdapterGenerator> findAndParseTargets(RoundEnvironment env) {
+        Map<TypeElement, BundleBindingAdapterGenerator> targetClassMap = new LinkedHashMap<TypeElement, BundleBindingAdapterGenerator>();
         Set<String> erasedTargetNames = new LinkedHashSet<String>(); // used for parent lookup.
 
         // Process each @SaveState
@@ -48,19 +48,19 @@ public class BundleInjectionProcessor extends InjectionProcessor {
             }
         }
 
-        // Process each @InjectAnnotation
-        for (Element element : env.getElementsAnnotatedWith(InjectArgument.class)) {
+        // Process each @BindArgument Annotation
+        for (Element element : env.getElementsAnnotatedWith(BindArgument.class)) {
             try {
-                parseInjectAnnotation(element, targetClassMap, erasedTargetNames);
+                parseBindAnnotation(element, targetClassMap, erasedTargetNames);
             } catch (Exception e) {
                 StringWriter stackTrace = new StringWriter();
                 e.printStackTrace(new PrintWriter(stackTrace));
-                error(element, "Unable to generate bundle adapter for @InjectAnnotation.\n\n%s", stackTrace);
+                error(element, "Unable to generate bundle adapter for @BindAnnotation.\n\n%s", stackTrace);
             }
         }
 
         // Try to find a parent adapter for each adapter
-        for (Map.Entry<TypeElement, BundleInjectionAdapterGenerator> entry : targetClassMap.entrySet()) {
+        for (Map.Entry<TypeElement, BundleBindingAdapterGenerator> entry : targetClassMap.entrySet()) {
             TypeElement parentElement = findParent(entry.getKey(), erasedTargetNames);
             if (parentElement != null) {
                 entry.getValue().setParentAdapter(getPackageName(parentElement), parentElement.getSimpleName() + BUNDLE_ADAPTER_SUFFIX);
@@ -70,7 +70,7 @@ public class BundleInjectionProcessor extends InjectionProcessor {
         return targetClassMap;
     }
 
-    private void parseSaveState(Element element, Map<TypeElement, BundleInjectionAdapterGenerator> targetClassMap, Set<String> erasedTargetNames)
+    private void parseSaveState(Element element, Map<TypeElement, BundleBindingAdapterGenerator> targetClassMap, Set<String> erasedTargetNames)
             throws ClassNotFoundException, InvalidTypeException {
         TypeElement enclosingElement = (TypeElement) element.getEnclosingElement();
 
@@ -85,7 +85,7 @@ public class BundleInjectionProcessor extends InjectionProcessor {
         validateForCodeGeneration(SaveState.class, element);
         validateBindingPackage(SaveState.class, element);
 
-        // Assemble information on the injection point.
+        // Assemble information on the bind point.
         String name = element.getSimpleName().toString();
         String bundleType = typeUtil.getBundleType(type);
         NotRequired notRequired = element.getAnnotation(NotRequired.class);
@@ -97,16 +97,16 @@ public class BundleInjectionProcessor extends InjectionProcessor {
         boolean canHaveDefault = !required && canHaveDefault(type, minSdk);
         boolean needsToBeCast = typeUtil.needToCastBundleType(type);
 
-        BundleInjectionAdapterGenerator bundleInjectionAdapterGenerator = getOrCreateTargetClass(targetClassMap, enclosingElement);
+        BundleBindingAdapterGenerator bundleBindingAdapterGenerator = getOrCreateTargetClass(targetClassMap, enclosingElement);
         BundleFieldBinding binding = new BundleFieldBinding(SAVE_STATE, name, type, bundleType, new KeySpec(null, generateKey(SAVE_STATE_KEY_PREFIX, name)),
                 needsToBeCast, canHaveDefault, required);
-        bundleInjectionAdapterGenerator.addField(binding);
+        bundleBindingAdapterGenerator.addField(binding);
 
         // Add the type-erased version to the valid targets set.
         erasedTargetNames.add(enclosingElement.toString());
     }
 
-    private void parseInjectAnnotation(Element element, Map<TypeElement, BundleInjectionAdapterGenerator> targetClassMap, Set<String> erasedTargetNames)
+    private void parseBindAnnotation(Element element, Map<TypeElement, BundleBindingAdapterGenerator> targetClassMap, Set<String> erasedTargetNames)
             throws InvalidTypeException {
         TypeElement enclosingElement = (TypeElement) element.getEnclosingElement();
 
@@ -118,10 +118,10 @@ public class BundleInjectionProcessor extends InjectionProcessor {
         }
 
         validateNotRequiredArguments(element);
-        validateForCodeGeneration(InjectArgument.class, element);
-        validateBindingPackage(InjectArgument.class, element);
+        validateForCodeGeneration(BindArgument.class, element);
+        validateBindingPackage(BindArgument.class, element);
 
-        // Assemble information on the injection point
+        // Assemble information on the bind point
         String name = element.getSimpleName().toString();
         String bundleType = typeUtil.getBundleType(type);
         KeySpec key = getKey(element);
@@ -134,39 +134,39 @@ public class BundleInjectionProcessor extends InjectionProcessor {
         boolean canHaveDefault = !required && canHaveDefault(type, minSdk);
         boolean needsToBeCast = typeUtil.needToCastBundleType(type);
 
-        BundleInjectionAdapterGenerator bundleInjectionAdapterGenerator = getOrCreateTargetClass(targetClassMap, enclosingElement);
+        BundleBindingAdapterGenerator bundleBindingAdapterGenerator = getOrCreateTargetClass(targetClassMap, enclosingElement);
         BundleFieldBinding binding = new BundleFieldBinding(BundleFieldBinding.AnnotationType.ARGUMENT, name, type, bundleType, key,
                 needsToBeCast, canHaveDefault, required);
-        bundleInjectionAdapterGenerator.orRequired(required);
-        bundleInjectionAdapterGenerator.addField(binding);
+        bundleBindingAdapterGenerator.orRequired(required);
+        bundleBindingAdapterGenerator.addField(binding);
 
         // Add the type-erased version to the valid targets set.
         erasedTargetNames.add(enclosingElement.toString());
     }
 
     private KeySpec getKey(Element element) {
-        if (isDefaultAnnotationElement(element, InjectArgument.class.getName(), "value")) {
+        if (isDefaultAnnotationElement(element, BindArgument.class.getName(), "value")) {
             return new KeySpec(null, generateKey(BundleFieldBinding.ARGUMENT_KEY_PREFIX, element.getSimpleName().toString()));
         }
-        return new KeySpec(null, element.getAnnotation(InjectArgument.class).value());
+        return new KeySpec(null, element.getAnnotation(BindArgument.class).value());
     }
 
     private boolean canHaveDefault(TypeMirror type, int minSdk) {
         return typeUtil.isPrimitive(type) || minSdk >= Build.VERSION_CODES.HONEYCOMB_MR1 && types.isAssignable(type, typeUtil.charSequenceType);
     }
 
-    private BundleInjectionAdapterGenerator getOrCreateTargetClass(Map<TypeElement, BundleInjectionAdapterGenerator> targetClassMap,
+    private BundleBindingAdapterGenerator getOrCreateTargetClass(Map<TypeElement, BundleBindingAdapterGenerator> targetClassMap,
                                                                    TypeElement enclosingElement) {
-        BundleInjectionAdapterGenerator bundleInjectionAdapterGenerator = targetClassMap.get(enclosingElement);
-        if (bundleInjectionAdapterGenerator == null) {
+        BundleBindingAdapterGenerator bundleBindingAdapterGenerator = targetClassMap.get(enclosingElement);
+        if (bundleBindingAdapterGenerator == null) {
             TypeMirror targetType = enclosingElement.asType();
             String classPackage = getPackageName(enclosingElement);
             String className = getClassName(enclosingElement, classPackage) + BUNDLE_ADAPTER_SUFFIX;
 
-            bundleInjectionAdapterGenerator = new BundleInjectionAdapterGenerator(classPackage, className, targetType, typeUtil);
-            targetClassMap.put(enclosingElement, bundleInjectionAdapterGenerator);
+            bundleBindingAdapterGenerator = new BundleBindingAdapterGenerator(classPackage, className, targetType, typeUtil);
+            targetClassMap.put(enclosingElement, bundleBindingAdapterGenerator);
         }
-        return bundleInjectionAdapterGenerator;
+        return bundleBindingAdapterGenerator;
     }
 
 }

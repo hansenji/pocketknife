@@ -5,14 +5,14 @@ import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import pocketknife.InjectArgument;
+import pocketknife.BindArgument;
 import pocketknife.PocketKnife;
 
 public class KeyGenFragment extends Fragment {
 
-    @InjectArgument
+    @BindArgument
     String aString;
-    @InjectArgument
+    @BindArgument
     int anInt;
 
     public static KeyGenFragment newInstance() {
@@ -27,6 +27,6 @@ public class KeyGenFragment extends Fragment {
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-        PocketKnife.injectArguments(this, getArguments());
+        PocketKnife.bindArguments(this, getArguments());
     }
 }

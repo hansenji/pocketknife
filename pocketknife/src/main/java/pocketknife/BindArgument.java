@@ -7,15 +7,15 @@ import static java.lang.annotation.ElementType.FIELD;
 import static java.lang.annotation.RetentionPolicy.CLASS;
 
 /**
- * Inject {@link android.content.Intent} extra for key.
+ * Bind {@link android.os.Bundle} value for key.
  * <pre>
  *     <code>
- *         {@literal @}InjectExtra("extra_key") int i;
+ *         {@literal @}BindArgument("Bundle_key") int i;
  *     </code>
  * </pre>
  */
 @Retention(CLASS)
 @Target(FIELD)
-public @interface InjectExtra {
+public @interface BindArgument {
     String value() default "";
 }

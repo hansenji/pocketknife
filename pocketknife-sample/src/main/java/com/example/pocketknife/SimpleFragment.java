@@ -6,7 +6,7 @@ import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import pocketknife.InjectArgument;
+import pocketknife.BindArgument;
 import pocketknife.NotRequired;
 import pocketknife.PocketKnife;
 
@@ -47,107 +47,107 @@ public class SimpleFragment extends Fragment {
     public static final int NRI_DEFAULT = 101;
 
     @NotRequired
-    @InjectArgument("Key")
+    @BindArgument("Key")
     String s;
     // boolean dv
-    @InjectArgument(BOOLEAN)
+    @BindArgument(BOOLEAN)
     boolean aBoolean;
     // boolean[]
 //    @NotRequired // ROBOLECTRIC implementation of intent doesn't allow for Required boolean[]
-    @InjectArgument(BOOLEAN_ARRAY)
+    @BindArgument(BOOLEAN_ARRAY)
     boolean[] booleans;
     // Bundle
-    @InjectArgument(BUNDLE)
+    @BindArgument(BUNDLE)
     Bundle bundle;
     // byte dv
 //    @NotRequired // ROBOLECTRIC implementation of intent doesn't allow for Required byte
-    @InjectArgument(BYTE)
+    @BindArgument(BYTE)
     byte aByte;
     // byte[]
-    @InjectArgument(BYTE_ARRAY)
+    @BindArgument(BYTE_ARRAY)
     byte[] bytes;
     // char dv
 //    @NotRequired // ROBOLECTRIC implementation of intent doesn't allow for Required char
-    @InjectArgument(CHAR)
+    @BindArgument(CHAR)
     char aChar;
     // char[]
 //    @NotRequired // ROBOLECTRIC implementation of intent doesn't allow for Required char[]
-    @InjectArgument(CHAR_ARRAY)
+    @BindArgument(CHAR_ARRAY)
     char[] chars;
     // CharSequence
-    @InjectArgument(CHAR_SEQUENCE)
+    @BindArgument(CHAR_SEQUENCE)
     CharSequence charSequence;
     // CharSequence[]
 //    @NotRequired // ROBOLECTRIC implementation of intent doesn't allow for Required CharSequence[]
-    @InjectArgument(CHAR_SEQUENCE_ARRAY)
+    @BindArgument(CHAR_SEQUENCE_ARRAY)
     CharSequence[] charSequences;
     // ArrayList<CharSequence>
 //    @NotRequired // ROBOLECTRIC implementation of intent doesn't allow for Required CharSequenceArrayList
-    @InjectArgument(CHAR_SEQUENCE_ARRAY_LIST)
+    @BindArgument(CHAR_SEQUENCE_ARRAY_LIST)
     ArrayList<CharSequence> charSequenceArrayList;
     // double dv
-    @InjectArgument(DOUBLE)
+    @BindArgument(DOUBLE)
     double aDouble;
     // double[]
 //    @NotRequired // ROBOLECTRIC implementation of intent doesn't allow for Required double[]
-    @InjectArgument(DOUBLE_ARRAY)
+    @BindArgument(DOUBLE_ARRAY)
     double[] doubles;
     // float dv
-    @InjectArgument(FLOAT)
+    @BindArgument(FLOAT)
     float aFloat;
     // float[]
 //    @NotRequired // ROBOLECTRIC implementation of intent doesn't allow for Required float[]
-    @InjectArgument(FLOAT_ARRAY)
+    @BindArgument(FLOAT_ARRAY)
     float[] floats;
     // int dv
-    @InjectArgument(INT)
+    @BindArgument(INT)
     int anInt;
     // int[]
-    @InjectArgument(INT_ARRAY)
+    @BindArgument(INT_ARRAY)
     int[] ints;
     // ArrayList<Integer>
-    @InjectArgument(INTEGER_ARRAY_LIST)
+    @BindArgument(INTEGER_ARRAY_LIST)
     ArrayList<Integer> integerArrayList;
     // long dv
-    @InjectArgument(LONG)
+    @BindArgument(LONG)
     long aLong;
     // long[]
-    @InjectArgument(LONG_ARRAY)
+    @BindArgument(LONG_ARRAY)
     long[] longs;
     // Parcelable
-    @InjectArgument(PARCELABLE)
+    @BindArgument(PARCELABLE)
     MyParcelable parcelable;
     // Parcelable[]
-    @InjectArgument(PARCELABLE_ARRAY)
+    @BindArgument(PARCELABLE_ARRAY)
     MyParcelable[] parcelables;
     // ArrayList<Parcelable>
-    @InjectArgument(PARCELABLE_ARRAY_LIST)
+    @BindArgument(PARCELABLE_ARRAY_LIST)
     ArrayList<MyParcelable> parcelableArrayList;
     // Serializable
-    @InjectArgument(SERIALIZABLE)
+    @BindArgument(SERIALIZABLE)
     Serializable serializable;
     // short dv
 //    @NotRequired // ROBOLECTRIC implementation of intent doesn't allow for Required Short
-    @InjectArgument(SHORT)
+    @BindArgument(SHORT)
     short aShort;
     // short[]
 //    @NotRequired // ROBOLECTRIC implementation of intent doesn't allow for Required Short[]
-    @InjectArgument(SHORT_ARRAY)
+    @BindArgument(SHORT_ARRAY)
     short[] shorts;
     // String
-    @InjectArgument(STRING)
+    @BindArgument(STRING)
     String string;
     // String[]
-    @InjectArgument(STRING_ARRAY)
+    @BindArgument(STRING_ARRAY)
     String[] strings;
     // ArrayList<String>
-    @InjectArgument(STRING_ARRAY_LIST)
+    @BindArgument(STRING_ARRAY_LIST)
     ArrayList<String> stringArrayList;
     // Not required
     @NotRequired
-    @InjectArgument(NOT_REQUIRED_INT)
+    @BindArgument(NOT_REQUIRED_INT)
     int notRequired = NRI_DEFAULT;
-    @InjectArgument(Intent.EXTRA_TEXT)
+    @BindArgument(Intent.EXTRA_TEXT)
     String text;
 
 
@@ -163,6 +163,6 @@ public class SimpleFragment extends Fragment {
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-        PocketKnife.injectArguments(this, getArguments());
+        PocketKnife.bindArguments(this, getArguments());
     }
 }

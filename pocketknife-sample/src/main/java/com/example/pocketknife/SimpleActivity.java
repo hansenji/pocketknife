@@ -3,7 +3,7 @@ package com.example.pocketknife;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
-import pocketknife.InjectExtra;
+import pocketknife.BindExtra;
 import pocketknife.NotRequired;
 import pocketknife.PocketKnife;
 
@@ -44,107 +44,107 @@ public class SimpleActivity extends FragmentActivity {
     public static final int NRI_DEFAULT = 101;
 
     @NotRequired
-    @InjectExtra("Key")
+    @BindExtra("Key")
     String s;
     // boolean dv
-    @InjectExtra(BOOLEAN_EXTRA)
+    @BindExtra(BOOLEAN_EXTRA)
     boolean aBoolean;
     // boolean[]
     @NotRequired // ROBOLECTRIC implementation of intent doesn't allow for Required boolean[]
-    @InjectExtra(BOOLEAN_ARRAY_EXTRA)
+    @BindExtra(BOOLEAN_ARRAY_EXTRA)
     boolean[] booleans;
     // Bundle
-    @InjectExtra(BUNDLE_EXTRA)
+    @BindExtra(BUNDLE_EXTRA)
     Bundle bundle;
     // byte dv
     @NotRequired // ROBOLECTRIC implementation of intent doesn't allow for Required byte
-    @InjectExtra(BYTE_EXTRA)
+    @BindExtra(BYTE_EXTRA)
     byte aByte;
     // byte[]
-    @InjectExtra(BYTE_ARRAY_EXTRA)
+    @BindExtra(BYTE_ARRAY_EXTRA)
     byte[] bytes;
     // char dv
     @NotRequired // ROBOLECTRIC implementation of intent doesn't allow for Required char
-    @InjectExtra(CHAR_EXTRA)
+    @BindExtra(CHAR_EXTRA)
     char aChar;
     // char[]
     @NotRequired // ROBOLECTRIC implementation of intent doesn't allow for Required char[]
-    @InjectExtra(CHAR_ARRAY_EXTRA)
+    @BindExtra(CHAR_ARRAY_EXTRA)
     char[] chars;
     // CharSequence
-    @InjectExtra(CHAR_SEQUENCE_EXTRA)
+    @BindExtra(CHAR_SEQUENCE_EXTRA)
     CharSequence charSequence;
     // CharSequence[]
     @NotRequired // ROBOLECTRIC implementation of intent doesn't allow for Required CharSequence[]
-    @InjectExtra(CHAR_SEQUENCE_ARRAY_EXTRA)
+    @BindExtra(CHAR_SEQUENCE_ARRAY_EXTRA)
     CharSequence[] charSequences;
     // ArrayList<CharSequence>
     @NotRequired // ROBOLECTRIC implementation of intent doesn't allow for Required CharSequenceArrayList
-    @InjectExtra(CHAR_SEQUENCE_ARRAY_LIST_EXTRA)
+    @BindExtra(CHAR_SEQUENCE_ARRAY_LIST_EXTRA)
     ArrayList<CharSequence> charSequenceArrayList;
     // double dv
-    @InjectExtra(DOUBLE_EXTRA)
+    @BindExtra(DOUBLE_EXTRA)
     double aDouble;
     // double[]
     @NotRequired // ROBOLECTRIC implementation of intent doesn't allow for Required double[]
-    @InjectExtra(DOUBLE_ARRAY_EXTRA)
+    @BindExtra(DOUBLE_ARRAY_EXTRA)
     double[] doubles;
     // float dv
-    @InjectExtra(FLOAT_EXTRA)
+    @BindExtra(FLOAT_EXTRA)
     float aFloat;
     // float[]
     @NotRequired // ROBOLECTRIC implementation of intent doesn't allow for Required float[]
-    @InjectExtra(FLOAT_ARRAY_EXTRA)
+    @BindExtra(FLOAT_ARRAY_EXTRA)
     float[] floats;
     // int dv
-    @InjectExtra(INT_EXTRA)
+    @BindExtra(INT_EXTRA)
     int anInt;
     // int[]
-    @InjectExtra(INT_ARRAY_EXTRA)
+    @BindExtra(INT_ARRAY_EXTRA)
     int[] ints;
     // ArrayList<Integer>
-    @InjectExtra(INTEGER_ARRAY_LIST_EXTRA)
+    @BindExtra(INTEGER_ARRAY_LIST_EXTRA)
     ArrayList<Integer> integerArrayList;
     // long dv
-    @InjectExtra(LONG_EXTRA)
+    @BindExtra(LONG_EXTRA)
     long aLong;
     // long[]
-    @InjectExtra(LONG_ARRAY_EXTRA)
+    @BindExtra(LONG_ARRAY_EXTRA)
     long[] longs;
     // Parcelable
-    @InjectExtra(PARCELABLE_EXTRA)
+    @BindExtra(PARCELABLE_EXTRA)
     MyParcelable parcelable;
     // Parcelable[]
-    @InjectExtra(PARCELABLE_ARRAY_EXTRA)
+    @BindExtra(PARCELABLE_ARRAY_EXTRA)
     MyParcelable[] parcelables;
     // ArrayList<Parcelable>
-    @InjectExtra(PARCELABLE_ARRAY_LIST_EXTRA)
+    @BindExtra(PARCELABLE_ARRAY_LIST_EXTRA)
     ArrayList<MyParcelable> parcelableArrayList;
     // Serializable
-    @InjectExtra(SERIALIZABLE_EXTRA)
+    @BindExtra(SERIALIZABLE_EXTRA)
     Serializable serializable;
     // short dv
     @NotRequired // ROBOLECTRIC implementation of intent doesn't allow for Required Short
-    @InjectExtra(SHORT_EXTRA)
+    @BindExtra(SHORT_EXTRA)
     short aShort;
     // short[]
     @NotRequired // ROBOLECTRIC implementation of intent doesn't allow for Required Short[]
-    @InjectExtra(SHORT_ARRAY_EXTRA)
+    @BindExtra(SHORT_ARRAY_EXTRA)
     short[] shorts;
     // String
-    @InjectExtra(STRING_EXTRA)
+    @BindExtra(STRING_EXTRA)
     String string;
     // String[]
-    @InjectExtra(STRING_ARRAY_EXTRA)
+    @BindExtra(STRING_ARRAY_EXTRA)
     String[] strings;
     // ArrayList<String>
-    @InjectExtra(STRING_ARRAY_LIST_EXTRA)
+    @BindExtra(STRING_ARRAY_LIST_EXTRA)
     ArrayList<String> stringArrayList;
     // Not required
     @NotRequired
-    @InjectExtra(NOT_REQUIRED_INT_EXTRA)
+    @BindExtra(NOT_REQUIRED_INT_EXTRA)
     int notRequired = NRI_DEFAULT;
-    @InjectExtra(Intent.EXTRA_TEXT)
+    @BindExtra(Intent.EXTRA_TEXT)
     String text;
 
     @Override
@@ -152,7 +152,7 @@ public class SimpleActivity extends FragmentActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.simple_activity);
 
-        PocketKnife.injectExtras(this);
+        PocketKnife.bindExtras(this);
     }
 
 }

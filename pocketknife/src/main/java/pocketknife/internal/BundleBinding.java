@@ -9,5 +9,5 @@ public interface BundleBinding<T> {
 
     void restoreInstanceState(T target, Bundle bundle);
 
-    void injectArguments(T target, Bundle bundle);
+    void bindArguments(T target, Bundle bundle);
 }

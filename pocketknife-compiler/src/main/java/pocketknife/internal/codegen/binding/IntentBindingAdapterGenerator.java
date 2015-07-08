@@ -1,4 +1,4 @@
-package pocketknife.internal.codegen.injection;
+package pocketknife.internal.codegen.binding;
 
 import com.squareup.javapoet.ClassName;
 import com.squareup.javapoet.JavaFile;
@@ -21,9 +21,9 @@ import java.util.Set;
 
 import static javax.lang.model.element.Modifier.PUBLIC;
 
-public class IntentInjectionAdapterGenerator extends BaseGenerator {
+public class IntentBindingAdapterGenerator extends BaseGenerator {
 
-    public static final String INJECT_EXTRAS_METHOD = "injectExtras";
+    public static final String BIND_EXTRAS_METHOD = "bindExtras";
 
     private static final String TARGET = "target";
     private static final String INTENT = "intent";
@@ -35,7 +35,7 @@ public class IntentInjectionAdapterGenerator extends BaseGenerator {
     private ClassName parentAdapter;
 
 
-    public IntentInjectionAdapterGenerator(String classPackage, String className, TypeMirror targetType, TypeUtil typeUtil) {
+    public IntentBindingAdapterGenerator(String classPackage, String className, TypeMirror targetType, TypeUtil typeUtil) {
         super(typeUtil);
         this.classPackage = classPackage;
         this.className = className;
@@ -51,7 +51,7 @@ public class IntentInjectionAdapterGenerator extends BaseGenerator {
         TypeSpec.Builder classBuilder = TypeSpec.classBuilder(className)
                 .addTypeVariable(TypeVariableName.get(t.name, ClassName.get(targetType)))
                 .addModifiers(PUBLIC)
-                .addAnnotation(getGeneratedAnnotationSpec(IntentInjectionAdapterGenerator.class));
+                .addAnnotation(getGeneratedAnnotationSpec(IntentBindingAdapterGenerator.class));
 
         // Add Interface or Parent Class
         if (parentAdapter != null) {
@@ -60,19 +60,19 @@ public class IntentInjectionAdapterGenerator extends BaseGenerator {
             classBuilder.addSuperinterface(ParameterizedTypeName.get(ClassName.get(IntentBinding.class), t));
         }
 
-        MethodSpec.Builder methodBuilder = MethodSpec.methodBuilder(INJECT_EXTRAS_METHOD)
+        MethodSpec.Builder methodBuilder = MethodSpec.methodBuilder(BIND_EXTRAS_METHOD)
                 .addModifiers(PUBLIC)
                 .addParameter(ParameterSpec.builder(t, TARGET).build())
                 .addParameter(ParameterSpec.builder(ClassName.get(typeUtil.intentType), INTENT).build());
         if (parentAdapter != null) {
-            methodBuilder.addStatement("super.$L($N, $N)", INJECT_EXTRAS_METHOD, TARGET, INTENT);
+            methodBuilder.addStatement("super.$L($N, $N)", BIND_EXTRAS_METHOD, TARGET, INTENT);
         }
         methodBuilder.beginControlFlow("if ($N == null)", INTENT);
         methodBuilder.addStatement("throw new $T($S)", IllegalStateException.class, "intent is null");
         methodBuilder.endControlFlow();
 
         for (IntentFieldBinding field : fields) {
-            addInjectExtraField(methodBuilder, field);
+            addBindExtraField(methodBuilder, field);
         }
 
         classBuilder.addMethod(methodBuilder.build());
@@ -80,7 +80,7 @@ public class IntentInjectionAdapterGenerator extends BaseGenerator {
         return JavaFile.builder(classPackage, classBuilder.build()).build();
     }
 
-    private void addInjectExtraField(MethodSpec.Builder methodBuilder, IntentFieldBinding field) {
+    private void addBindExtraField(MethodSpec.Builder methodBuilder, IntentFieldBinding field) {
         methodBuilder.beginControlFlow("if ($N.hasExtra($S))", INTENT, field.getKey().getValue());
 
         List<Object> stmtArgs = new ArrayList<Object>();

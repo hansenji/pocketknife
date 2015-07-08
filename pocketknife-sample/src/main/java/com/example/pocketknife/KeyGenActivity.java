@@ -2,14 +2,14 @@ package com.example.pocketknife;
 
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
-import pocketknife.InjectExtra;
+import pocketknife.BindExtra;
 import pocketknife.PocketKnife;
 
 public class KeyGenActivity extends FragmentActivity {
 
-    @InjectExtra
+    @BindExtra
     String string;
-    @InjectExtra
+    @BindExtra
     int blah;
 
     @Override
@@ -17,6 +17,6 @@ public class KeyGenActivity extends FragmentActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.simple_activity);
 
-        PocketKnife.injectExtras(this);
+        PocketKnife.bindExtras(this);
     }
 }

@@ -24,7 +24,7 @@ import static org.junit.Assert.assertNull;
 public class SimpleFragmentActivityTest extends BaseTest {
 
     @Test
-    public void verifyArgumentInjection() {
+    public void verifyArgumentBinding() {
         Bundle bundle = new Bundle();
         Random random = new Random(42);
 
@@ -200,7 +200,7 @@ public class SimpleFragmentActivityTest extends BaseTest {
     }
 
     @Test (expected = IllegalStateException.class)
-    public void verifyArgumentInjectionException() {
+    public void verifyArgumentBindingException() {
         Bundle bundle = new Bundle();
         ActivityController<SimpleFragmentActivity> initialController = Robolectric.buildActivity(SimpleFragmentActivity.class).create();
         SimpleFragmentActivity simpleActivity = initialController.start().restart().visible().get();
@@ -210,7 +210,7 @@ public class SimpleFragmentActivityTest extends BaseTest {
     }
 
     @Test
-    public void verifyNotRequiredArgumentInjection() {
+    public void verifyNotRequiredArgumentBinding() {
         ActivityController<SimpleFragmentActivity> initialController = Robolectric.buildActivity(SimpleFragmentActivity.class).create();
         SimpleFragmentActivity simpleActivity = initialController.start().restart().visible().get();
         NotRequiredArgFragment fragment = new NotRequiredArgFragment();

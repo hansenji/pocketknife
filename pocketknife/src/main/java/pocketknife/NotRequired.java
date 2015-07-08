@@ -9,12 +9,12 @@ import static java.lang.annotation.ElementType.FIELD;
 import static java.lang.annotation.RetentionPolicy.CLASS;
 
 /**
- * Denote that the variable specified by the injection is not required to be present.
+ * Denote that the variable specified by the binding is not required to be present.
  *
  * <pre><code>
  * {@literal @}NotRequired @SaveState int i;
  * {@literal @}NotRequired(Build.VERSION_CODES.HONEYCOMB_MR1) @SaveState String s = "Default Value";
- * {@literal @}NotRequired @InjectArgument("BundleKey") int i;
+ * {@literal @}NotRequired @BindArgument("BundleKey") int i;
  * </code></pre>
  */
 @Retention(CLASS)

@@ -23,7 +23,7 @@ import static org.junit.Assert.assertNull;
 public class SimpleActivityTest extends BaseTest {
 
     @Test
-    public void verifyExtraInjection() {
+    public void verifyExtraBinding() {
         Intent intent = new Intent(RuntimeEnvironment.application, SimpleActivity.class);
         Random random = new Random(42);
 
@@ -198,7 +198,7 @@ public class SimpleActivityTest extends BaseTest {
     }
 
     @Test
-    public void verifyNotRequiredExtraInjection() {
+    public void verifyNotRequiredExtraBinding() {
         SimpleFragmentActivity activity = Robolectric.buildActivity(SimpleFragmentActivity.class).create().get();
 
         assertEquals(2, activity.intExtra);

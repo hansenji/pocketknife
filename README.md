@@ -3,7 +3,7 @@
 Pocket Knife
 ============
 
-Intent and Bundle "injection" library for Android which uses annotation processing to generate boilerplate code
+Intent and Bundle utility library for Android which uses annotation processing to generate boilerplate code
 for you. This library is based on [ButterKnife][2] and [Dagger][1]
 
 ### NOTE
@@ -12,7 +12,7 @@ Any libraries that use Pocket Knife will need to be updated to 2.0.
 
 ```java
 class ExampleActivity extends Activity {
-  @InjectExtra
+  @BindExtra
   int id;
   
   @SaveState
@@ -20,7 +20,7 @@ class ExampleActivity extends Activity {
   
   public void onCreate(Bundle savedInstanceState) {
     ...
-    PocketKnife.injectExtras(this);
+    PocketKnife.bindExtras(this);
     PocketKnife.restoreInstanceState(this, savedInstanceState);
     ...
   }
@@ -35,10 +35,6 @@ class ExampleActivity extends Activity {
 
 For documentation and additional information see [the website][5].
 
-__Remember: A pocket knife is like [a dagger][1] or [a butter knife][2] but has different gadgets.__
-
-
-
 Download
 --------
 
@@ -47,19 +43,19 @@ Download the latest JARs [core][3] and [compiler][4] or grab via Maven:
 <dependency>
   <groupId>com.vikingsen</groupId>
   <artifactId>pocketknife-core</artifactId>
-  <version>2.0.0</version>
+  <version>3.0.0</version>
 </dependency>
 <dependency>
   <groupId>com.vikingsen</groupId>
   <artifactId>pocketknife-compiler</artifactId>
-  <version>2.0.0</version>
+  <version>3.0.0</version>
   <scope>provided</scope>
 </dependency>
 ```
 or Gradle:
 ```groovy
-compile 'com.vikingsen:pocketknife-core:2.0.0'
-provided 'com.vikingsen:pocketknife-compiler:2.0.0'
+compile 'com.vikingsen:pocketknife-core:3.0.0'
+provided 'com.vikingsen:pocketknife-compiler:3.0.0'
 ```
 
 

@@ -2,7 +2,7 @@ package com.example.pocketknife;
 
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
-import pocketknife.InjectExtra;
+import pocketknife.BindExtra;
 import pocketknife.PocketKnife;
 import pocketknife.SaveState;
 
@@ -10,7 +10,7 @@ public class ParentActivity extends FragmentActivity {
 
     public static final String PARENT_EXTRA = "PARENT_EXTRA";
 
-    @InjectExtra(PARENT_EXTRA)
+    @BindExtra(PARENT_EXTRA)
     int parentExtra;
 
     @SaveState
@@ -21,7 +21,7 @@ public class ParentActivity extends FragmentActivity {
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.simple_activity);
-        PocketKnife.injectExtras(this);
+        PocketKnife.bindExtras(this);
 
         PocketKnife.restoreInstanceState(this, savedInstanceState);
     }

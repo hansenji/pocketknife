@@ -12,7 +12,7 @@ public class IntentFieldBinding extends FieldBinding {
     // Builder Only
     private final boolean arrayList;
 
-    // Injector Only
+    // Binder Only
     private final boolean required;
     private final boolean needsToBeCast;
     private final boolean hasDefault;

@@ -15,7 +15,7 @@
     <packaging>pom</packaging>
 
     <name>Pocket Knife (Parent)</name>
-    <description>Intent and Bundle "injection" for Android.</description>
+    <description>Intent and Bundle utility for Android.</description>
     <url>http://github.com/hansenji/butterknife/</url>
     <inceptionYear>2014</inceptionYear>
 

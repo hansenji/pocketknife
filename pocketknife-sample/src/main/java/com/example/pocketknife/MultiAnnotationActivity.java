@@ -2,14 +2,14 @@ package com.example.pocketknife;
 
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
-import pocketknife.InjectExtra;
+import pocketknife.BindExtra;
 import pocketknife.PocketKnife;
 import pocketknife.SaveState;
 
 public class MultiAnnotationActivity extends FragmentActivity {
     public static final String EXTRA_INT = "EXTRA_INT";
 
-    @InjectExtra(EXTRA_INT)
+    @BindExtra(EXTRA_INT)
     @SaveState
     int i;
 
@@ -22,7 +22,7 @@ public class MultiAnnotationActivity extends FragmentActivity {
         setContentView(R.layout.simple_activity);
 
 
-        PocketKnife.injectExtras(this);
+        PocketKnife.bindExtras(this);
         PocketKnife.restoreInstanceState(this, savedInstanceState);
     }
 

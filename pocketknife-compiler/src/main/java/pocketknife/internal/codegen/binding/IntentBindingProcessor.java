@@ -1,6 +1,6 @@
-package pocketknife.internal.codegen.injection;
+package pocketknife.internal.codegen.binding;
 
-import pocketknife.InjectExtra;
+import pocketknife.BindExtra;
 import pocketknife.NotRequired;
 import pocketknife.internal.codegen.IntentFieldBinding;
 import pocketknife.internal.codegen.InvalidTypeException;
@@ -23,29 +23,29 @@ import java.util.Set;
 
 import static pocketknife.internal.GeneratedAdapters.INTENT_ADAPTER_SUFFIX;
 
-public class IntentInjectionProcessor extends InjectionProcessor {
+public class IntentBindingProcessor extends BindingProcessor {
 
-    public IntentInjectionProcessor(Messager messager, Elements elements, Types types) {
+    public IntentBindingProcessor(Messager messager, Elements elements, Types types) {
         super(messager, elements, types);
     }
 
-    public Map<TypeElement, IntentInjectionAdapterGenerator> findAndParseTargets(RoundEnvironment env) {
-        Map<TypeElement, IntentInjectionAdapterGenerator> targetClassMap = new LinkedHashMap<TypeElement, IntentInjectionAdapterGenerator>();
+    public Map<TypeElement, IntentBindingAdapterGenerator> findAndParseTargets(RoundEnvironment env) {
+        Map<TypeElement, IntentBindingAdapterGenerator> targetClassMap = new LinkedHashMap<TypeElement, IntentBindingAdapterGenerator>();
         Set<String> erasedTargetNames = new LinkedHashSet<String>();
 
-        // Process each @InjectExtra
-        for (Element element : env.getElementsAnnotatedWith(InjectExtra.class)) {
+        // Process each @BindExtra
+        for (Element element : env.getElementsAnnotatedWith(BindExtra.class)) {
             try {
-                parseInjectExtra(element, targetClassMap, erasedTargetNames);
+                parseBindExtra(element, targetClassMap, erasedTargetNames);
             } catch (Exception e) {
                 StringWriter stackTrace = new StringWriter();
                 e.printStackTrace(new PrintWriter(stackTrace));
-                error(element, "Unable to generate intent adapter for @InjectExtra.\n\n%s", stackTrace);
+                error(element, "Unable to generate intent adapter for @BindExtra.\n\n%s", stackTrace);
             }
         }
 
         // Try to find a parent adapter for each adapter
-        for (Map.Entry<TypeElement, IntentInjectionAdapterGenerator> entry : targetClassMap.entrySet()) {
+        for (Map.Entry<TypeElement, IntentBindingAdapterGenerator> entry : targetClassMap.entrySet()) {
             TypeElement parent = findParent(entry.getKey(), erasedTargetNames);
             if (parent != null) {
                 entry.getValue().setParentAdapter(getPackageName(parent), parent.getSimpleName() + INTENT_ADAPTER_SUFFIX);
@@ -55,7 +55,7 @@ public class IntentInjectionProcessor extends InjectionProcessor {
         return targetClassMap;
     }
 
-    private void parseInjectExtra(Element element, Map<TypeElement, IntentInjectionAdapterGenerator> targetClassMap, Set<String> erasedTargetNames)
+    private void parseBindExtra(Element element, Map<TypeElement, IntentBindingAdapterGenerator> targetClassMap, Set<String> erasedTargetNames)
             throws InvalidTypeException {
         TypeElement enclosingElement = (TypeElement) element.getEnclosingElement();
 
@@ -67,10 +67,10 @@ public class IntentInjectionProcessor extends InjectionProcessor {
         }
 
         validateNotRequiredArguments(element);
-        validateForCodeGeneration(InjectExtra.class, element);
-        validateBindingPackage(InjectExtra.class, element);
+        validateForCodeGeneration(BindExtra.class, element);
+        validateBindingPackage(BindExtra.class, element);
 
-        // Assemble information on the injection point
+        // Assemble information on the bind point
         String name = element.getSimpleName().toString();
         String intentType = typeUtil.getIntentType(type);
         KeySpec key = getKey(element);
@@ -78,32 +78,32 @@ public class IntentInjectionProcessor extends InjectionProcessor {
         boolean hasDefault = typeUtil.isPrimitive(type);
         boolean needsToBeCast = typeUtil.needToCastIntentType(type);
 
-        IntentInjectionAdapterGenerator intentInjectionAdapterGenerator = getOrCreateTargetClass(targetClassMap, enclosingElement);
+        IntentBindingAdapterGenerator intentBindingAdapterGenerator = getOrCreateTargetClass(targetClassMap, enclosingElement);
         IntentFieldBinding binding = new IntentFieldBinding(name, type, intentType, key, needsToBeCast, hasDefault, required);
-        intentInjectionAdapterGenerator.addField(binding);
+        intentBindingAdapterGenerator.addField(binding);
 
         // Add the type-erased version to the valid targets set.
         erasedTargetNames.add(enclosingElement.toString());
     }
 
     private KeySpec getKey(Element element) {
-        if (isDefaultAnnotationElement(element, InjectExtra.class.getName(), "value")) {
+        if (isDefaultAnnotationElement(element, BindExtra.class.getName(), "value")) {
             return new KeySpec(null, generateKey(IntentFieldBinding.KEY_PREFIX, element.getSimpleName().toString()));
         }
-        return new KeySpec(null, element.getAnnotation(InjectExtra.class).value());
+        return new KeySpec(null, element.getAnnotation(BindExtra.class).value());
     }
 
-    private IntentInjectionAdapterGenerator getOrCreateTargetClass(Map<TypeElement, IntentInjectionAdapterGenerator> targetClassMap,
+    private IntentBindingAdapterGenerator getOrCreateTargetClass(Map<TypeElement, IntentBindingAdapterGenerator> targetClassMap,
                                                                    TypeElement enclosingElement) {
-        IntentInjectionAdapterGenerator intentInjectionAdapterGenerator = targetClassMap.get(enclosingElement);
-        if (intentInjectionAdapterGenerator == null) {
+        IntentBindingAdapterGenerator intentBindingAdapterGenerator = targetClassMap.get(enclosingElement);
+        if (intentBindingAdapterGenerator == null) {
             TypeMirror targetType = enclosingElement.asType();
             String classPackage = getPackageName(enclosingElement);
             String className = getClassName(enclosingElement, classPackage) + INTENT_ADAPTER_SUFFIX;
 
-            intentInjectionAdapterGenerator = new IntentInjectionAdapterGenerator(classPackage, className, targetType, typeUtil);
-            targetClassMap.put(enclosingElement, intentInjectionAdapterGenerator);
+            intentBindingAdapterGenerator = new IntentBindingAdapterGenerator(classPackage, className, targetType, typeUtil);
+            targetClassMap.put(enclosingElement, intentBindingAdapterGenerator);
         }
-        return intentInjectionAdapterGenerator;
+        return intentBindingAdapterGenerator;
     }
 }

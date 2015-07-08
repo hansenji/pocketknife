@@ -5,7 +5,7 @@ import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import pocketknife.InjectArgument;
+import pocketknife.BindArgument;
 import pocketknife.PocketKnife;
 import pocketknife.SaveState;
 
@@ -13,7 +13,7 @@ public class ParentFragment extends Fragment {
 
     public static final String PARENT_ARG = "PARENT_ARG";
 
-    @InjectArgument(PARENT_ARG)
+    @BindArgument(PARENT_ARG)
     int parentArg;
 
     @SaveState
@@ -26,7 +26,7 @@ public class ParentFragment extends Fragment {
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-        PocketKnife.injectArguments(this);
+        PocketKnife.bindArguments(this);
         PocketKnife.restoreInstanceState(this, savedInstanceState);
     }
 

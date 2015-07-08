@@ -61,57 +61,57 @@ public final class PocketKnife {
     }
 
     /**
-     * Inject annotated fields in the specified {@link android.app.Fragment} from its arguments.
+     * Bind annotated fields in the specified {@link android.app.Fragment} from its arguments.
      *
-     * @param fragment fragment to inject the arguments;
+     * @param fragment fragment to bind the arguments;
      */
-    public static void injectArguments(android.app.Fragment fragment) {
-        injectArguments(fragment, fragment.getArguments());
+    public static void bindArguments(android.app.Fragment fragment) {
+        bindArguments(fragment, fragment.getArguments());
     }
 
     /**
-     * Inject annotated fields in the specified {@link android.support.v4.app.Fragment} from its arguments.
+     * Bind annotated fields in the specified {@link android.support.v4.app.Fragment} from its arguments.
      *
-     * @param fragment fragment to inject the arguments;
+     * @param fragment fragment to bind the arguments;
      */
-    public static void injectArguments(android.support.v4.app.Fragment fragment) {
-        injectArguments(fragment, fragment.getArguments());
+    public static void bindArguments(android.support.v4.app.Fragment fragment) {
+        bindArguments(fragment, fragment.getArguments());
     }
 
     /**
-     * Inject annotated fields in the specified {@code target} from the {@link android.os.Bundle}.
+     * Bind annotated fields in the specified {@code target} from the {@link android.os.Bundle}.
      *
-     * @param target Target object for inject arguments
+     * @param target Target object for bind arguments
      * @param bundle Bundle containing arguments;
      */
-    public static <T> void injectArguments(T target, Bundle bundle) {
+    public static <T> void bindArguments(T target, Bundle bundle) {
         @SuppressWarnings("unchecked")
         BundleBinding<T> binding = (BundleBinding<T>) getBundleBinding(target.getClass().getClassLoader(), target.getClass());
         if (binding != null) {
-            binding.injectArguments(target, bundle);
+            binding.bindArguments(target, bundle);
         }
     }
 
     /**
-     * Inject annotated field in the specified {@link android.app.Activity} from its intent.
+     * Bind annotated field in the specified {@link android.app.Activity} from its intent.
      *
-     * @param activity activity to inject the extras.
+     * @param activity activity to bind the extras.
      */
-    public static void injectExtras(Activity activity) {
-        injectExtras(activity, activity.getIntent());
+    public static void bindExtras(Activity activity) {
+        bindExtras(activity, activity.getIntent());
     }
 
     /**
-     * Inject annotated fields in the specified {@code target} from the {@link android.content.Intent}.
+     * Bind annotated fields in the specified {@code target} from the {@link android.content.Intent}.
      *
-     * @param target Target object to inject the extras.
+     * @param target Target object to bind the extras.
      * @param intent Intent containing the extras.
      */
-    public static <T> void injectExtras(T target, Intent intent) {
+    public static <T> void bindExtras(T target, Intent intent) {
         @SuppressWarnings("unchecked")
         IntentBinding<T> binding = (IntentBinding<T>) getIntentBinding(target.getClass().getClassLoader(), target.getClass());
         if (binding != null) {
-            binding.injectExtras(target, intent);
+            binding.bindExtras(target, intent);
         }
     }
 

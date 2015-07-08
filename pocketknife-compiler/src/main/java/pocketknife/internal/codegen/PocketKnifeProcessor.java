@@ -2,18 +2,18 @@ package pocketknife.internal.codegen;
 
 import com.google.common.collect.ImmutableSet;
 import com.squareup.javapoet.JavaFile;
+import pocketknife.BindArgument;
 import pocketknife.BundleBuilder;
 import pocketknife.FragmentBuilder;
-import pocketknife.InjectArgument;
-import pocketknife.InjectExtra;
+import pocketknife.BindExtra;
 import pocketknife.IntentBuilder;
 import pocketknife.SaveState;
 import pocketknife.internal.codegen.builder.BuilderGenerator;
 import pocketknife.internal.codegen.builder.BuilderProcessor;
-import pocketknife.internal.codegen.injection.BundleInjectionAdapterGenerator;
-import pocketknife.internal.codegen.injection.BundleInjectionProcessor;
-import pocketknife.internal.codegen.injection.IntentInjectionAdapterGenerator;
-import pocketknife.internal.codegen.injection.IntentInjectionProcessor;
+import pocketknife.internal.codegen.binding.BundleBindingAdapterGenerator;
+import pocketknife.internal.codegen.binding.BundleBindingProcessor;
+import pocketknife.internal.codegen.binding.IntentBindingAdapterGenerator;
+import pocketknife.internal.codegen.binding.IntentBindingProcessor;
 
 import javax.annotation.processing.AbstractProcessor;
 import javax.annotation.processing.Filer;
@@ -38,8 +38,8 @@ public class PocketKnifeProcessor extends AbstractProcessor {
     private Messager messager;
     private Filer filer;
 
-    private BundleInjectionProcessor bundleInjectionProcessor;
-    private IntentInjectionProcessor intentInjectionProcessor;
+    private BundleBindingProcessor bundleBindingProcessor;
+    private IntentBindingProcessor intentBindingProcessor;
     private BuilderProcessor builderProcessor;
 
     @Override
@@ -54,8 +54,8 @@ public class PocketKnifeProcessor extends AbstractProcessor {
         filer = processingEnv.getFiler();
         Elements elements = processingEnv.getElementUtils();
         Types types = processingEnv.getTypeUtils();
-        bundleInjectionProcessor = new BundleInjectionProcessor(messager, elements, types);
-        intentInjectionProcessor = new IntentInjectionProcessor(messager, elements, types);
+        bundleBindingProcessor = new BundleBindingProcessor(messager, elements, types);
+        intentBindingProcessor = new IntentBindingProcessor(messager, elements, types);
         builderProcessor = new BuilderProcessor(messager, elements, types);
     }
 
@@ -63,8 +63,8 @@ public class PocketKnifeProcessor extends AbstractProcessor {
     public Set<String> getSupportedAnnotationTypes() {
         return ImmutableSet.of(
                 SaveState.class.getCanonicalName(),
-                InjectArgument.class.getCanonicalName(),
-                InjectExtra.class.getCanonicalName(),
+                BindArgument.class.getCanonicalName(),
+                BindExtra.class.getCanonicalName(),
                 IntentBuilder.class.getCanonicalName(),
                 BundleBuilder.class.getCanonicalName(),
                 FragmentBuilder.class.getCanonicalName()
@@ -73,12 +73,12 @@ public class PocketKnifeProcessor extends AbstractProcessor {
 
     @Override
     public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
-        // Bundle Injections
-        Map<TypeElement, BundleInjectionAdapterGenerator> bundleInjectionMap = bundleInjectionProcessor.findAndParseTargets(roundEnv);
+        // Bundle bindings
+        Map<TypeElement, BundleBindingAdapterGenerator> bundleBindingMap = bundleBindingProcessor.findAndParseTargets(roundEnv);
 
-        for (Map.Entry<TypeElement, BundleInjectionAdapterGenerator> entry : bundleInjectionMap.entrySet()) {
+        for (Map.Entry<TypeElement, BundleBindingAdapterGenerator> entry : bundleBindingMap.entrySet()) {
             TypeElement typeElement = entry.getKey();
-            BundleInjectionAdapterGenerator generator = entry.getValue();
+            BundleBindingAdapterGenerator generator = entry.getValue();
             try {
                 JavaFile javaFile = generator.generate();
                 javaFile.writeTo(filer);
@@ -87,12 +87,12 @@ public class PocketKnifeProcessor extends AbstractProcessor {
             }
         }
 
-        // Intent Injections
-        Map<TypeElement, IntentInjectionAdapterGenerator> intentInjectionMap = intentInjectionProcessor.findAndParseTargets(roundEnv);
+        // Intent bindings
+        Map<TypeElement, IntentBindingAdapterGenerator> intentBindingMap = intentBindingProcessor.findAndParseTargets(roundEnv);
 
-        for (Map.Entry<TypeElement, IntentInjectionAdapterGenerator> entry : intentInjectionMap.entrySet()) {
+        for (Map.Entry<TypeElement, IntentBindingAdapterGenerator> entry : intentBindingMap.entrySet()) {
             TypeElement typeElement = entry.getKey();
-            IntentInjectionAdapterGenerator generator = entry.getValue();
+            IntentBindingAdapterGenerator generator = entry.getValue();
             try {
                 JavaFile javaFile = generator.generate();
                 javaFile.writeTo(filer);

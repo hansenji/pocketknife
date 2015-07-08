@@ -17,7 +17,7 @@ public class BundleFieldBinding extends FieldBinding {
     private final String bundleType;
     private final KeySpec key;
 
-    // Injector Only
+    // Binder Only
     private final boolean needsToBeCast;
     private final boolean canHaveDefault;
     private final boolean required;

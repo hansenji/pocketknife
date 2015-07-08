@@ -1,4 +1,4 @@
-package pocketknife.internal.codegen.injection;
+package pocketknife.internal.codegen.binding;
 
 import android.os.Build;
 import pocketknife.NotRequired;
@@ -25,14 +25,14 @@ import static javax.tools.Diagnostic.Kind.ERROR;
 import static pocketknife.internal.GeneratedAdapters.ANDROID_PREFIX;
 import static pocketknife.internal.GeneratedAdapters.JAVA_PREFIX;
 
-public abstract class InjectionProcessor extends BaseProcessor {
+public abstract class BindingProcessor extends BaseProcessor {
 
     protected Messager messager;
     protected Elements elements;
     protected Types types;
     protected TypeUtil typeUtil;
 
-    public InjectionProcessor(Messager messager, Elements elements, Types types) {
+    public BindingProcessor(Messager messager, Elements elements, Types types) {
         this.messager = messager;
         this.elements = elements;
         this.types = types;

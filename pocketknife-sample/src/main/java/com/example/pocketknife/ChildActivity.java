@@ -1,7 +1,7 @@
 package com.example.pocketknife;
 
 import android.os.Bundle;
-import pocketknife.InjectExtra;
+import pocketknife.BindExtra;
 import pocketknife.SaveState;
 
 public class ChildActivity extends ParentActivity {
@@ -9,10 +9,10 @@ public class ChildActivity extends ParentActivity {
     public static final String CHILD_EXTRA = "CHILD_EXTRA";
     public static final String FRAGMENT_ARGS = "FRAGMENT_ARGS";
 
-    @InjectExtra(CHILD_EXTRA)
+    @BindExtra(CHILD_EXTRA)
     int childExtra;
 
-    @InjectExtra(FRAGMENT_ARGS)
+    @BindExtra(FRAGMENT_ARGS)
     Bundle args;
 
     @SaveState
