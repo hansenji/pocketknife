@@ -1,10 +1,20 @@
 Change Log
 ==========
 
+Version 3.0.0 *(2015-07-07)*
+----------------------------
+
+ * Resolved #6 Changed inject to bind to match Android data bind.
+ 
+Version 2.6.1 *(2015-06-24)*
+------------------
+
+ * Fixed #5 `@Key` variable naming conflict.
+
 Version 2.6.0 *(2015-06-17)*
 ----------------------------
 
-  * Fixed Issue #4 added @Key annotation to specify Extra/Argument keys in builders.
+  * Fixed #4 added @Key annotation to specify Extra/Argument keys in builders.
 
 Version 2.5.1 *(2015-05-26)*
 ----------------------------
