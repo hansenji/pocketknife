@@ -241,6 +241,22 @@
 </pre>
 </div>
 
+<h3 id="proguard">ProGuard</h3>
+<p>Pocket Knife generates and uses classes dynamically which means that static analysis tools like ProGuard may think they are unused. In order to prevent them from being removed, explicitly mark them to be kept.
+   To prevent ProGuard renaming classes that use @Bind* on a member field the <code>keepclasseswithmembernames</code> option is used.</p>
+            <pre>-keep class pocketknife.** { *; }
+-dontwarn pocketknife.internal.**
+-keep class **$$BundleAdapter { *; }
+-keep class **$$IntentAdapter { *; }
+
+-keepclasseswithmembernames class * {
+    @pocketknife.* &lt;fields&gt;;
+}
+
+-keepclasseswithmembernames class * {
+    @pocketknife.* &lt;methods&gt;;
+}</pre>
+
 <h2 id="license" class="nav_anchor">License</h2>
 
 <pre>Copyright 2014-2015 Jordan Hansen
