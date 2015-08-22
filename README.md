@@ -43,26 +43,26 @@ Download the latest JARs [core][3] and [compiler][4] or grab via Maven:
 <dependency>
   <groupId>com.vikingsen</groupId>
   <artifactId>pocketknife-core</artifactId>
-  <version>3.0.0</version>
+  <version>3.1.0</version>
 </dependency>
 <dependency>
   <groupId>com.vikingsen</groupId>
   <artifactId>pocketknife-compiler</artifactId>
-  <version>3.0.0</version>
+  <version>3.1.0</version>
   <scope>provided</scope>
 </dependency>
 ```
 or Gradle:
 ```groovy
-compile 'com.vikingsen:pocketknife-core:3.0.0'
-provided 'com.vikingsen:pocketknife-compiler:3.0.0'
+compile 'com.vikingsen:pocketknife-core:3.1.0'
+provided 'com.vikingsen:pocketknife-compiler:3.1.0'
 ```
 
 
 License
 -------
 
-    Copyright 2015 Jordan Hansen
+    Copyright 2014-2015 Jordan Hansen
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.

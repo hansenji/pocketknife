@@ -1,5 +1,9 @@
 Change Log
 ==========
+Version 3.1.0 *(2015-08-22)*
+----------------------------
+
+ * Resolved #10 Added @BundleSerializer and @IntentSerializer to allow users to save nonstandard Bundle and Intent types respectively.
 
 Version 3.0.0 *(2015-07-07)*
 ----------------------------

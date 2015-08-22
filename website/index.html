@@ -47,16 +47,12 @@
 
 <div class="highlight highlight-java">
 <pre>
-<span class="c1">// Bundle Keys</span>
-<span class="kd">private</span> <span class="kd">static</span> <span class="kd">final</span> <span class="n">String</span> <span class="n">BUNDLE_COUNTER</span> <span
-        class="o">=</span> <span class="s">"BUNDLE_COUNTER"</span><span class="o">;</span>
+// Bundle Keys
+private static final String BUNDLE_COUNTER = "BUNDLE_COUNTER";
 
-<span class="kd">public</span> <span class="kt">void</span> <span class="nf">saveInstanceState</span><span class="o">(</span><span
-        class="n">Fragment</span> <span class="n">fragment</span><span class="o">,</span> <span class="n">Bundle</span> <span class="n">bundle</span><span
-        class="o">)</span> <span class="o">{</span>
-    <span class="n">bundle</span><span class="o">.</span><span class="na">putInt</span><span class="o">(</span><span class="n">BUNDLE_COUNTER</span><span
-        class="o">,</span> <span class="n">fragment</span><span class="o">.</span><span class="na">counter</span><span class="o">);</span>
-<span class="o">}</span>
+public void saveInstanceState(Fragment fragment, Bundle bundle) {
+    bundle.putInt(BUNDLE_COUNTER, fragment.counter);
+}
 </pre>
 </div>
 
@@ -76,34 +72,31 @@
 <div class="highlight highlight-java">
 <p>To save a field to the save state bundle in activities and fragments first annotate the field with <span class="nd">@SaveState</span></p>
 <pre>
-<span class="o">...</span>
-<span class="nd">@SaveState</span>
-<span class="kt">int</span> <span class="n">anInt</span><span class="o">;</span>
-<span class="o">...</span></pre>
+...
+@SaveState
+int anInt;
+...
+</pre>
 <p>Then in <span class="nf">onSaveInstanceState</span> call <span class="n">PocketKnife</span><span class="o">.</span><span
         class="na">saveInstanceState</span><span class="o">(</span><span class="k">this</span><span class="o">,</span> <span class="n">outState</span><span
         class="o">);</span> to save annotated fields to the bundle.</p>
 <pre>
-<span class="kd">public</span> <span class="kt">void</span> <span class="nf">onSaveInstanceState</span><span class="o">(</span><span
-        class="n">Bundle</span> <span class="n">outState</span><span class="o">)</span> <span class="o">{</span>
-  <span class="o">...</span>
-  <span class="n">PocketKnife</span><span class="o">.</span><span class="na">saveInstanceState</span><span class="o">(</span><span class="k">this</span><span
-        class="o">,</span> <span class="n">outState</span><span class="o">);</span>
-  <span class="o">...</span>
-<span class="o">}</span>
+public void onSaveInstanceState(Bundle outState) {
+  ...
+  PocketKnife.saveInstanceState(this, outState);
+  ...
+}
 </pre>
 <p>To restore from the bundle call <span class="n">PocketKnife</span><span class="o">.</span><span class="na">restoreInstanceState</span><span
         class="o">(</span><span class="k">this</span><span class="o">,</span> <span class="n">savedInstanceState</span><span class="o">);</span> in <span
         class="nf">onCreate</span>.</p>
 
 <pre>
-<span class="kd">public</span> <span class="kt">void</span> <span class="nf">onCreate</span><span class="o">(</span><span class="n">Bundle</span> <span
-        class="n">savedInstanceState</span><span class="o">)</span> <span class="o">{</span>
-  <span class="o">...</span>
-  <span class="n">PocketKnife</span><span class="o">.</span><span class="na">restoreInstanceState</span><span class="o">(</span><span class="k">this</span><span
-        class="o">,</span> <span class="n">savedInstanceState</span><span class="o">);</span>
-  <span class="o">...</span>
-<span class="o">}</span>
+public void onCreate(Bundle savedInstanceState) {
+  ...
+  PocketKnife.restoreInstanceState(this, savedInstanceState);
+  ...
+}
 </pre>
 </div>
 <h3>Binding Arguments</h3>
@@ -111,23 +104,22 @@
 <div class="highlight highlight-java">
 <p>To bind arguments into a field for a Fragment first annotate the field with <span class="nd">@BindArgument</span>. Pocket Knife will
    find and automatically cast the corresponding value.</p>
-    <pre>
-<span class="o">...</span>
-<span class="nd">@BindArgument</span>
-<span class="kt">int</span> <span class="n">anInt</span><span class="o">;</span>
-<span class="nd">@BindArgument</span><span class="o">(</span><span class="n">ARG_LONG</span><span class="o">)</span>
-<span class="kt">long</span> <span class="n">aLong</span><span class="o">;</span>
-<span class="o">...</span></pre>
+<pre>
+...
+@BindArgument
+int anInt;
+@BindArgument(ARG_LONG)
+long aLong;
+...
+</pre>
 <p>Then in <span class="nf">onActivityCreated</span> or another appropriate method call in a fragment <span class="n">PocketKnife</span><span class="o">.</span><span
         class="na">bindArguments</span><span class="o">(</span><span class="k">this</span><span class="o">);</span></p>
 <pre>
-<span class="kd">public</span> <span class="kt">void</span> <span class="nf">onActivityCreated</span><span class="o">(</span><span class="n">Bundle</span> <span
-        class="n">savedInstanceState</span><span class="o">)</span> <span class="o">{</span>
-  <span class="o">...</span>
-  <span class="n">PocketKnife</span><span class="o">.</span><span class="na">bindArguments</span><span class="o">(</span><span class="k">this</span><span
-        class="o">);</span>
-  <span class="o">...</span>
-<span class="o">}</span>
+public void onActivityCreated(Bundle savedInstanceState) {
+  ...
+  PocketKnife.bindArguments(this);
+  ...
+}
 </pre>
 </div>
 
@@ -136,23 +128,21 @@
 <div class="highlight highlight-java">
 <p>To bind extras into a field for an activity first annotate the field with <span class="nd">@BindExtra</span>. Pocket Knife will
    find and automatically cast the corresponding value.</p>
-    <pre>
-<span class="o">...</span>
-<span class="nd">@BindExtra</span>
-<span class="kt">int</span> <span class="n">anInt</span><span class="o">;</span>
-<span class="nd">@BindExtra</span><span class="o">(</span><span class="n">EXTRA_LONG</span><span class="o">)</span>
-<span class="kt">long</span> <span class="n">aLong</span><span class="o">;</span>
-<span class="o">...</span></pre>
+<pre>
+...
+@BindExtra
+int anInt;
+@BindExtra(EXTRA_LONG)
+long aLong;
+...</pre>
 <p>Then in <span class="nf">onCreate</span> or another appropriate method call in an activity <span class="n">PocketKnife</span><span class="o">.</span><span
         class="na">bindExtras</span><span class="o">(</span><span class="k">this</span><span class="o">);</span></p>
 <pre>
-<span class="kd">public</span> <span class="kt">void</span> <span class="nf">onActivityCreated</span><span class="o">(</span><span class="n">Bundle</span> <span
-        class="n">savedInstanceState</span><span class="o">)</span> <span class="o">{</span>
-  <span class="o">...</span>
-  <span class="n">PocketKnife</span><span class="o">.</span><span class="na">bindExtras</span><span class="o">(</span><span class="k">this</span><span
-        class="o">);</span>
-  <span class="o">...</span>
-<span class="o">}</span>
+public void onActivityCreated(Bundle savedInstanceState) {
+  ...
+  PocketKnife.bindExtras(this);
+        ...
+}
 </pre>
 </div>
 
@@ -161,13 +151,12 @@
 <div class="highlight highlight-java">
 <p>To create a bundle, create an interface and annotate the methods with <span class="nd">@BundleBuilder</span>.</p>
 <pre>
-<span class="kd">public</span> <span class="kt">interface</span> <span class="nf">Bundles</span> <span class="o">{</span>
-  <span class="o">...</span>
-  <span class="nd">@BundleBuilder</span>
-  <span class="kt">Bundle</span> <span class="na">getBundle</span><span class="o">(</span><span class="n">long</span> <span class="n">individualId</span><span
-        class="o">);</span>
-  <span class="o">...</span>
-<span class="o">}</span>
+public interface Bundles {
+  ...
+  @BundleBuilder
+  Bundle getBundle(long individualId);
+  ...
+}
 </pre>
 <p>Pocket Knife will generate the class PocketKnife&lt;interface name&gt; (<span class="nf">PocketKnifeBundles</span> for the example above).</p>
 </div>
@@ -180,22 +169,96 @@
    Data values for the intent are passed as a <span class="nd">String</span> or <span class="nd">Uri</span> argument annotated with
     <span class="kt">@Data</span>.</p>
 <pre>
-<span class="kd">public</span> <span class="kt">interface</span> <span class="nf">Intents</span> <span class="o">{</span>
-  <span class="o">...</span>
-  <span class="nd">@IntentBuilder</span><span class="o">(</span><span class="n">cls</span><span class="o">=</span><span class="n">SimpleActivity</span><span
-        class="o">.</span><span class="k">class</span><span class="o">)</span>
-  <span class="kt">Intent</span> <span class="na">getIntent</span><span class="o">(</span><span class="n">long</span> <span class="n">individualId</span><span
-        class="o">);</span>
+public interface Intents {
+  ...
+  @IntentBuilder(cls=SimpleActivity.class)
+  Intent getIntent(long individualId);
 
-  <span class="nd">@IntentBuilder</span><span class="o">(</span><span class="n">action</span><span class="o">=</span><span class="n">Intent</span><span
-        class="o">.</span><span class="n">ACTION_VIEW</span><span class="o">)</span>
-  <span class="kt">Intent</span> <span class="na">getIntent</span><span class="o">(</span><span class="nd">@Data</span> <span class="n">String</span> <span class="n">data</span><span
-        class="o">);</span>
-  <span class="o">...</span>
-<span class="o">}</span>
+  @IntentBuilder(action=Intent.ACTION_VIEW)
+  Intent getIntent(@Data String data);
+  ...
+}
 </pre>
 <p>Pocket Knife will generate the class PocketKnife&lt;interface name&gt; (<span class="nf">PocketKnifeIntents</span> for the example above).</p>
 </div>
+
+<h2 id="serialize" class="nav_anchor">Serializing Nonstandard Types</h2>
+<div class="highlight highlight-java">
+<p>To serialize nonstandard types to bundles and intents annotate variables and parameters with <span class="nd">@BundleBuilder</span> and
+    <span class="nd">@IntentBuilder</span> respectively. These annotations take a <span class="nf">PocketKnifeBundleSerializer</span> and
+    <span class="nf">PocketKnifeIntentSerializer</span> as parameters as follows.</p>
+<p>Example saving class <span class="nf">Foo</span> to bundles and intents</p>
+<pre>
+public class Foo {
+    private String bar;
+    private int baz;
+    ...
+}
+</pre>
+<p>Example serializer</p>
+<pre>
+public class FooSerializer implements PocketKnifeBundleSerializer&lt;Foo&gt;,
+                                      PocketKnifeIntentSerializer&lt;Foo&gt; {
+  private static final String BAR = ".BAR";
+  private static final String BAZ = ".BAZ";
+
+  @Override
+  public void put(Bundle bundle, Foo foo, String keyPrefix) {
+    bundle.putString(keyPrefix + BAR, foo.getBar());
+    bundle.putInt(keyPrefix + BAZ, foo.getBaz());
+  }
+
+  @Override
+  public Foo get(Bundle bundle, Foo foo, String keyPrefix) {
+    foo.setBar(bundle.getString(keyPrefix + BAR));
+    foo.setBaz(bundle.getInt(keyPrefix + BAZ));
+    return foo;
+  }
+
+  @Override
+  public void put(Intent intent, Foo foo, String keyPrefix) {
+    intent.putExtra(keyPrefix + BAZ, foo.getBaz());
+    intent.putExtra(keyPrefix + BAR, foo.getBar());
+  }
+
+  @Override
+  public Foo get(Intent intent, Foo foo, String keyPrefix) {
+    foo.setBar(intent.getStringExtra(keyPrefix + BAR));
+    foo.setBaz(intent.getIntExtra(keyPrefix + BAZ, 0));
+    return foo;
+  }
+}
+</pre>
+<p>Example usage</p>
+<pre>
+  ...
+  @SaveState
+  @BundleSerializer(FooSerializer.class)
+  Foo saveFoo;
+
+  @BindArgument
+  @BundleSerializer(FooSerializer.class)
+  Foo argFoo;
+
+  @BindExtra
+  @IntentSerializer(FooSerializer.class)
+  Foo extraFoo;
+  ...
+</pre>
+<pre>
+  public interface Builder {
+    @BundleBuilder
+    Bundle buildBundle(@BundleSerializer(FooSerializer.class) Foo argFoo);
+
+    @IntentBuilder(action = "test")
+    Intent buildIntent(@IntentSerializer(FooSerializer.class)Foo extraFoo);
+
+    @FragmentBuilder
+    Fragment buildFragment(@BundleSerializer(FooSerializer.class) Foo argFoo);
+  }
+</pre>
+</div>
+
 
 <h2 id="download" class="nav_anchor">Download</h2>
 
