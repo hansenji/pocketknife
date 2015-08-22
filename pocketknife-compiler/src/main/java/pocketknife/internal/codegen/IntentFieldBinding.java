@@ -9,6 +9,8 @@ public class IntentFieldBinding extends FieldBinding {
     private final TypeMirror type;
     private final String intentType;
     private final KeySpec key;
+    private final TypeMirror intentSerializer;
+
     // Builder Only
     private final boolean arrayList;
 
@@ -17,11 +19,12 @@ public class IntentFieldBinding extends FieldBinding {
     private final boolean needsToBeCast;
     private final boolean hasDefault;
 
-    public IntentFieldBinding(String name, TypeMirror type, String intentType, KeySpec key, boolean arrayList) {
+    public IntentFieldBinding(String name, TypeMirror type, String intentType, KeySpec key, boolean arrayList, TypeMirror intentSerializer) {
         this.name = name;
         this.type = type;
         this.intentType = intentType;
         this.key = key;
+        this.intentSerializer = intentSerializer;
         this.arrayList = arrayList;
 
         this.required = false;
@@ -29,7 +32,8 @@ public class IntentFieldBinding extends FieldBinding {
         this.hasDefault = false;
     }
 
-    public IntentFieldBinding(String name, TypeMirror type, String intentType, KeySpec key, Boolean needsToBeCast, boolean hasDefault, boolean required) {
+    public IntentFieldBinding(String name, TypeMirror type, String intentType, KeySpec key, Boolean needsToBeCast, boolean hasDefault, boolean required,
+                              TypeMirror intentSerializer) {
         this.name = name;
         this.type = type;
         this.intentType = intentType;
@@ -37,6 +41,7 @@ public class IntentFieldBinding extends FieldBinding {
         this.needsToBeCast = needsToBeCast;
         this.hasDefault = hasDefault;
         this.required = required;
+        this.intentSerializer = intentSerializer;
 
         this.arrayList = false;
     }
@@ -76,6 +81,10 @@ public class IntentFieldBinding extends FieldBinding {
 
     public boolean hasDefault() {
         return hasDefault;
+    }
+
+    public TypeMirror getIntentSerializer() {
+        return intentSerializer;
     }
 
     @Override

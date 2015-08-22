@@ -81,35 +81,40 @@ public class IntentBindingAdapterGenerator extends BaseGenerator {
     }
 
     private void addBindExtraField(MethodSpec.Builder methodBuilder, IntentFieldBinding field) {
-        methodBuilder.beginControlFlow("if ($N.hasExtra($S))", INTENT, field.getKey().getValue());
-
-        List<Object> stmtArgs = new ArrayList<Object>();
-        String stmt = "$N.$N = ";
-        stmtArgs.add(TARGET);
-        stmtArgs.add(field.getName());
-
-        if (field.needsToBeCast()) {
-            stmt = stmt.concat("($T)");
-            stmtArgs.add(field.getType());
-        }
-        stmt = stmt.concat("$N.get$LExtra($S");
-        stmtArgs.add(INTENT);
-        stmtArgs.add(field.getIntentType());
-        stmtArgs.add(field.getKey().getValue());
-
-        if (field.hasDefault()) {
-            stmt = stmt.concat(", $N.$N");
+        if (field.getIntentSerializer() == null) {
+            methodBuilder.beginControlFlow("if ($N.hasExtra($S))", INTENT, field.getKey().getValue());
+            List<Object> stmtArgs = new ArrayList<Object>();
+            String stmt = "$N.$N = ";
             stmtArgs.add(TARGET);
             stmtArgs.add(field.getName());
+
+            if (field.needsToBeCast()) {
+                stmt = stmt.concat("($T)");
+                stmtArgs.add(field.getType());
+            }
+            stmt = stmt.concat("$N.get$LExtra($S");
+            stmtArgs.add(INTENT);
+            stmtArgs.add(field.getIntentType());
+            stmtArgs.add(field.getKey().getValue());
+
+            if (field.hasDefault()) {
+                stmt = stmt.concat(", $N.$N");
+                stmtArgs.add(TARGET);
+                stmtArgs.add(field.getName());
+            }
+            stmt = stmt.concat(")");
+            methodBuilder.addStatement(stmt, stmtArgs.toArray(new Object[stmtArgs.size()]));
+            if (field.isRequired()) {
+                methodBuilder.nextControlFlow("else")
+                        .addStatement("throw new $T($S)", IllegalStateException.class, String.format("Required Extra with key '%s' was not found for '%s'."
+                                + "If this is not required add '@NotRequired' annotation.", field.getKey().getValue(), field.getName()));
+            }
+
+            methodBuilder.endControlFlow();
+        } else {
+            methodBuilder.addStatement("$N.$N = new $T().get($N, $N.$N, $S)", TARGET, field.getName(), field.getIntentSerializer(), INTENT, TARGET,
+                    field.getName(), field.getKey().getValue());
         }
-        stmt = stmt.concat(")");
-        methodBuilder.addStatement(stmt, stmtArgs.toArray(new Object[stmtArgs.size()]));
-        if (field.isRequired()) {
-            methodBuilder.nextControlFlow("else")
-            .addStatement("throw new $T($S)", IllegalStateException.class, String.format("Required Extra with key '%s' was not found for '%s'."
-                    + "If this is not required add '@NotRequired' annotation.", field.getKey().getValue(), field.getName()));
-        }
-        methodBuilder.endControlFlow();
     }
 
     public void setParentAdapter(String packageName, String className) {

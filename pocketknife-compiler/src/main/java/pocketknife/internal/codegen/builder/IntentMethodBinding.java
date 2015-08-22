@@ -82,19 +82,29 @@ public class IntentMethodBinding extends MethodBinding {
             methodBuilder.addStatement("$N.addCategory($S)", returnVarName, category);
         }
 
-        for (IntentFieldBinding fieldBinding : fields) {
-            methodBuilder.addParameter(ClassName.get(fieldBinding.getType()), fieldBinding.getName());
-            if (StringUtils.equals(fieldBinding.getName(), dataParam)) {
+        for (IntentFieldBinding field : fields) {
+            methodBuilder.addParameter(ClassName.get(field.getType()), field.getName());
+            if (StringUtils.equals(field.getName(), dataParam)) {
                 continue;  // Data is handled previously
             }
+            addPutExtraStatement(methodBuilder, field, returnVarName);
+        }
+
+        methodBuilder.addStatement("return $N", returnVarName);
+
+        return methodBuilder.build();
+    }
+
+    private void addPutExtraStatement(MethodSpec.Builder methodBuilder, IntentFieldBinding field, String returnVarName) {
+        KeySpec key = field.getKey();
+        if (field.getIntentSerializer() == null) {
             String stmt = "$N.put";
-            if (fieldBinding.isArrayList()) {
+            if (field.isArrayList()) {
                 stmt = stmt.concat("$LExtra(");
             } else {
                 stmt = stmt.concat("Extra(");
             }
             String keyValue;
-            KeySpec key = fieldBinding.getKey();
             if (StringUtils.isBlank(key.getName())) {
                 keyValue = key.getValue();
                 stmt = stmt.concat("$S");
@@ -103,16 +113,18 @@ public class IntentMethodBinding extends MethodBinding {
                 stmt = stmt.concat("$N");
             }
             stmt = stmt.concat(", $N)");
-            if (fieldBinding.isArrayList()) {
-                methodBuilder.addStatement(stmt, returnVarName, fieldBinding.getIntentType(), keyValue, fieldBinding.getName());
+            if (field.isArrayList()) {
+                methodBuilder.addStatement(stmt, returnVarName, field.getIntentType(), keyValue, field.getName());
             } else {
-                methodBuilder.addStatement(stmt, returnVarName, keyValue, fieldBinding.getName());
+                methodBuilder.addStatement(stmt, returnVarName, keyValue, field.getName());
+            }
+        } else {
+            if (StringUtils.isBlank(key.getName())) {
+                methodBuilder.addStatement("new $T().put($N, $N, $S)", field.getIntentSerializer(), returnVarName, field.getName(), key.getValue());
+            } else {
+                methodBuilder.addStatement("new $T().put($N, $N, $N)", field.getIntentSerializer(), returnVarName, field.getName(), key.getName());
             }
         }
-
-        methodBuilder.addStatement("return $N", returnVarName);
-
-        return methodBuilder.build();
     }
 
     private void addDataAndOrType(MethodSpec.Builder methodBuilder, String returnVarName, TypeUtil typeUtil) {

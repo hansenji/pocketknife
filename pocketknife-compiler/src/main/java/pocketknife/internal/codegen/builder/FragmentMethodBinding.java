@@ -67,20 +67,28 @@ public class FragmentMethodBinding extends MethodBinding {
             methodBuilder.addStatement("$T $N = new $T()", ClassName.get(typeUtil.bundleType), argsVarName, ClassName.get(typeUtil.bundleType));
         }
 
-        for (BundleFieldBinding fieldBinding : fields) {
-            methodBuilder.addParameter(ClassName.get(fieldBinding.getType()), fieldBinding.getName());
-            String keyValue;
-            String stmt = "$N.put$L(";
-            KeySpec key = fieldBinding.getKey();
-            if (StringUtils.isBlank(key.getName())) {
-                keyValue = key.getValue();
-                stmt = stmt.concat("$S");
+        for (BundleFieldBinding field : fields) {
+            methodBuilder.addParameter(ClassName.get(field.getType()), field.getName());
+            KeySpec key = field.getKey();
+            if (field.getBundleSerializer() == null) {
+                String keyValue;
+                String stmt = "$N.put$L(";
+                if (StringUtils.isBlank(key.getName())) {
+                    keyValue = key.getValue();
+                    stmt = stmt.concat("$S");
+                } else {
+                    keyValue = key.getName();
+                    stmt = stmt.concat("$N");
+                }
+                stmt = stmt.concat(", $N)");
+                methodBuilder.addStatement(stmt, argsVarName, field.getBundleType(), keyValue, field.getName());
             } else {
-                keyValue = key.getName();
-                stmt = stmt.concat("$N");
+                if (StringUtils.isBlank(key.getName())) {
+                    methodBuilder.addStatement("new $T().put($N, $N, $S)", field.getBundleSerializer(), argsVarName, field.getName(), key.getValue());
+                } else {
+                    methodBuilder.addStatement("new $T().put($N, $N, $N)", field.getBundleSerializer(), argsVarName, field.getName(), key.getName());
+                }
             }
-            stmt = stmt.concat(", $N)");
-            methodBuilder.addStatement(stmt, argsVarName, fieldBinding.getBundleType(), keyValue, fieldBinding.getName());
         }
 
         if (!fields.isEmpty()) {

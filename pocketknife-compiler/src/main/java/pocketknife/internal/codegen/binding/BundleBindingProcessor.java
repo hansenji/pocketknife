@@ -2,10 +2,12 @@ package pocketknife.internal.codegen.binding;
 
 import android.os.Build;
 import pocketknife.BindArgument;
+import pocketknife.BundleSerializer;
 import pocketknife.NotRequired;
+import pocketknife.PocketKnifeBundleSerializer;
 import pocketknife.SaveState;
-import pocketknife.internal.codegen.InvalidTypeException;
 import pocketknife.internal.codegen.BundleFieldBinding;
+import pocketknife.internal.codegen.InvalidTypeException;
 import pocketknife.internal.codegen.KeySpec;
 
 import javax.annotation.processing.Messager;
@@ -85,21 +87,31 @@ public class BundleBindingProcessor extends BindingProcessor {
         validateForCodeGeneration(SaveState.class, element);
         validateBindingPackage(SaveState.class, element);
 
+        TypeMirror bundleSerializer = getAnnotationElementClass(element, BundleSerializer.class);
+        validateSerializer(element, BundleSerializer.class, bundleSerializer, PocketKnifeBundleSerializer.class);
+
         // Assemble information on the bind point.
         String name = element.getSimpleName().toString();
-        String bundleType = typeUtil.getBundleType(type);
+        String bundleType = null;
         NotRequired notRequired = element.getAnnotation(NotRequired.class);
         boolean required = notRequired == null;
         int minSdk = Build.VERSION_CODES.FROYO;
         if (!required) {
             minSdk = notRequired.value();
         }
-        boolean canHaveDefault = !required && canHaveDefault(type, minSdk);
-        boolean needsToBeCast = typeUtil.needToCastBundleType(type);
+        boolean canHaveDefault = false;
+        boolean needsToBeCast = false;
+        if (bundleSerializer == null) {
+            bundleType = typeUtil.getBundleType(type);
+            canHaveDefault = !required && canHaveDefault(type, minSdk);
+            needsToBeCast = typeUtil.needToCastBundleType(type);
+        }
+
+
 
         BundleBindingAdapterGenerator bundleBindingAdapterGenerator = getOrCreateTargetClass(targetClassMap, enclosingElement);
         BundleFieldBinding binding = new BundleFieldBinding(SAVE_STATE, name, type, bundleType, new KeySpec(null, generateKey(SAVE_STATE_KEY_PREFIX, name)),
-                needsToBeCast, canHaveDefault, required);
+                needsToBeCast, canHaveDefault, required, bundleSerializer);
         bundleBindingAdapterGenerator.addField(binding);
 
         // Add the type-erased version to the valid targets set.
@@ -117,26 +129,35 @@ public class BundleBindingProcessor extends BindingProcessor {
             type = typeVariable.getUpperBound();
         }
 
+
         validateNotRequiredArguments(element);
         validateForCodeGeneration(BindArgument.class, element);
         validateBindingPackage(BindArgument.class, element);
 
+        TypeMirror bundleSerializer = getAnnotationElementClass(element, BundleSerializer.class);
+        validateSerializer(element, BundleSerializer.class, bundleSerializer, PocketKnifeBundleSerializer.class);
+
         // Assemble information on the bind point
         String name = element.getSimpleName().toString();
-        String bundleType = typeUtil.getBundleType(type);
+        String bundleType = null;
         KeySpec key = getKey(element);
+        boolean canHaveDefault = false;
+        boolean needsToBeCast = false;
         NotRequired notRequired = element.getAnnotation(NotRequired.class);
         boolean required = notRequired == null;
         int minSdk = Build.VERSION_CODES.FROYO;
         if (!required) {
             minSdk = notRequired.value();
         }
-        boolean canHaveDefault = !required && canHaveDefault(type, minSdk);
-        boolean needsToBeCast = typeUtil.needToCastBundleType(type);
+        if (bundleSerializer == null) {
+            bundleType = typeUtil.getBundleType(type);
+            canHaveDefault = !required && canHaveDefault(type, minSdk);
+            needsToBeCast = typeUtil.needToCastBundleType(type);
+        }
 
         BundleBindingAdapterGenerator bundleBindingAdapterGenerator = getOrCreateTargetClass(targetClassMap, enclosingElement);
         BundleFieldBinding binding = new BundleFieldBinding(BundleFieldBinding.AnnotationType.ARGUMENT, name, type, bundleType, key,
-                needsToBeCast, canHaveDefault, required);
+                needsToBeCast, canHaveDefault, required, bundleSerializer);
         bundleBindingAdapterGenerator.orRequired(required);
         bundleBindingAdapterGenerator.addField(binding);
 

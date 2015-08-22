@@ -1,7 +1,9 @@
 package pocketknife.internal.codegen.binding;
 
 import pocketknife.BindExtra;
+import pocketknife.IntentSerializer;
 import pocketknife.NotRequired;
+import pocketknife.PocketKnifeIntentSerializer;
 import pocketknife.internal.codegen.IntentFieldBinding;
 import pocketknife.internal.codegen.InvalidTypeException;
 import pocketknife.internal.codegen.KeySpec;
@@ -66,20 +68,28 @@ public class IntentBindingProcessor extends BindingProcessor {
             type = typeVariable.getUpperBound();
         }
 
+        TypeMirror intentSerializer = getAnnotationElementClass(element, IntentSerializer.class);
+        validateSerializer(element, IntentSerializer.class, intentSerializer, PocketKnifeIntentSerializer.class);
+
         validateNotRequiredArguments(element);
         validateForCodeGeneration(BindExtra.class, element);
         validateBindingPackage(BindExtra.class, element);
 
         // Assemble information on the bind point
         String name = element.getSimpleName().toString();
-        String intentType = typeUtil.getIntentType(type);
+        String intentType = null;
         KeySpec key = getKey(element);
         boolean required = element.getAnnotation(NotRequired.class) == null;
-        boolean hasDefault = typeUtil.isPrimitive(type);
-        boolean needsToBeCast = typeUtil.needToCastIntentType(type);
+        boolean hasDefault = false;
+        boolean needsToBeCast = false;
+        if (intentSerializer == null) {
+            intentType = typeUtil.getIntentType(type);
+            hasDefault = typeUtil.isPrimitive(type);
+            needsToBeCast = typeUtil.needToCastIntentType(type);
+        }
 
         IntentBindingAdapterGenerator intentBindingAdapterGenerator = getOrCreateTargetClass(targetClassMap, enclosingElement);
-        IntentFieldBinding binding = new IntentFieldBinding(name, type, intentType, key, needsToBeCast, hasDefault, required);
+        IntentFieldBinding binding = new IntentFieldBinding(name, type, intentType, key, needsToBeCast, hasDefault, required, intentSerializer);
         intentBindingAdapterGenerator.addField(binding);
 
         // Add the type-erased version to the valid targets set.

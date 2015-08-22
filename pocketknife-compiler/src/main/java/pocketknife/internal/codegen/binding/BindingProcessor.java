@@ -3,7 +3,6 @@ package pocketknife.internal.codegen.binding;
 import android.os.Build;
 import pocketknife.NotRequired;
 import pocketknife.internal.codegen.BaseProcessor;
-import pocketknife.internal.codegen.TypeUtil;
 
 import javax.annotation.processing.Messager;
 import javax.lang.model.element.Element;
@@ -14,7 +13,6 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
-
 import java.lang.annotation.Annotation;
 import java.util.Set;
 
@@ -28,15 +26,11 @@ import static pocketknife.internal.GeneratedAdapters.JAVA_PREFIX;
 public abstract class BindingProcessor extends BaseProcessor {
 
     protected Messager messager;
-    protected Elements elements;
-    protected Types types;
-    protected TypeUtil typeUtil;
 
     public BindingProcessor(Messager messager, Elements elements, Types types) {
+        super(elements, types);
         this.messager = messager;
-        this.elements = elements;
-        this.types = types;
-        this.typeUtil = TypeUtil.getInstance(elements, types);
+
     }
 
     protected String getPackageName(TypeElement type) {
@@ -131,24 +125,6 @@ public abstract class BindingProcessor extends BaseProcessor {
             throw new IllegalStateException(String.format("@%s-annotated class incorrectly in Java framework package. (%s",
                     annotationClass.getSimpleName(), qualifiedName));
         }
-    }
-
-    protected boolean isBindingInWrongPackage(Class<? extends Annotation> annotationClass, Element element) {
-        TypeElement enclosingElement = (TypeElement) element.getEnclosingElement();
-        String qualifiedName = enclosingElement.getQualifiedName().toString();
-
-        if (qualifiedName.startsWith(ANDROID_PREFIX)) {
-            error(element, "@%s-annotated class incorrectly in Android framework package. (%s)",
-                    annotationClass.getSimpleName(), qualifiedName);
-            return true;
-        }
-        if (qualifiedName.startsWith(JAVA_PREFIX)) {
-            error(element, "@%s-annotated class incorrectly in Java framework package. (%s)",
-                    annotationClass.getSimpleName(), qualifiedName);
-            return true;
-        }
-
-        return false;
     }
 
     protected TypeElement findParent(TypeElement typeElement, Set<String> parents) {

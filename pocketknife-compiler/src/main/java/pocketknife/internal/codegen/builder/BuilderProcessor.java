@@ -1,16 +1,19 @@
 package pocketknife.internal.codegen.builder;
 
 import pocketknife.BundleBuilder;
+import pocketknife.BundleSerializer;
 import pocketknife.Data;
 import pocketknife.FragmentBuilder;
 import pocketknife.IntentBuilder;
+import pocketknife.IntentSerializer;
 import pocketknife.Key;
+import pocketknife.PocketKnifeBundleSerializer;
+import pocketknife.PocketKnifeIntentSerializer;
 import pocketknife.internal.codegen.BaseProcessor;
 import pocketknife.internal.codegen.BundleFieldBinding;
 import pocketknife.internal.codegen.IntentFieldBinding;
 import pocketknife.internal.codegen.InvalidTypeException;
 import pocketknife.internal.codegen.KeySpec;
-import pocketknife.internal.codegen.TypeUtil;
 
 import javax.annotation.processing.Messager;
 import javax.annotation.processing.RoundEnvironment;
@@ -43,15 +46,10 @@ public class BuilderProcessor extends BaseProcessor {
     private static final String EXTRA_KEY_PREFIX = "EXTRA_";
 
     protected final Messager messager;
-    protected final Elements elements;
-    protected final Types types;
-    protected final TypeUtil typeUtil;
 
     public BuilderProcessor(Messager messager, Elements elements, Types types) {
+        super(elements, types);
         this.messager = messager;
-        this.elements = elements;
-        this.types = types;
-        this.typeUtil = TypeUtil.getInstance(elements, types);
     }
 
     protected void error(Element element, String message, Object... args) {
@@ -149,10 +147,18 @@ public class BuilderProcessor extends BaseProcessor {
             type = ((TypeVariable) type).getUpperBound();
         }
 
+        TypeMirror bundleSerializer = getAnnotationElementClass(element, BundleSerializer.class);
+        validateSerializer(element, BundleSerializer.class, bundleSerializer, PocketKnifeBundleSerializer.class);
+
         String name = element.getSimpleName().toString();
-        String bundleType = typeUtil.getBundleType(type);
+        String bundleType = null;
+        if (bundleSerializer == null) {
+            bundleType = typeUtil.getBundleType(type);
+        }
+
         KeySpec key = getKey(element, ARG_KEY_PREFIX);
-        return new BundleFieldBinding(name, type, bundleType, key);
+
+        return new BundleFieldBinding(name, type, bundleType, key, bundleSerializer);
     }
 
     private void processIntentBuilder(Map<TypeElement, BuilderGenerator> targetMap, RoundEnvironment roundEnv) {
@@ -265,11 +271,17 @@ public class BuilderProcessor extends BaseProcessor {
             type = ((TypeVariable) type).getUpperBound();
         }
 
+        TypeMirror intentSerializer = getAnnotationElementClass(element, IntentSerializer.class);
+        validateSerializer(element, IntentSerializer.class, intentSerializer, PocketKnifeIntentSerializer.class);
+
         String name = element.getSimpleName().toString();
-        String intentType = typeUtil.getIntentType(type);
+        String intentType = null;
+        if (intentSerializer == null) {
+            intentType = typeUtil.getIntentType(type);
+        }
         boolean arrayList = isIntentArrayList(intentType);
         KeySpec key = getKey(element, EXTRA_KEY_PREFIX);
-        return new IntentFieldBinding(name, type, intentType, key, arrayList);
+        return new IntentFieldBinding(name, type, intentType, key, arrayList, intentSerializer);
     }
 
     private boolean isIntentArrayList(String intentType) {
