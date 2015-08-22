@@ -8,7 +8,7 @@ import static java.lang.annotation.ElementType.PARAMETER;
 import static java.lang.annotation.RetentionPolicy.CLASS;
 
 @Retention(CLASS)
-@Target({FIELD, PARAMETER})
+@Target({ FIELD, PARAMETER })
 public @interface BundleSerializer {
     Class<? extends PocketKnifeBundleSerializer> value();
 }
