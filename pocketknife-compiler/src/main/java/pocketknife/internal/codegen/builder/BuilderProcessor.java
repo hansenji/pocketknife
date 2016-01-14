@@ -163,6 +163,10 @@ public class BuilderProcessor extends BaseProcessor {
 
     private void processIntentBuilder(Map<TypeElement, BuilderGenerator> targetMap, RoundEnvironment roundEnv) {
         for (Element element : roundEnv.getElementsAnnotatedWith(IntentBuilder.class)) {
+            IntentBuilder annotation = element.getAnnotation(IntentBuilder.class);
+            if (annotation == null) {
+                continue;
+            }
             try {
                 TypeElement enclosingElement = (TypeElement) element.getEnclosingElement();
                 // This should be guarded by the annotation's @Target but it's worth a check for safe casting.

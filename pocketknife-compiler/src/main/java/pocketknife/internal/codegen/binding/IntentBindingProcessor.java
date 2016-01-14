@@ -37,6 +37,10 @@ public class IntentBindingProcessor extends BindingProcessor {
 
         // Process each @BindExtra
         for (Element element : env.getElementsAnnotatedWith(BindExtra.class)) {
+            BindExtra annotation = element.getAnnotation(BindExtra.class);
+            if (annotation == null) {
+                continue;
+            }
             try {
                 parseBindExtra(element, targetClassMap, erasedTargetNames);
             } catch (Exception e) {

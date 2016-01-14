@@ -41,6 +41,10 @@ public class BundleBindingProcessor extends BindingProcessor {
 
         // Process each @SaveState
         for (Element element : env.getElementsAnnotatedWith(SaveState.class)) {
+            SaveState annotation = element.getAnnotation(SaveState.class);
+            if (annotation == null) {
+                continue;
+            }
             try {
                 parseSaveState(element, targetClassMap, erasedTargetNames);
             } catch (Exception e) {
@@ -52,6 +56,10 @@ public class BundleBindingProcessor extends BindingProcessor {
 
         // Process each @BindArgument Annotation
         for (Element element : env.getElementsAnnotatedWith(BindArgument.class)) {
+            BindArgument annotation = element.getAnnotation(BindArgument.class);
+            if (annotation == null) {
+                continue;
+            }
             try {
                 parseBindAnnotation(element, targetClassMap, erasedTargetNames);
             } catch (Exception e) {
