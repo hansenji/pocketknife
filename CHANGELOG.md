@@ -1,5 +1,11 @@
 Change Log
 ==========
+Version 3.2.0 *(2016-02-07)*
+----------------------------
+
+* Added Java Bean accessor/mutator support
+* Added Kotlin support (Must use [kapt](http://blog.jetbrains.com/kotlin/2015/06/better-annotation-processing-supporting-stubs-in-kapt/))
+
 Version 3.1.0 *(2015-08-22)*
 ----------------------------
 
