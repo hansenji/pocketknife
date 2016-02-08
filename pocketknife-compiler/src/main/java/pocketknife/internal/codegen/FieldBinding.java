@@ -4,6 +4,7 @@ import com.google.common.base.CaseFormat;
 
 public abstract class FieldBinding {
     public abstract String getName();
+    public abstract Access getAccess();
 
     /** A description of the binding in human readable form (e.g., "field 'foo'"). */
     public abstract String getDescription();

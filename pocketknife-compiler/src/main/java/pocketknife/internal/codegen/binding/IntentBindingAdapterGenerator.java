@@ -8,6 +8,7 @@ import com.squareup.javapoet.ParameterizedTypeName;
 import com.squareup.javapoet.TypeSpec;
 import com.squareup.javapoet.TypeVariableName;
 import pocketknife.internal.IntentBinding;
+import pocketknife.internal.codegen.Access;
 import pocketknife.internal.codegen.BaseGenerator;
 import pocketknife.internal.codegen.IntentFieldBinding;
 import pocketknife.internal.codegen.TypeUtil;
@@ -81,12 +82,19 @@ public class IntentBindingAdapterGenerator extends BaseGenerator {
     }
 
     private void addBindExtraField(MethodSpec.Builder methodBuilder, IntentFieldBinding field) {
+        Access access = field.getAccess();
+        boolean method = access.getType() == Access.Type.METHOD;
         if (field.getIntentSerializer() == null) {
             methodBuilder.beginControlFlow("if ($N.hasExtra($S))", INTENT, field.getKey().getValue());
             List<Object> stmtArgs = new ArrayList<Object>();
-            String stmt = "$N.$N = ";
+            String stmt;
+            if (method) {
+                stmt = "$N.$N(";
+            } else {
+                stmt = "$N.$N = ";
+            }
             stmtArgs.add(TARGET);
-            stmtArgs.add(field.getName());
+            stmtArgs.add(access.getSetter());
 
             if (field.needsToBeCast()) {
                 stmt = stmt.concat("($T)");
@@ -98,11 +106,18 @@ public class IntentBindingAdapterGenerator extends BaseGenerator {
             stmtArgs.add(field.getKey().getValue());
 
             if (field.hasDefault()) {
-                stmt = stmt.concat(", $N.$N");
+                if (method) {
+                    stmt = stmt.concat(", $N.$N()");
+                } else {
+                    stmt = stmt.concat(", $N.$N");
+                }
                 stmtArgs.add(TARGET);
-                stmtArgs.add(field.getName());
+                stmtArgs.add(access.getGetter());
             }
             stmt = stmt.concat(")");
+            if (method) {
+                stmt = stmt.concat(")");
+            }
             methodBuilder.addStatement(stmt, stmtArgs.toArray(new Object[stmtArgs.size()]));
             if (field.isRequired()) {
                 methodBuilder.nextControlFlow("else")
@@ -112,8 +127,14 @@ public class IntentBindingAdapterGenerator extends BaseGenerator {
 
             methodBuilder.endControlFlow();
         } else {
-            methodBuilder.addStatement("$N.$N = new $T().get($N, $N.$N, $S)", TARGET, field.getName(), field.getIntentSerializer(), INTENT, TARGET,
-                    field.getName(), field.getKey().getValue());
+            String stmt;
+            if (method) {
+                stmt = "$N.$N(new $T().get($N, $N.$N(), $S))";
+            } else {
+                stmt = "$N.$N = new $T().get($N, $N.$N, $S)";
+            }
+            methodBuilder.addStatement(stmt, TARGET, access.getSetter(), field.getIntentSerializer(), INTENT, TARGET,
+                    access.getGetter(), field.getKey().getValue());
         }
     }
 

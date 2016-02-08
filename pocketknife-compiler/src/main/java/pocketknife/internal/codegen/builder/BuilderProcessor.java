@@ -158,7 +158,7 @@ public class BuilderProcessor extends BaseProcessor {
 
         KeySpec key = getKey(element, ARG_KEY_PREFIX);
 
-        return new BundleFieldBinding(name, type, bundleType, key, bundleSerializer);
+        return new BundleFieldBinding(name, null, type, bundleType, key, bundleSerializer);
     }
 
     private void processIntentBuilder(Map<TypeElement, BuilderGenerator> targetMap, RoundEnvironment roundEnv) {
@@ -285,7 +285,7 @@ public class BuilderProcessor extends BaseProcessor {
         }
         boolean arrayList = isIntentArrayList(intentType);
         KeySpec key = getKey(element, EXTRA_KEY_PREFIX);
-        return new IntentFieldBinding(name, type, intentType, key, arrayList, intentSerializer);
+        return new IntentFieldBinding(name, null, type, intentType, key, arrayList, intentSerializer);
     }
 
     private boolean isIntentArrayList(String intentType) {

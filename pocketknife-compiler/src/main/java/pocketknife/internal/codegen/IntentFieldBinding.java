@@ -6,6 +6,7 @@ public class IntentFieldBinding extends FieldBinding {
     public static final String KEY_PREFIX = "EXTRA_";
 
     private final String name;
+    private final Access access;
     private final TypeMirror type;
     private final String intentType;
     private final KeySpec key;
@@ -19,8 +20,9 @@ public class IntentFieldBinding extends FieldBinding {
     private final boolean needsToBeCast;
     private final boolean hasDefault;
 
-    public IntentFieldBinding(String name, TypeMirror type, String intentType, KeySpec key, boolean arrayList, TypeMirror intentSerializer) {
+    public IntentFieldBinding(String name, Access access, TypeMirror type, String intentType, KeySpec key, boolean arrayList, TypeMirror intentSerializer) {
         this.name = name;
+        this.access = access;
         this.type = type;
         this.intentType = intentType;
         this.key = key;
@@ -32,9 +34,10 @@ public class IntentFieldBinding extends FieldBinding {
         this.hasDefault = false;
     }
 
-    public IntentFieldBinding(String name, TypeMirror type, String intentType, KeySpec key, Boolean needsToBeCast, boolean hasDefault, boolean required,
-                              TypeMirror intentSerializer) {
+    public IntentFieldBinding(String name, Access access, TypeMirror type, String intentType, KeySpec key, Boolean needsToBeCast, boolean hasDefault,
+                              boolean required, TypeMirror intentSerializer) {
         this.name = name;
+        this.access = access;
         this.type = type;
         this.intentType = intentType;
         this.key = key;
@@ -53,6 +56,10 @@ public class IntentFieldBinding extends FieldBinding {
 
     public String getName() {
         return name;
+    }
+
+    public Access getAccess() {
+        return access;
     }
 
     public TypeMirror getType() {

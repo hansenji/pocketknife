@@ -6,6 +6,7 @@ import pocketknife.BundleSerializer;
 import pocketknife.NotRequired;
 import pocketknife.PocketKnifeBundleSerializer;
 import pocketknife.SaveState;
+import pocketknife.internal.codegen.Access;
 import pocketknife.internal.codegen.BundleFieldBinding;
 import pocketknife.internal.codegen.InvalidTypeException;
 import pocketknife.internal.codegen.KeySpec;
@@ -94,6 +95,7 @@ public class BundleBindingProcessor extends BindingProcessor {
         validateNotRequiredArguments(element);
         validateForCodeGeneration(SaveState.class, element);
         validateBindingPackage(SaveState.class, element);
+        Access access = getAccess(SaveState.class, element, enclosingElement);
 
         TypeMirror bundleSerializer = getAnnotationElementClass(element, BundleSerializer.class);
         validateSerializer(element, BundleSerializer.class, bundleSerializer, PocketKnifeBundleSerializer.class);
@@ -118,8 +120,8 @@ public class BundleBindingProcessor extends BindingProcessor {
 
 
         BundleBindingAdapterGenerator bundleBindingAdapterGenerator = getOrCreateTargetClass(targetClassMap, enclosingElement);
-        BundleFieldBinding binding = new BundleFieldBinding(SAVE_STATE, name, type, bundleType, new KeySpec(null, generateKey(SAVE_STATE_KEY_PREFIX, name)),
-                needsToBeCast, canHaveDefault, required, bundleSerializer);
+        BundleFieldBinding binding = new BundleFieldBinding(SAVE_STATE, name, access, type, bundleType,
+                new KeySpec(null, generateKey(SAVE_STATE_KEY_PREFIX, name)), needsToBeCast, canHaveDefault, required, bundleSerializer);
         bundleBindingAdapterGenerator.addField(binding);
 
         // Add the type-erased version to the valid targets set.
@@ -139,8 +141,9 @@ public class BundleBindingProcessor extends BindingProcessor {
 
 
         validateNotRequiredArguments(element);
-        validateForCodeGeneration(BindArgument.class, element);
         validateBindingPackage(BindArgument.class, element);
+        validateForCodeGeneration(BindArgument.class, element);
+        Access access = getAccess(BindArgument.class, element, enclosingElement);
 
         TypeMirror bundleSerializer = getAnnotationElementClass(element, BundleSerializer.class);
         validateSerializer(element, BundleSerializer.class, bundleSerializer, PocketKnifeBundleSerializer.class);
@@ -164,7 +167,7 @@ public class BundleBindingProcessor extends BindingProcessor {
         }
 
         BundleBindingAdapterGenerator bundleBindingAdapterGenerator = getOrCreateTargetClass(targetClassMap, enclosingElement);
-        BundleFieldBinding binding = new BundleFieldBinding(BundleFieldBinding.AnnotationType.ARGUMENT, name, type, bundleType, key,
+        BundleFieldBinding binding = new BundleFieldBinding(BundleFieldBinding.AnnotationType.ARGUMENT, name, access, type, bundleType, key,
                 needsToBeCast, canHaveDefault, required, bundleSerializer);
         bundleBindingAdapterGenerator.orRequired(required);
         bundleBindingAdapterGenerator.addField(binding);

@@ -13,6 +13,7 @@ public class BundleFieldBinding extends FieldBinding {
 
     private final AnnotationType annotationType;
     private final String name;
+    private final Access access;
     private final TypeMirror type;
     private final String bundleType;
     private final KeySpec key;
@@ -23,14 +24,15 @@ public class BundleFieldBinding extends FieldBinding {
     private final boolean canHaveDefault;
     private final boolean required;
 
-    public BundleFieldBinding(String name, TypeMirror type, String bundleType, KeySpec key, TypeMirror bundleSerializer) {
-        this(AnnotationType.BUILDER, name, type, bundleType, key, false, false, false, bundleSerializer);
+    public BundleFieldBinding(String name, Access access, TypeMirror type, String bundleType, KeySpec key, TypeMirror bundleSerializer) {
+        this(AnnotationType.BUILDER, name, access, type, bundleType, key, false, false, false, bundleSerializer);
     }
 
-    public BundleFieldBinding(AnnotationType annotationType, String name, TypeMirror type, String bundleType, KeySpec key, boolean needsToBeCast,
+    public BundleFieldBinding(AnnotationType annotationType, String name, Access access, TypeMirror type, String bundleType, KeySpec key, boolean needsToBeCast,
                               boolean canHaveDefault, boolean required, TypeMirror bundleSerializer) {
         this.annotationType = annotationType;
         this.name = name;
+        this.access = access;
         this.type = type;
         this.bundleType = bundleType;
         this.needsToBeCast = needsToBeCast;
@@ -47,6 +49,10 @@ public class BundleFieldBinding extends FieldBinding {
 
     public String getName() {
         return name;
+    }
+
+    public Access getAccess() {
+        return access;
     }
 
     public TypeMirror getType() {

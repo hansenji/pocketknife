@@ -8,6 +8,7 @@ import com.squareup.javapoet.ParameterizedTypeName;
 import com.squareup.javapoet.TypeSpec;
 import com.squareup.javapoet.TypeVariableName;
 import pocketknife.internal.BundleBinding;
+import pocketknife.internal.codegen.Access;
 import pocketknife.internal.codegen.BaseGenerator;
 import pocketknife.internal.codegen.BundleFieldBinding;
 import pocketknife.internal.codegen.TypeUtil;
@@ -84,10 +85,24 @@ public final class BundleBindingAdapterGenerator extends BaseGenerator {
         }
         for (BundleFieldBinding field : fields) {
             if (SAVE_STATE == field.getAnnotationType()) {
+                Access access = field.getAccess();
+                boolean method = access.getType() == Access.Type.METHOD;
                 if (field.getBundleSerializer() == null) {
-                    methodBuilder.addStatement("$N.put$L($S, $N.$N)", BUNDLE, field.getBundleType(), field.getKey().getValue(), TARGET, field.getName());
+                    String stmt;
+                    if (method) {
+                        stmt = "$N.put$L($S, $N.$N())";
+                    } else {
+                        stmt = "$N.put$L($S, $N.$N)";
+                    }
+                    methodBuilder.addStatement(stmt, BUNDLE, field.getBundleType(), field.getKey().getValue(), TARGET, access.getGetter());
                 } else {
-                    methodBuilder.addStatement("new $T().put($N, $N.$N, $S)", field.getBundleSerializer(), BUNDLE, TARGET, field.getName(),
+                    String stmt;
+                    if (method) {
+                        stmt = "new $T().put($N, $N.$N(), $S)";
+                    } else {
+                        stmt = "new $T().put($N, $N.$N, $S)";
+                    }
+                    methodBuilder.addStatement(stmt, field.getBundleSerializer(), BUNDLE, TARGET, access.getGetter(),
                             field.getKey().getValue());
                 }
             }
@@ -115,12 +130,19 @@ public final class BundleBindingAdapterGenerator extends BaseGenerator {
     }
 
     private void addGetStatement(MethodSpec.Builder methodBuilder, BundleFieldBinding field) {
+        Access access = field.getAccess();
+        boolean method = access.getType() == Access.Type.METHOD;
         if (field.getBundleSerializer() == null) {
             methodBuilder.beginControlFlow("if ($N.containsKey($S))", BUNDLE, field.getKey().getValue());
             List<Object> stmtArgs = new ArrayList<Object>();
-            String stmt = "$N.$N = ";
+            String stmt;
+            if (method) {
+                stmt = "$N.$N(";
+            } else {
+                stmt = "$N.$N = ";
+            }
             stmtArgs.add(TARGET);
-            stmtArgs.add(field.getName());
+            stmtArgs.add(access.getSetter());
             if (field.needsToBeCast()) {
                 stmt = stmt.concat("($T)");
                 stmtArgs.add(field.getType());
@@ -130,11 +152,18 @@ public final class BundleBindingAdapterGenerator extends BaseGenerator {
             stmtArgs.add(field.getBundleType());
             stmtArgs.add(field.getKey().getValue());
             if (field.canHaveDefault()) {
-                stmt = stmt.concat(", $N.$N");
+                if (method) {
+                    stmt = stmt.concat(", $N.$N()");
+                } else {
+                    stmt = stmt.concat(", $N.$N");
+                }
                 stmtArgs.add(TARGET);
-                stmtArgs.add(field.getName());
+                stmtArgs.add(access.getGetter());
             }
             stmt = stmt.concat(")");
+            if (method) {
+                stmt = stmt.concat(")");
+            }
             methodBuilder.addStatement(stmt, stmtArgs.toArray(new Object[stmtArgs.size()]));
             if (field.isRequired()) {
                 methodBuilder.nextControlFlow("else");
@@ -145,8 +174,14 @@ public final class BundleBindingAdapterGenerator extends BaseGenerator {
             }
             methodBuilder.endControlFlow();
         } else {
-            methodBuilder.addStatement("$N.$N = new $T().get($N, $N.$N, $S)", TARGET, field.getName(), field.getBundleSerializer(), BUNDLE, TARGET,
-                    field.getName(), field.getKey().getValue());
+            String stmt;
+            if (method) {
+                stmt = "$N.$N(new $T().get($N, $N.$N(), $S))";
+            } else {
+                stmt = "$N.$N = new $T().get($N, $N.$N, $S)";
+            }
+            methodBuilder.addStatement(stmt, TARGET, access.getSetter(), field.getBundleSerializer(), BUNDLE, TARGET,
+                    access.getGetter(), field.getKey().getValue());
         }
     }
 
@@ -174,12 +209,19 @@ public final class BundleBindingAdapterGenerator extends BaseGenerator {
     }
 
     private void addGetArgumentStatement(MethodSpec.Builder methodBuilder, BundleFieldBinding field) {
+        Access access = field.getAccess();
+        boolean method = access.getType() == Access.Type.METHOD;
         if (field.getBundleSerializer() == null) {
             methodBuilder.beginControlFlow("if ($N.containsKey($S))", BUNDLE, field.getKey().getValue());
             List<Object> stmtArgs = new ArrayList<Object>();
-            String stmt = "$N.$N = ";
+            String stmt;
+            if (method) {
+                stmt = "$N.$N(";
+            } else {
+                stmt = "$N.$N = ";
+            }
             stmtArgs.add(TARGET);
-            stmtArgs.add(field.getName());
+            stmtArgs.add(access.getSetter());
             if (field.needsToBeCast()) {
                 stmt = stmt.concat("($T)");
                 stmtArgs.add(field.getType());
@@ -189,11 +231,18 @@ public final class BundleBindingAdapterGenerator extends BaseGenerator {
             stmtArgs.add(field.getBundleType());
             stmtArgs.add(field.getKey().getValue());
             if (field.canHaveDefault()) {
-                stmt = stmt.concat(", $N.$N");
+                if (method) {
+                    stmt = stmt.concat(", $N.$N()");
+                } else {
+                    stmt = stmt.concat(", $N.$N");
+                }
                 stmtArgs.add(TARGET);
-                stmtArgs.add(field.getName());
+                stmtArgs.add(access.getGetter());
             }
             stmt = stmt.concat(")");
+            if (method) {
+                stmt = stmt.concat(")");
+            }
             methodBuilder.addStatement(stmt, stmtArgs.toArray(new Object[stmtArgs.size()]));
             if (field.isRequired()) {
                 methodBuilder.nextControlFlow("else");
@@ -204,8 +253,14 @@ public final class BundleBindingAdapterGenerator extends BaseGenerator {
             }
             methodBuilder.endControlFlow();
         } else {
-            methodBuilder.addStatement("$N.$N = new $T().get($N, $N.$N, $S)", TARGET, field.getName(), field.getBundleSerializer(), BUNDLE, TARGET,
-                    field.getName(), field.getKey().getValue());
+            String stmt;
+            if (method) {
+                stmt = "$N.$N(new $T().get($N, $N.$N(), $S))";
+            } else {
+                stmt = "$N.$N = new $T().get($N, $N.$N, $S)";
+            }
+            methodBuilder.addStatement(stmt, TARGET, access.getSetter(), field.getBundleSerializer(), BUNDLE, TARGET,
+                    access.getGetter(), field.getKey().getValue());
         }
     }
 

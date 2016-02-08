@@ -4,6 +4,7 @@ import pocketknife.BindExtra;
 import pocketknife.IntentSerializer;
 import pocketknife.NotRequired;
 import pocketknife.PocketKnifeIntentSerializer;
+import pocketknife.internal.codegen.Access;
 import pocketknife.internal.codegen.IntentFieldBinding;
 import pocketknife.internal.codegen.InvalidTypeException;
 import pocketknife.internal.codegen.KeySpec;
@@ -76,8 +77,9 @@ public class IntentBindingProcessor extends BindingProcessor {
         validateSerializer(element, IntentSerializer.class, intentSerializer, PocketKnifeIntentSerializer.class);
 
         validateNotRequiredArguments(element);
-        validateForCodeGeneration(BindExtra.class, element);
         validateBindingPackage(BindExtra.class, element);
+        validateForCodeGeneration(BindExtra.class, element);
+        Access access = getAccess(BindExtra.class, element, enclosingElement);
 
         // Assemble information on the bind point
         String name = element.getSimpleName().toString();
@@ -93,7 +95,7 @@ public class IntentBindingProcessor extends BindingProcessor {
         }
 
         IntentBindingAdapterGenerator intentBindingAdapterGenerator = getOrCreateTargetClass(targetClassMap, enclosingElement);
-        IntentFieldBinding binding = new IntentFieldBinding(name, type, intentType, key, needsToBeCast, hasDefault, required, intentSerializer);
+        IntentFieldBinding binding = new IntentFieldBinding(name, access, type, intentType, key, needsToBeCast, hasDefault, required, intentSerializer);
         intentBindingAdapterGenerator.addField(binding);
 
         // Add the type-erased version to the valid targets set.
