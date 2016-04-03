@@ -60,7 +60,7 @@ public final class BundleBindingAdapterGenerator extends BaseGenerator {
         TypeSpec.Builder classBuilder = TypeSpec.classBuilder(className)
                 .addTypeVariable(TypeVariableName.get(t.name, ClassName.get(targetType)))
                 .addModifiers(PUBLIC)
-                .addAnnotation(getGeneratedAnnotationSpec(BundleBindingAdapterGenerator.class));
+                .addJavadoc(getGeneratedComment(BundleBindingAdapterGenerator.class));
 
         if (parentAdapter != null) {
             classBuilder.superclass(ParameterizedTypeName.get(parentAdapter, t));

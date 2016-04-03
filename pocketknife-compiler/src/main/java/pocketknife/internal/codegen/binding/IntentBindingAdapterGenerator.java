@@ -52,7 +52,7 @@ public class IntentBindingAdapterGenerator extends BaseGenerator {
         TypeSpec.Builder classBuilder = TypeSpec.classBuilder(className)
                 .addTypeVariable(TypeVariableName.get(t.name, ClassName.get(targetType)))
                 .addModifiers(PUBLIC)
-                .addAnnotation(getGeneratedAnnotationSpec(IntentBindingAdapterGenerator.class));
+                .addJavadoc(getGeneratedComment(IntentBindingAdapterGenerator.class));
 
         // Add Interface or Parent Class
         if (parentAdapter != null) {

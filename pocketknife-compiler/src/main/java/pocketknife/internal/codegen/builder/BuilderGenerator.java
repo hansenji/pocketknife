@@ -40,7 +40,7 @@ public class BuilderGenerator extends BaseGenerator {
         TypeSpec.Builder classBuilder = TypeSpec.classBuilder(className)
                 .addSuperinterface(ClassName.get(classPackage, interfaceName))
                 .addModifiers(PUBLIC)
-                .addAnnotation(getGeneratedAnnotationSpec(BuilderGenerator.class));
+                .addJavadoc(getGeneratedComment(BuilderGenerator.class));
 
         generateKeys(classBuilder);
 
