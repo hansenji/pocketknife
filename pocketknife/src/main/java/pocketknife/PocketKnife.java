@@ -19,6 +19,10 @@ import static pocketknife.internal.GeneratedAdapters.JAVA_PREFIX;
 
 public final class PocketKnife {
     private static final String TAG = "PocketKnife";
+
+    public static final String COULD_NOT_CREATE_INSTANCE_BUNDLE_ADAPTER_CLASS = "Could not create an instance of the bundle adapter for class ";
+    public static final String COULD_NOT_CREATE_INSTANCE_INTENT_ADAPTER_CLASS = "Could not create an instance of the intent adapter for class ";
+
     private static boolean debug;
 
     private PocketKnife() {
@@ -138,13 +142,13 @@ public final class PocketKnife {
                                 + clsName);
             } catch (InvocationTargetException e) {
                 throw new IllegalStateException(
-                        "Could not create an instance of the bundle adapter for class " + clsName, e);
+                        COULD_NOT_CREATE_INSTANCE_BUNDLE_ADAPTER_CLASS + clsName, e);
             } catch (InstantiationException e) {
                 throw new IllegalStateException(
-                        "Could not create an instance of the bundle adapter for class " + clsName, e);
+                        COULD_NOT_CREATE_INSTANCE_BUNDLE_ADAPTER_CLASS + clsName, e);
             } catch (IllegalAccessException e) {
                 throw new IllegalStateException(
-                        "Could not create an instance of the bundle adapter for class " + clsName, e);
+                        COULD_NOT_CREATE_INSTANCE_BUNDLE_ADAPTER_CLASS + clsName, e);
             }
         }
         // Search for Parent Class adapter
@@ -177,13 +181,13 @@ public final class PocketKnife {
                                 + clsName);
             } catch (InvocationTargetException e) {
                 throw new IllegalStateException(
-                        "Could not create an instance of the intent adapter for class " + clsName, e);
+                        COULD_NOT_CREATE_INSTANCE_INTENT_ADAPTER_CLASS + clsName, e);
             } catch (InstantiationException e) {
                 throw new IllegalStateException(
-                        "Could not create an instance of the intent adapter for class " + clsName, e);
+                        COULD_NOT_CREATE_INSTANCE_INTENT_ADAPTER_CLASS + clsName, e);
             } catch (IllegalAccessException e) {
                 throw new IllegalStateException(
-                        "Could not create an instance of the intent adapter for class " + clsName, e);
+                        COULD_NOT_CREATE_INSTANCE_INTENT_ADAPTER_CLASS + clsName, e);
             }
         }
         // Search for Parent Class adapter

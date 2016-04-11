@@ -4,6 +4,18 @@ import android.os.Parcel;
 import android.os.Parcelable;
 
 public class MyParcelable implements Parcelable {
+    public static final Creator<MyParcelable> CREATOR = new Creator<MyParcelable>() {
+        @Override
+        public MyParcelable createFromParcel(Parcel in) {
+            return new MyParcelable(in);
+        }
+
+        @Override
+        public MyParcelable[] newArray(int size) {
+            return new MyParcelable[size];
+        }
+    };
+
     private int data;
 
     public MyParcelable(int data) {
@@ -33,18 +45,6 @@ public class MyParcelable implements Parcelable {
     public void writeToParcel(Parcel out, int flags) {
         out.writeInt(data);
     }
-
-    public static final Creator<MyParcelable> CREATOR = new Creator<MyParcelable>() {
-        @Override
-        public MyParcelable createFromParcel(Parcel in) {
-            return new MyParcelable(in);
-        }
-
-        @Override
-        public MyParcelable[] newArray(int size) {
-            return new MyParcelable[size];
-        }
-    };
 
     public int getData() {
         return data;
