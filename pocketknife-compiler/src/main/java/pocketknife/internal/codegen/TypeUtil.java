@@ -66,11 +66,11 @@ public class TypeUtil {
             throw new IllegalStateException("Unable to find Parcelable type");
         }
         parcelableType = element.asType();
-//        element = elements.getTypeElement(BINDER);
+//        element = elements.getTypeElement(BINDER)
 //        if (element == null) {
-//            throw new IllegalStateException("Unable to find Binder type");
+//            throw new IllegalStateException("Unable to find Binder type")
 //        }
-//        binderType = element.asType();
+//        binderType = element.asType()
         element = elements.getTypeElement(BUNDLE);
         if (element == null) {
             throw new IllegalStateException("Unable to find Bundle type");

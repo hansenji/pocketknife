@@ -22,6 +22,7 @@ import static javax.lang.model.element.Modifier.PUBLIC;
 import static javax.lang.model.element.Modifier.STATIC;
 
 public class BuilderGenerator extends BaseGenerator {
+    public static final String CONTEXT = "context";
     private final String classPackage;
     private final String className;
     private final String interfaceName;
@@ -45,11 +46,11 @@ public class BuilderGenerator extends BaseGenerator {
         generateKeys(classBuilder);
 
         if (contextRequired) {
-            classBuilder.addField(ClassName.get(typeUtil.contextType), "context", PRIVATE, FINAL);
+            classBuilder.addField(ClassName.get(typeUtil.contextType), CONTEXT, PRIVATE, FINAL);
             classBuilder.addMethod(MethodSpec.constructorBuilder()
                     .addModifiers(PUBLIC)
-                    .addParameter(ClassName.get(typeUtil.contextType), "context")
-                    .addStatement("this.$N = $N", "context", "context")
+                    .addParameter(ClassName.get(typeUtil.contextType), CONTEXT)
+                    .addStatement("this.$N = $N", CONTEXT, CONTEXT)
                     .build());
         }
 

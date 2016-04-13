@@ -44,6 +44,8 @@ public class BuilderProcessor extends BaseProcessor {
     protected static final String GENERATOR_PREFIX = "PocketKnife";
     private static final String ARG_KEY_PREFIX = "ARG_";
     private static final String EXTRA_KEY_PREFIX = "EXTRA_";
+    public static final String S_ANNOTATION_MUST_BE_ON_A_METHOD = "@%s annotation must be on a method.";
+    public static final String UNABLE_TO_GENERATE_S_S = "Unable to generate @%s.\n\n%s";
 
     protected final Messager messager;
 
@@ -111,7 +113,7 @@ public class BuilderProcessor extends BaseProcessor {
             try {
                 TypeElement enclosingElement = (TypeElement) element.getEnclosingElement();
                 if (!(element instanceof ExecutableElement) || element.getKind() != METHOD) {
-                    throw new IllegalStateException(String.format("@%s annotation must be on a method.", BundleBuilder.class));
+                    throw new IllegalStateException(String.format(S_ANNOTATION_MUST_BE_ON_A_METHOD, BundleBuilder.class));
                 }
                 ExecutableElement executableElement = (ExecutableElement) element;
                 // Validate
@@ -128,7 +130,7 @@ public class BuilderProcessor extends BaseProcessor {
             } catch (Exception e) {
                 StringWriter stackTrace = new StringWriter();
                 e.printStackTrace(new PrintWriter(stackTrace));
-                error(element, "Unable to generate @%s.\n\n%s", BundleBuilder.class.getSimpleName(), stackTrace.toString());
+                error(element, UNABLE_TO_GENERATE_S_S, BundleBuilder.class.getSimpleName(), stackTrace.toString());
             }
         }
     }
@@ -171,7 +173,7 @@ public class BuilderProcessor extends BaseProcessor {
                 TypeElement enclosingElement = (TypeElement) element.getEnclosingElement();
                 // This should be guarded by the annotation's @Target but it's worth a check for safe casting.
                 if (!(element instanceof ExecutableElement) || element.getKind() != METHOD) {
-                    throw new IllegalStateException(String.format("@%s annotation must be on a method.", IntentBuilder.class));
+                    throw new IllegalStateException(String.format(S_ANNOTATION_MUST_BE_ON_A_METHOD, IntentBuilder.class));
                 }
                 ExecutableElement executableElement = (ExecutableElement) element;
                 // Validate
@@ -189,7 +191,7 @@ public class BuilderProcessor extends BaseProcessor {
             } catch (InvalidTypeException e) {
                 StringWriter stackTrace = new StringWriter();
                 e.printStackTrace(new PrintWriter(stackTrace));
-                error(element, "Unable to generate @%s.\n\n%s", IntentBuilder.class.getSimpleName(), stackTrace.toString());
+                error(element, UNABLE_TO_GENERATE_S_S, IntentBuilder.class.getSimpleName(), stackTrace.toString());
             }
         }
     }
@@ -300,7 +302,7 @@ public class BuilderProcessor extends BaseProcessor {
             try {
                 TypeElement enclosingElement = (TypeElement) element.getEnclosingElement();
                 if (!(element instanceof ExecutableElement) || element.getKind() != METHOD) {
-                    throw new IllegalStateException(String.format("@%s annotation must be on a method.", FragmentBuilder.class));
+                    throw new IllegalStateException(String.format(S_ANNOTATION_MUST_BE_ON_A_METHOD, FragmentBuilder.class));
                 }
                 ExecutableElement executableElement = (ExecutableElement) element;
                 // Validate
@@ -318,7 +320,7 @@ public class BuilderProcessor extends BaseProcessor {
             } catch (Exception e) {
                 StringWriter stackTrace = new StringWriter();
                 e.printStackTrace(new PrintWriter(stackTrace));
-                error(element, "Unable to generate @%s.\n\n%s", FragmentBuilder.class.getSimpleName(), stackTrace.toString());
+                error(element, UNABLE_TO_GENERATE_S_S, FragmentBuilder.class.getSimpleName(), stackTrace.toString());
             }
         }
     }

@@ -32,6 +32,8 @@ public final class BundleBindingAdapterGenerator extends BaseGenerator {
 
     private static final String BUNDLE = "bundle";
     private static final String TARGET = "target";
+    public static final String SUPER_METHOD_TEMPLATE = "super.$L($N, $N)";
+    public static final String THROW_NEW_DOLLAR_SIGN_T_PARENTHESES_DOLLAR_SIGN_S_PARENTHESES = "throw new $T($S)";
 
     private final Set<BundleFieldBinding> fields = new LinkedHashSet<BundleFieldBinding>();
     private final String classPackage;
@@ -81,7 +83,7 @@ public final class BundleBindingAdapterGenerator extends BaseGenerator {
                 .addParameter(ParameterSpec.builder(t, TARGET).build())
                 .addParameter(ParameterSpec.builder(ClassName.get(typeUtil.bundleType), BUNDLE).build());
         if (parentAdapter != null) {
-            methodBuilder.addStatement("super.$L($N, $N)", SAVE_METHOD, TARGET, BUNDLE);
+            methodBuilder.addStatement(SUPER_METHOD_TEMPLATE, SAVE_METHOD, TARGET, BUNDLE);
         }
         for (BundleFieldBinding field : fields) {
             if (SAVE_STATE == field.getAnnotationType()) {
@@ -116,7 +118,7 @@ public final class BundleBindingAdapterGenerator extends BaseGenerator {
                 .addParameter(ParameterSpec.builder(t, TARGET).build())
                 .addParameter(ParameterSpec.builder(ClassName.get(typeUtil.bundleType), BUNDLE).build());
         if (parentAdapter != null) {
-            methodBuilder.addStatement("super.$L($N, $N)", RESTORE_METHOD, TARGET, BUNDLE);
+            methodBuilder.addStatement(SUPER_METHOD_TEMPLATE, RESTORE_METHOD, TARGET, BUNDLE);
         }
         methodBuilder.beginControlFlow("if ($N != null)", BUNDLE);
         for (BundleFieldBinding field : fields) {
@@ -167,7 +169,7 @@ public final class BundleBindingAdapterGenerator extends BaseGenerator {
             methodBuilder.addStatement(stmt, stmtArgs.toArray(new Object[stmtArgs.size()]));
             if (field.isRequired()) {
                 methodBuilder.nextControlFlow("else");
-                methodBuilder.addStatement("throw new $T($S)", IllegalStateException.class,
+                methodBuilder.addStatement(THROW_NEW_DOLLAR_SIGN_T_PARENTHESES_DOLLAR_SIGN_S_PARENTHESES, IllegalStateException.class,
                         String.format("Required Bundle value with key '%s' was not found for '%s'. "
                                         + "If this field is not required add '@NotRequired' annotation",
                                 field.getKey().getValue(), field.getName()));
@@ -191,11 +193,11 @@ public final class BundleBindingAdapterGenerator extends BaseGenerator {
                 .addParameter(ParameterSpec.builder(t, TARGET).build())
                 .addParameter(ParameterSpec.builder(ClassName.get(typeUtil.bundleType), BUNDLE).build());
         if (parentAdapter != null) {
-            methodBuilder.addStatement("super.$L($N, $N)", BIND_ARGUMENTS_METHOD, TARGET, BUNDLE);
+            methodBuilder.addStatement(SUPER_METHOD_TEMPLATE, BIND_ARGUMENTS_METHOD, TARGET, BUNDLE);
         }
         methodBuilder.beginControlFlow("if ($N == null)", BUNDLE);
         if (required) {
-            methodBuilder.addStatement("throw new $T($S)", IllegalStateException.class, "Argument bundle is null");
+            methodBuilder.addStatement(THROW_NEW_DOLLAR_SIGN_T_PARENTHESES_DOLLAR_SIGN_S_PARENTHESES, IllegalStateException.class, "Argument bundle is null");
         } else {
             methodBuilder.addStatement("$N = new $T()", BUNDLE, ClassName.get(typeUtil.bundleType));
         }
@@ -246,7 +248,7 @@ public final class BundleBindingAdapterGenerator extends BaseGenerator {
             methodBuilder.addStatement(stmt, stmtArgs.toArray(new Object[stmtArgs.size()]));
             if (field.isRequired()) {
                 methodBuilder.nextControlFlow("else");
-                methodBuilder.addStatement("throw new $T($S)", IllegalStateException.class,
+                methodBuilder.addStatement(THROW_NEW_DOLLAR_SIGN_T_PARENTHESES_DOLLAR_SIGN_S_PARENTHESES, IllegalStateException.class,
                         String.format("Required Bundle value with key '%s' was not found for '%s'. "
                                         + "If this field is not required add '@NotRequired' annotation",
                                 field.getKey().getValue(), field.getName()));

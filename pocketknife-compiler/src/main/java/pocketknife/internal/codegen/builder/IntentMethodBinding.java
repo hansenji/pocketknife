@@ -19,6 +19,7 @@ import static javax.lang.model.element.Modifier.PUBLIC;
 public class IntentMethodBinding extends MethodBinding {
 
     private static final String RETURN_VAR_NAME_ROOT = "intent";
+    public static final String IF_DOLLAR_T_VERSION_SDK_INT_DOLLAR_T_VERSION_CODES_JELLY_BEAN = "if ($T.VERSION.SDK_INT >= $T.VERSION_CODES.JELLY_BEAN)";
 
     private final String name;
     private final TypeMirror className;
@@ -129,7 +130,7 @@ public class IntentMethodBinding extends MethodBinding {
 
     private void addDataAndOrType(MethodSpec.Builder methodBuilder, String returnVarName, TypeUtil typeUtil) {
         if (dataParam != null && type != null) {
-            methodBuilder.beginControlFlow("if ($T.VERSION.SDK_INT >= $T.VERSION_CODES.JELLY_BEAN)", ClassName.get(typeUtil.buildType),
+            methodBuilder.beginControlFlow(IF_DOLLAR_T_VERSION_SDK_INT_DOLLAR_T_VERSION_CODES_JELLY_BEAN, ClassName.get(typeUtil.buildType),
                     ClassName.get(typeUtil.buildType));
             if (dataParamIsString) {
                 methodBuilder.addStatement("$N.setDataAndTypeAndNormalize($T.parse($N), $S)", returnVarName, ClassName.get(typeUtil.uriType), dataParam, type);
@@ -144,7 +145,7 @@ public class IntentMethodBinding extends MethodBinding {
             }
             methodBuilder.endControlFlow();
         } else if (dataParam != null) {
-            methodBuilder.beginControlFlow("if ($T.VERSION.SDK_INT >= $T.VERSION_CODES.JELLY_BEAN)", ClassName.get(typeUtil.buildType),
+            methodBuilder.beginControlFlow(IF_DOLLAR_T_VERSION_SDK_INT_DOLLAR_T_VERSION_CODES_JELLY_BEAN, ClassName.get(typeUtil.buildType),
                     ClassName.get(typeUtil.buildType));
             if (dataParamIsString) {
                 methodBuilder.addStatement("$N.setDataAndNormalize($T.parse($N))", returnVarName, ClassName.get(typeUtil.uriType), dataParam);
@@ -159,7 +160,7 @@ public class IntentMethodBinding extends MethodBinding {
             }
             methodBuilder.endControlFlow();
         } else if (type != null) {
-            methodBuilder.beginControlFlow("if ($T.VERSION.SDK_INT >= $T.VERSION_CODES.JELLY_BEAN)", ClassName.get(typeUtil.buildType),
+            methodBuilder.beginControlFlow(IF_DOLLAR_T_VERSION_SDK_INT_DOLLAR_T_VERSION_CODES_JELLY_BEAN, ClassName.get(typeUtil.buildType),
                     ClassName.get(typeUtil.buildType));
             methodBuilder.addStatement("$N.setTypeAndNormalize($S)", returnVarName, type);
             methodBuilder.nextControlFlow("else");
