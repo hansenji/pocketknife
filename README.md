@@ -1,5 +1,7 @@
 [![Build Status](https://travis-ci.org/hansenji/pocketknife.svg?branch=master)](https://travis-ci.org/hansenji/pocketknife)
 
+### Deprecated Look into using [Kotlin][7] and [Android Extras Delegates][6]
+
 Pocket Knife
 ============
 
@@ -83,3 +85,5 @@ License
  [3]: http://repository.sonatype.org/service/local/artifact/maven/redirect?r=central-proxy&g=com.vikingsen&a=pocketknife-core&v=LATEST
  [4]: http://repository.sonatype.org/service/local/artifact/maven/redirect?r=central-proxy&g=com.vikingsen&a=pocketknife-core&v=LATEST
  [5]: http://hansenji.github.io/pocketknife
+ [6]: https://github.com/Takhion/android-extras-delegates
+ [7]: https://kotlinlang.org/
